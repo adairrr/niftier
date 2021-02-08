@@ -3,6 +3,8 @@ const fs = require("fs");
 const chalk = require("chalk");
 
 require("@nomiclabs/hardhat-waffle");
+require("@nomiclabs/hardhat-ethers");
+require('@openzeppelin/hardhat-upgrades');
 
 const { isAddress, getAddress, formatUnits, parseUnits } = utils;
 
@@ -104,7 +106,7 @@ module.exports = {
         }
       },
       {
-        version: "0.5.5",
+        version: "0.7.6",
         settings: {
           optimizer: {
             enabled: true,

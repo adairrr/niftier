@@ -1,7 +1,7 @@
 /* eslint no-use-before-define: "warn" */
 const fs = require("fs");
 const chalk = require("chalk");
-const { config, ethers } = require("hardhat");
+const { ethers, upgrades } = require("hardhat");
 const { utils } = require("ethers");
 const R = require("ramda");
 
@@ -9,8 +9,8 @@ const main = async () => {
 
   console.log("\n\n 📡 Deploying...\n");
 
-
-  const yourContract = await deploy("YourContract") // <-- add in constructor args like line 19 vvvv
+// , {unsafeAllowCustomTypes:true}
+  const yourContract = await deploy("YourContract", ["aoeu"]) // <-- add in constructor args like line 19 vvvv
 
   //const secondContract = await deploy("SecondContract")
 
@@ -58,9 +58,12 @@ const deploy = async (contractName, _args = [], overrides = {}, libraries = {}) 
   console.log(` 🛰  Deploying: ${contractName}`);
 
   const contractArgs = _args || [];
-  const contractArtifacts = await ethers.getContractFactory(contractName,{libraries: libraries});
-  const deployed = await contractArtifacts.deploy(...contractArgs, overrides);
-  const encoded = abiEncodeArgs(deployed, contractArgs);
+  const contractArtifacts = await ethers.getContractFactory(contractName, {libraries: libraries});
+  console.log(contractArgs);
+  const deployed = await upgrades.deployProxy(contractArtifacts, contractArgs, {unsafeAllowCustomTypes:true});
+  await deployed.deployed();
+
+  // const encoded = abiEncodeArgs(deployed, contractArgs);
   fs.writeFileSync(`artifacts/${contractName}.address`, deployed.address);
 
   console.log(
@@ -70,10 +73,12 @@ const deploy = async (contractName, _args = [], overrides = {}, libraries = {}) 
     chalk.magenta(deployed.address),
   );
 
-  if (!encoded || encoded.length <= 2) return deployed;
-  fs.writeFileSync(`artifacts/${contractName}.args`, encoded.slice(2));
+  return deployed
+  // if (!encoded || encoded.length <= 2) return deployed;
+  // may have to use deployed.interface.encodeFunctionData?
+  // fs.writeFileSync(`artifacts/${contractName}.args`, encoded.slice(2));
 
-  return deployed;
+  // return deployed;
 };
 
 
