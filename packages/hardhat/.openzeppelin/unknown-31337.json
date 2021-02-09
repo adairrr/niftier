@@ -70,8 +70,8 @@
       }
     },
     "853d53bcb53f63d73612f952bfb3c164a06784006b69c920bf174ae54e0c4c3f": {
-      "address": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
-      "txHash": "0x65976d984858e1b6108ea8c971b2dcb57c91a1f3ac5d125d6b70b41c73157bf6",
+      "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+      "txHash": "0x52f3c65460558ed50ac9cd8805cded59e3c5cf5f2b0ca53750d8fdba9b5100f4",
       "layout": {
         "storage": [
           {
@@ -103,9 +103,9 @@
         }
       }
     },
-    "b5cc474db93d67edca5a32a09503e360de59eceef2835c5a3b124fbcedce742b": {
-      "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-      "txHash": "0xc64a9d64ee184b92657eb1f9da1c0f5343049e5da087a5f88999f88eac341c21",
+    "928f63b53e2483c7963c166cb8eb42a42ecc26e811e6bcfe5b58fdba3e471eca": {
+      "address": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
+      "txHash": "0x8f48ab4a1acb6181a179409543859ac6e1d1b2decc6a92a25d89e197cb9b9f05",
       "layout": {
         "storage": [
           {
@@ -121,95 +121,18 @@
             "src": "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol:30"
           },
           {
-            "contract": "ContextUpgradeable",
-            "label": "__gap",
-            "type": "t_array(t_uint256)50_storage",
-            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:31"
-          },
-          {
-            "contract": "AccessControlUpgradeable",
-            "label": "_roles",
-            "type": "t_mapping(t_bytes32,t_struct(RoleData)39_storage)",
-            "src": "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol:61"
-          },
-          {
-            "contract": "AccessControlUpgradeable",
-            "label": "__gap",
-            "type": "t_array(t_uint256)49_storage",
-            "src": "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol:225"
-          },
-          {
-            "contract": "AccessRestriction",
-            "label": "isAccessRestriction",
-            "type": "t_bool",
-            "src": "contracts/access/AccessRestriction.sol:24"
-          },
-          {
-            "contract": "AccessRestriction",
-            "label": "__gap",
-            "type": "t_array(t_uint256)50_storage",
-            "src": "contracts/access/AccessRestriction.sol:72"
+            "contract": "YourContract",
+            "label": "purpose",
+            "type": "t_string_storage",
+            "src": "contracts/YourContract.sol:14"
           }
         ],
         "types": {
+          "t_string_storage": {
+            "label": "string"
+          },
           "t_bool": {
             "label": "bool"
-          },
-          "t_array(t_uint256)50_storage": {
-            "label": "uint256[50]"
-          },
-          "t_uint256": {
-            "label": "uint256"
-          },
-          "t_mapping(t_bytes32,t_struct(RoleData)39_storage)": {
-            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)"
-          },
-          "t_bytes32": {
-            "label": "bytes32"
-          },
-          "t_struct(RoleData)39_storage": {
-            "label": "struct AccessControlUpgradeable.RoleData",
-            "members": [
-              {
-                "label": "members",
-                "type": "t_struct(AddressSet)938_storage"
-              },
-              {
-                "label": "adminRole",
-                "type": "t_bytes32"
-              }
-            ]
-          },
-          "t_struct(AddressSet)938_storage": {
-            "label": "struct EnumerableSetUpgradeable.AddressSet",
-            "members": [
-              {
-                "label": "_inner",
-                "type": "t_struct(Set)673_storage"
-              }
-            ]
-          },
-          "t_struct(Set)673_storage": {
-            "label": "struct EnumerableSetUpgradeable.Set",
-            "members": [
-              {
-                "label": "_values",
-                "type": "t_array(t_bytes32)dyn_storage"
-              },
-              {
-                "label": "_indexes",
-                "type": "t_mapping(t_bytes32,t_uint256)"
-              }
-            ]
-          },
-          "t_array(t_bytes32)dyn_storage": {
-            "label": "bytes32[]"
-          },
-          "t_mapping(t_bytes32,t_uint256)": {
-            "label": "mapping(bytes32 => uint256)"
-          },
-          "t_array(t_uint256)49_storage": {
-            "label": "uint256[49]"
           }
         }
       }

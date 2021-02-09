@@ -3,7 +3,11 @@ const fs = require("fs");
 const chalk = require("chalk");
 
 require("@nomiclabs/hardhat-waffle");
+// hardhat-ethers is included with waffle.
 require('@openzeppelin/hardhat-upgrades');
+// see codechecks.io
+require("hardhat-gas-reporter");
+require("solidity-coverage");
 
 const { isAddress, getAddress, formatUnits, parseUnits } = utils;
 
@@ -112,19 +116,13 @@ module.exports = {
             runs: 200
           }
         }
-      },
-      {
-        version: "0.6.7",
-        settings: {
-          optimizer: {
-            enabled: true,
-            runs: 200
-          }
-        }
       }
     ],
 
   },
+  gasReporter: {
+    enabled: (process.env.REPORT_GAS) ? true : false
+  }
 };
 
 const DEBUG = false;
