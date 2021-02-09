@@ -60,7 +60,7 @@ const deploy = async (contractName, _args = [], overrides = {}, libraries = {}) 
   const contractArgs = _args || [];
   const contractArtifacts = await ethers.getContractFactory(contractName, {libraries: libraries});
   console.log(contractArgs);
-  const deployed = await upgrades.deployProxy(contractArtifacts, contractArgs, {unsafeAllowCustomTypes:true});
+  const deployed = await upgrades.deployProxy(contractArtifacts, contractArgs, {unsafeAllowCustomTypes: true});
   await deployed.deployed();
 
   // const encoded = abiEncodeArgs(deployed, contractArgs);

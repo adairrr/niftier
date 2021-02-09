@@ -1,40 +1,6 @@
 {
   "manifestVersion": "3.1",
   "impls": {
-    "21a991456aad0955fc26be88aeb94c1bb4811aabd634e79a9775d4479f6e4b4e": {
-      "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-      "txHash": "0x461ed88697b4dff9e42fa6c676189db5c8094e6a6a9255fc9957016566a1fa58",
-      "layout": {
-        "storage": [
-          {
-            "contract": "Initializable",
-            "label": "_initialized",
-            "type": "t_bool",
-            "src": "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol:25"
-          },
-          {
-            "contract": "Initializable",
-            "label": "_initializing",
-            "type": "t_bool",
-            "src": "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol:30"
-          },
-          {
-            "contract": "YourContract",
-            "label": "purpose",
-            "type": "t_string_storage",
-            "src": "contracts/YourContract.sol:12"
-          }
-        ],
-        "types": {
-          "t_string_storage": {
-            "label": "string"
-          },
-          "t_bool": {
-            "label": "bool"
-          }
-        }
-      }
-    },
     "88cccb337c15402218a9f4598258df85980f4ca3cf73e42807e795ee37a024d4": {
       "address": "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
       "txHash": "0x83bc197c14deeb6c9bb9cdee001df05251599522e294f08010dda7d4513c6be8",
@@ -104,8 +70,8 @@
       }
     },
     "853d53bcb53f63d73612f952bfb3c164a06784006b69c920bf174ae54e0c4c3f": {
-      "address": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
-      "txHash": "0xfb285320c246a8454668f4874ab584c54058d96f101089988be6cb50b4e8011c",
+      "address": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+      "txHash": "0x65976d984858e1b6108ea8c971b2dcb57c91a1f3ac5d125d6b70b41c73157bf6",
       "layout": {
         "storage": [
           {
@@ -136,10 +102,121 @@
           }
         }
       }
+    },
+    "b5cc474db93d67edca5a32a09503e360de59eceef2835c5a3b124fbcedce742b": {
+      "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+      "txHash": "0xc64a9d64ee184b92657eb1f9da1c0f5343049e5da087a5f88999f88eac341c21",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol:25"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol:30"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "AccessControlUpgradeable",
+            "label": "_roles",
+            "type": "t_mapping(t_bytes32,t_struct(RoleData)39_storage)",
+            "src": "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol:61"
+          },
+          {
+            "contract": "AccessControlUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol:225"
+          },
+          {
+            "contract": "AccessRestriction",
+            "label": "isAccessRestriction",
+            "type": "t_bool",
+            "src": "contracts/access/AccessRestriction.sol:24"
+          },
+          {
+            "contract": "AccessRestriction",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "contracts/access/AccessRestriction.sol:72"
+          }
+        ],
+        "types": {
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_bytes32,t_struct(RoleData)39_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_struct(RoleData)39_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "members",
+                "type": "t_struct(AddressSet)938_storage"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32"
+              }
+            ]
+          },
+          "t_struct(AddressSet)938_storage": {
+            "label": "struct EnumerableSetUpgradeable.AddressSet",
+            "members": [
+              {
+                "label": "_inner",
+                "type": "t_struct(Set)673_storage"
+              }
+            ]
+          },
+          "t_struct(Set)673_storage": {
+            "label": "struct EnumerableSetUpgradeable.Set",
+            "members": [
+              {
+                "label": "_values",
+                "type": "t_array(t_bytes32)dyn_storage"
+              },
+              {
+                "label": "_indexes",
+                "type": "t_mapping(t_bytes32,t_uint256)"
+              }
+            ]
+          },
+          "t_array(t_bytes32)dyn_storage": {
+            "label": "bytes32[]"
+          },
+          "t_mapping(t_bytes32,t_uint256)": {
+            "label": "mapping(bytes32 => uint256)"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          }
+        }
+      }
     }
   },
   "admin": {
-    "address": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
-    "txHash": "0x5c451ffa577e3f2017225e51703eb966f09bad5913607270ba5267bb58daa256"
+    "address": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+    "txHash": "0x52c9be0ab70f72512f49bb48732a9065e7375148954544397ec32cd4022ff196"
   }
 }
