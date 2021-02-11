@@ -12,7 +12,7 @@ jobs:
     working_directory: ~/nft-canvas-ci
     steps:
       - checkout # check out source code to working directory
-       - setup_remote_docker:
+      - setup_remote_docker:
           docker_layer_caching: false
       - restore_cache: # restore the dependency cache
           name: Restore yarn package cache
@@ -48,7 +48,7 @@ jobs:
       - image: circleci/node:14.15.1
     working_directory: ~/nft-canvas-ci
     steps:
-       - setup_remote_docker:
+      - setup_remote_docker:
           docker_layer_caching: false
       - run:
           name: Fetch solc version
@@ -71,7 +71,7 @@ jobs:
       - image: circleci/node:14.15.1
     working_directory: ~/nft-canvas-ci
     steps:
-       - setup_remote_docker:
+      - setup_remote_docker:
           docker_layer_caching: false
       - run:
           name: Fetch solc version
