@@ -123,6 +123,20 @@ module.exports = {
   },
   gasReporter: {
     enabled: (process.env.REPORT_GAS) ? true : false
+  },
+  mocha: {
+    timeout: 20000,
+    // report to consale AND mocha-junit-reporter
+    reporter: 'mocha-multi',
+    reporterOptions: {
+      'mocha-junit-reporter': {
+        stdout: '-',
+        options: {
+          mochaFile: 'test-results/hardhat-test-results.xml'
+        },
+      },
+      spec: "-"
+    }
   }
 };
 

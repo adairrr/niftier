@@ -22,6 +22,7 @@ packages/subgraph/config/config.json
 # testing
 coverage
 packages/hardhat/coverage.json
+packages/hardhat/test-results/hardhat-test-results.xml
 
 # production
 build

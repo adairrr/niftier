@@ -65,6 +65,8 @@ jobs:
       - run:
           name: Hardhat test
           command: yarn test
+      - store_test_results:
+          path: packages/hardhat/test-results
 
   coverage:
     docker:

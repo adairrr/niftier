@@ -613,9 +613,9 @@
         }
       }
     },
-    "2ca595804be90c30cd89264eee8503cfa5bd3398fda48583afda2f833a8882df": {
+    "054344b79bb31e3b68fab850bb1a82560bd82f0ba8f4c2aaf91f78a0e3b80207": {
       "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-      "txHash": "0x940e9b442df24da31e06a6305bcedb932125b2ef5cca9e3541105545cd03e268",
+      "txHash": "0xfc4d19fb609a0e5c870eba94e218f4d36cf224865b090fb65d341dc6e3cb8ad5",
       "layout": {
         "storage": [
           {
@@ -724,9 +724,9 @@
         }
       }
     },
-    "595430a1623173a65cea1cdb501c1162606a93488944affd2897f6a5e90fe85b": {
+    "bb5277d1e905e9450782cb106d327030975e01a81daa5d5b064d2630d5de7de1": {
       "address": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
-      "txHash": "0x643cc2c17d61edbe06cbb7950759df48f1f0e01f051c608e5245222adb07a702",
+      "txHash": "0xb27222368f8c46b7c85c69f0e3f838e0b0adfadc310100ebd358f660cbabbdc2",
       "layout": {
         "storage": [
           {
@@ -792,72 +792,72 @@
           {
             "contract": "ERC1155Composable",
             "label": "accessRestriction",
-            "type": "t_contract(AccessRestriction)5889",
-            "src": "contracts/ERC998/ERC1155Composable.sol:79"
+            "type": "t_contract(AccessRestriction)4916",
+            "src": "contracts/ERC998/ERC1155Composable.sol:60"
           },
           {
             "contract": "ERC1155Composable",
             "label": "baseUri",
             "type": "t_string_storage",
-            "src": "contracts/ERC998/ERC1155Composable.sol:82"
+            "src": "contracts/ERC998/ERC1155Composable.sol:63"
           },
           {
             "contract": "ERC1155Composable",
             "label": "tokenIdTracker",
             "type": "t_struct(Counter)2498_storage",
-            "src": "contracts/ERC998/ERC1155Composable.sol:86"
+            "src": "contracts/ERC998/ERC1155Composable.sol:67"
           },
           {
             "contract": "ERC1155Composable",
             "label": "authorizedChildContracts",
             "type": "t_struct(AddressSet)3374_storage",
-            "src": "contracts/ERC998/ERC1155Composable.sol:90"
+            "src": "contracts/ERC998/ERC1155Composable.sol:71"
           },
           {
             "contract": "ERC1155Composable",
             "label": "tokenSupply",
             "type": "t_mapping(t_uint256,t_uint256)",
-            "src": "contracts/ERC998/ERC1155Composable.sol:93"
+            "src": "contracts/ERC998/ERC1155Composable.sol:74"
           },
           {
             "contract": "ERC1155Composable",
             "label": "tokenUris",
             "type": "t_mapping(t_uint256,t_string_storage)",
-            "src": "contracts/ERC998/ERC1155Composable.sol:96"
+            "src": "contracts/ERC998/ERC1155Composable.sol:77"
           },
           {
             "contract": "ERC1155Composable",
             "label": "tokenCreators",
             "type": "t_struct(UintToAddressMap)2872_storage",
-            "src": "contracts/ERC998/ERC1155Composable.sol:98"
+            "src": "contracts/ERC998/ERC1155Composable.sol:79"
           },
           {
             "contract": "ERC1155Composable",
             "label": "tokenOwners",
             "type": "t_struct(UintToAddressMap)2872_storage",
-            "src": "contracts/ERC998/ERC1155Composable.sol:99"
+            "src": "contracts/ERC998/ERC1155Composable.sol:80"
           },
           {
             "contract": "ERC1155Composable",
             "label": "parentToChildBalances",
             "type": "t_mapping(t_uint256,t_mapping(t_address,t_mapping(t_uint256,t_uint256)))",
-            "src": "contracts/ERC998/ERC1155Composable.sol:106"
+            "src": "contracts/ERC998/ERC1155Composable.sol:87"
           },
           {
             "contract": "ERC1155Composable",
             "label": "parentToChildTokens",
             "type": "t_mapping(t_uint256,t_mapping(t_address,t_struct(UintSet)3495_storage))",
-            "src": "contracts/ERC998/ERC1155Composable.sol:110"
+            "src": "contracts/ERC998/ERC1155Composable.sol:91"
           },
           {
             "contract": "ERC1155Composable",
             "label": "childToParentHolders",
             "type": "t_mapping(t_address,t_mapping(t_uint256,t_struct(UintSet)3495_storage))",
-            "src": "contracts/ERC998/ERC1155Composable.sol:115"
+            "src": "contracts/ERC998/ERC1155Composable.sol:96"
           }
         ],
         "types": {
-          "t_contract(AccessRestriction)5889": {
+          "t_contract(AccessRestriction)4916": {
             "label": "contract AccessRestriction"
           },
           "t_string_storage": {
@@ -1013,9 +1013,9 @@
         }
       }
     },
-    "74b3bf340e9a50cce8328e8ab9c52ae763332a9971ef0862d3ca40b11266da13": {
+    "853d53bcb53f63d73612f952bfb3c164a06784006b69c920bf174ae54e0c4c3f": {
       "address": "0x2bdCC0de6bE1f7D2ee689a0342D76F52E8EFABa3",
-      "txHash": "0x02e6df0e65d2e2d4cc6a85cfe047a3358fd1b4a32e15d72d05a6c15bea3997b3",
+      "txHash": "0x29370e14cd7d2a0277e18c34614325a4e46f66c8917bf584bf1c0c2eee7c8002",
       "layout": {
         "storage": [
           {
@@ -1034,7 +1034,7 @@
             "contract": "YourContract",
             "label": "purpose",
             "type": "t_string_storage",
-            "src": "contracts/YourContract.sol:14"
+            "src": "contracts/YourContract.sol:12"
           }
         ],
         "types": {
@@ -1050,6 +1050,6 @@
   },
   "admin": {
     "address": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
-    "txHash": "0x76da40fee12f08b1b5dc1d9be5ef85ddaf98c16fdec9fdf71c6850ad5a53562f"
+    "txHash": "0x52c9be0ab70f72512f49bb48732a9065e7375148954544397ec32cd4022ff196"
   }
 }
