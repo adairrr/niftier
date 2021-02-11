@@ -3,6 +3,7 @@ const fs = require("fs");
 const chalk = require("chalk");
 
 require("@nomiclabs/hardhat-waffle");
+// require("@nomiclabs/hardhat-solhint");
 // hardhat-ethers is included with waffle.
 require('@openzeppelin/hardhat-upgrades');
 // see codechecks.io

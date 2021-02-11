@@ -59,7 +59,7 @@ jobs:
           command: yarn chain
           background: true
       - run:
-          name: Hardhat Test
+          name: Hardhat test
           command: yarn test
 
   coverage:

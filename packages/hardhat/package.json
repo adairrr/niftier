@@ -20,6 +20,7 @@
     "hardhat-gas-reporter": "^1.0.4",
     "solidity-coverage": "^0.7.14",
     "chai": "^4.2.0",
+    "mocha": "^8.2.1",
     "chalk": "^4.1.0",
     "ethereum-waffle": "^3.2.2",
     "ethers": "^5.0.29",
