@@ -12,6 +12,8 @@ jobs:
     working_directory: ~/nft-canvas-ci
     steps:
       - checkout # check out source code to working directory
+       - setup_remote_docker:
+          docker_layer_caching: false
       - restore_cache: # restore the dependency cache
           name: Restore yarn package cache
           key: yarn-packages-{{ checksum "yarn.lock" }}
@@ -46,6 +48,8 @@ jobs:
       - image: circleci/node:14.15.1
     working_directory: ~/nft-canvas-ci
     steps:
+       - setup_remote_docker:
+          docker_layer_caching: false
       - run:
           name: Fetch solc version
           command: docker pull ethereum/solc:0.7.4
@@ -55,7 +59,7 @@ jobs:
       #     name: Setup Environment Variables
       #     command: cp .env.default .env
       - run:
-          name: Test RPC
+          name: Start the local chain
           command: yarn chain
           background: true
       - run:
@@ -67,6 +71,8 @@ jobs:
       - image: circleci/node:14.15.1
     working_directory: ~/nft-canvas-ci
     steps:
+       - setup_remote_docker:
+          docker_layer_caching: false
       - run:
           name: Fetch solc version
           command: docker pull ethereum/solc:0.7.4
@@ -79,6 +85,7 @@ jobs:
           name: Coverage
           command: yarn coverage
       - coveralls/upload # upload lcov.info to coveralls.io
+          path_to_lcov: packages/hardhat/coverage/lcov.info
 
 workflows:
   version: 2
