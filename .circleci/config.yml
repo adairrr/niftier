@@ -84,7 +84,7 @@ jobs:
       - run:
           name: Coverage
           command: yarn coverage
-      - coveralls/upload # upload lcov.info to coveralls.io
+      - coveralls/upload: # upload lcov.info to coveralls.io
           path_to_lcov: packages/hardhat/coverage/lcov.info
 
 workflows:
