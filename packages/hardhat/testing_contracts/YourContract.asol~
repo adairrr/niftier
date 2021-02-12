@@ -1,0 +1,94 @@
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity >=0.6.2 <0.8.0;
+
+import "hardhat/console.sol";
+//import "@openzeppelin/contracts/access/Ownable.sol"; //https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/access/Ownable.sol
+
+import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/presets/ERC1155PresetMinterPauserUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
+
+contract YourContract is ERC1155PresetMinterPauserUpgradeable {
+    
+    using CountersUpgradeable for CountersUpgradeable.Counter;
+    using SafeMathUpgradeable for uint256;
+    using AddressUpgradeable for address;
+
+    // bytes32[] public constant DEFAULT_PRIMARY_TYPES = ["ARTPIECE_TYPE", "LAYER_TYPE", "CONTROLLER_TYPE"];
+
+    CountersUpgradeable.Counter private _tokenIdTracker;
+
+    string private _contractURI;
+    string private _baseURI;
+    uint256 nonce;
+    
+
+    // mapping from the address of the art/layer/controller to the creator
+    mapping(uint256 => address) public creators;
+    mapping (uint256 => address) owners;
+    // mapping(uint256 => bytes32) public ipfsHashes;
+    mapping(uint256 => string) public ipfsHashes;
+    struct Artpiece {
+        bytes32 ipfsHash;
+        Layer[] layers;
+    }
+
+    struct Layer {
+        bytes32 ipfsHash;
+        Controller[] controllers;
+    }
+    
+    struct Controller {
+        int256 minimum;
+        int256 maximum;
+        int256 current;
+    }
+    
+    modifier onlyAdmin() {
+        require(
+            hasRole(DEFAULT_ADMIN_ROLE, _msgSender()),
+            "ERC1155PresetMinterPauser: must have admin role to mint"
+        );
+        _;
+    }
+
+    function currentTokenId() public view returns (uint256) {
+        return _tokenIdTracker.current();
+    }
+
+    function increaseTokenId() internal {
+        _tokenIdTracker.increment();
+    }
+
+    function initializeYourContract() internal initializer {
+        ERC1155PresetMinterPauserUpgradeable.initialize("");
+        _baseURI = "https://ipfs.io/ipfs/";
+    }
+
+    function createLayer(uint256 artworkId, uint256 amount, string memory ipfsHash) public virtual {
+
+        uint256 tokenId = currentTokenId();
+
+        // super.mint(msg.sender, layerId, amount, "");
+        // // if not reverted, assign creator
+        // creators[layerId] = msg.sender;
+        // ipfsHashes[layerId] = ipfsHash;
+    }
+  
+    // function to mint the artpiece, minting it all as a batch 
+    function createArtpiece(address to, uint256[] memory ids, uint256[] memory amounts, bytes memory data) public virtual {
+        // needs to check that those with the type layer have the required fields
+        
+        super.mintBatch(to, ids, amounts, data);
+    }
+    
+    
+    
+    function setContractURI(string memory ipfsUrl) external onlyAdmin {
+        _contractURI = ipfsUrl;
+    }
+
+    function setBaseURI(string memory baseURI) external onlyAdmin {
+        _baseURI = baseURI;
+    }
+}

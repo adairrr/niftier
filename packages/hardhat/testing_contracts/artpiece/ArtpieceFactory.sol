@@ -1,0 +1,81 @@
+// SPDX-License-Identifier: UNLICENSED
+
+pragma solidity >=0.6.0 <0.8.0;
+
+// import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/math/SafeMathUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/GSN/ContextUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
+import "./ArtpieceNFT.sol";
+
+contract ArtpieceFactory is Initializable, ContextUpgradeable {
+
+    using SafeMathUpgradeable for uint256;
+    using AddressUpgradeable for address;
+
+    event ArtpieceCreated(uint256 indexed artpieceId);
+
+    /// @dev sanity check
+    bool public isArtpieceFactory;
+
+    /// @dev governs access control
+    IAccessRestriction accessControl;
+    ArtpieceNFT public artpieceToken;
+    LayerFactory public layerFactory;
+
+
+    mapping (uint256 => address) public artpieceToArtist;
+    // mapping (address => uint256) public artistToArtpieces;
+
+    function initialize(
+        address _accessControlAddress,
+        ArtpieceNFT _artpieceToken,
+        LayerFactory _layerFactory
+    )
+        public initializer
+    {
+        isArtpieceFactory = true;
+
+        // setup access
+        IAccessRestriction candidateContract = IAccessRestriction(_accessControlAddress);
+        require(candidateContract.isAccessRestriction());
+        AccessRestriction = candidateContract;
+
+        artpieceToken = _artpieceToken;
+        layerFactory = _layerFactory;
+    }
+
+    function createNewLayer(bytes32 calldata _uri) external returns (uint256 layerId) {
+        require(
+            accessControl.hasMinterRole(_msgSender()),
+            "ArtpieceFactory.createNewLayer: Sender must be minter"
+        );
+        return layerFactory.createLayer(_uri);
+    }
+
+    function createNewLayers(bytes32[] calldata _uris) external returns (uint256 layerId) {
+        require(
+            accessControl.hasMinterRole(_msgSender()),
+            "ArtpieceFactory.createNewLayers: Sender must be minter"
+        );
+        return layerFactory.createLayers(_uris);
+    }
+
+    function createArtpieceAndMintLayers(
+        string calldata _artpieceUri,
+        address _artist,
+        uint256[] calldata _layerIds,
+        uint256[] calldata _layerAmounts,
+        address _to
+    ) external {
+        require(
+            accessControl.hasMinterRole(_msgSender()),
+            "ArtpieceFactory.createNewLayers: Sender must be minter"
+        );
+        uint256 artpieceTokenId = artpieceToken.mint(_to, _artpieceUri, _artist);
+        materials.batchMintStrands(_layerIds, _layerAmounts, address(artpieceToken), abi.encodePacked(artpieceTokenId));
+        emit ArtpieceCreated(artpieceTokenId);
+    }
+
+}

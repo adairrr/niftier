@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Mocha Tests" time="1.3760" tests="24" failures="0">
+  <testsuite name="Root Suite" timestamp="2021-02-12T03:31:48" tests="0" time="0.0000" failures="0">
+  </testsuite>
+  <testsuite name="AccessRestriction" timestamp="2021-02-12T03:31:48" tests="1" file="/home/ethnode/workplace/nft_canvas/packages/hardhat/test/access/AccessRestriction.js" time="0.0560" failures="0">
+    <testcase name="AccessRestriction should grant default admin role to deployer" time="0.0560" classname="should grant default admin role to deployer">
+    </testcase>
+  </testsuite>
+  <testsuite name="My Dapp" timestamp="2021-02-12T03:31:50" tests="1" file="/home/ethnode/workplace/nft_canvas/packages/hardhat/test/YourContract.js" time="0.0790" failures="0">
+    <testcase name="My Dapp retrieve returns a value previously stored" time="0.0790" classname="retrieve returns a value previously stored">
+    </testcase>
+  </testsuite>
+  <testsuite name="YourContract (proxy)" timestamp="2021-02-12T03:31:51" tests="1" file="/home/ethnode/workplace/nft_canvas/packages/hardhat/test/YourContract.proxy.js" time="0.0300" failures="0">
+    <testcase name="YourContract (proxy) retrieve returns a value previously initialized" time="0.0300" classname="retrieve returns a value previously initialized">
+    </testcase>
+  </testsuite>
+  <testsuite name="Initialization" timestamp="2021-02-12T03:31:53" tests="2" file="/home/ethnode/workplace/nft_canvas/packages/hardhat/test/YourContract.proxy.js" time="0.1030" failures="0">
+    <testcase name="Initialization should set all the defaults properly" time="0.0250" classname="should set all the defaults properly">
+    </testcase>
+    <testcase name="Initialization should reject any ether transfers" time="0.0780" classname="should reject any ether transfers">
+    </testcase>
+  </testsuite>
+  <testsuite name="Upgrades" timestamp="2021-02-12T03:31:54" tests="1" file="/home/ethnode/workplace/nft_canvas/packages/hardhat/test/YourContract.proxy.js" time="0.0000" failures="0">
+    <testcase name="Upgrades should be upgradeable" time="0.0000" classname="should be upgradeable">
+    </testcase>
+  </testsuite>
+  <testsuite name="Admin methods" timestamp="2021-02-12T03:31:54" tests="0" file="/home/ethnode/workplace/nft_canvas/packages/hardhat/test/YourContract.proxy.js" time="0.0000" failures="0">
+  </testsuite>
+  <testsuite name="setBaseUri" timestamp="2021-02-12T03:31:54" tests="2" file="/home/ethnode/workplace/nft_canvas/packages/hardhat/test/YourContract.proxy.js" time="0.1540" failures="0">
+    <testcase name="Admin methods setBaseUri should update the base uri" time="0.1120" classname="should update the base uri">
+    </testcase>
+    <testcase name="Admin methods setBaseUri should not be callable non-admins" time="0.0420" classname="should not be callable non-admins">
+    </testcase>
+  </testsuite>
+  <testsuite name="updateTokenUri" timestamp="2021-02-12T03:31:55" tests="2" file="/home/ethnode/workplace/nft_canvas/packages/hardhat/test/YourContract.proxy.js" time="0.1250" failures="0">
+    <testcase name="Admin methods updateTokenUri should update a token&apos;s uri" time="0.0740" classname="should update a token&apos;s uri">
+    </testcase>
+    <testcase name="Admin methods updateTokenUri should not be callable non-admins" time="0.0510" classname="should not be callable non-admins">
+    </testcase>
+  </testsuite>
+  <testsuite name="updateAccessRestriction" timestamp="2021-02-12T03:31:56" tests="3" file="/home/ethnode/workplace/nft_canvas/packages/hardhat/test/YourContract.proxy.js" time="0.2920" failures="0">
+    <testcase name="Admin methods updateAccessRestriction should update the access restriction" time="0.2320" classname="should update the access restriction">
+    </testcase>
+    <testcase name="Admin methods updateAccessRestriction should disallow addresses that are not of the accessControls instance" time="0.0190" classname="should disallow addresses that are not of the accessControls instance">
+    </testcase>
+    <testcase name="Admin methods updateAccessRestriction should not be callable by non-admins" time="0.0410" classname="should not be callable by non-admins">
+    </testcase>
+  </testsuite>
+  <testsuite name="authorizeChildContract" timestamp="2021-02-12T03:31:58" tests="3" file="/home/ethnode/workplace/nft_canvas/packages/hardhat/test/YourContract.proxy.js" time="0.2660" failures="0">
+    <testcase name="Admin methods authorizeChildContract should add an authorized child contract" time="0.2420" classname="should add an authorized child contract">
+    </testcase>
+    <testcase name="Admin methods authorizeChildContract should disallow addresses that are not ERC1155 contracts" time="0.0140" classname="should disallow addresses that are not ERC1155 contracts">
+    </testcase>
+    <testcase name="Admin methods authorizeChildContract should not be callable by non-admins" time="0.0100" classname="should not be callable by non-admins">
+    </testcase>
+  </testsuite>
+  <testsuite name="Composability" timestamp="2021-02-12T03:31:59" tests="0" file="/home/ethnode/workplace/nft_canvas/packages/hardhat/test/YourContract.proxy.js" time="0.0000" failures="0">
+  </testsuite>
+  <testsuite name="Authorized child contracts" timestamp="2021-02-12T03:31:59" tests="2" file="/home/ethnode/workplace/nft_canvas/packages/hardhat/test/YourContract.proxy.js" time="0.1640" failures="0">
+    <testcase name="Composability Authorized child contracts should allow receiving of authorized ERC1155 tokens (in this case: by the same creator)" time="0.0890" classname="should allow receiving of authorized ERC1155 tokens (in this case: by the same creator)">
+    </testcase>
+    <testcase name="Composability Authorized child contracts should allow minting of authorized ERC1155 tokens directly to a token" time="0.0750" classname="should allow minting of authorized ERC1155 tokens directly to a token">
+    </testcase>
+  </testsuite>
+  <testsuite name="Unuthorized child contracts" timestamp="2021-02-12T03:32:00" tests="1" file="/home/ethnode/workplace/nft_canvas/packages/hardhat/test/YourContract.proxy.js" time="0.0230" failures="0">
+    <testcase name="Composability Unuthorized child contracts should revert when child contract is unauthorized" time="0.0230" classname="should revert when child contract is unauthorized">
+    </testcase>
+  </testsuite>
+  <testsuite name="Minting" timestamp="2021-02-12T03:32:00" tests="0" file="/home/ethnode/workplace/nft_canvas/packages/hardhat/test/YourContract.proxy.js" time="0.0000" failures="0">
+  </testsuite>
+  <testsuite name="Success" timestamp="2021-02-12T03:32:00" tests="1" file="/home/ethnode/workplace/nft_canvas/packages/hardhat/test/YourContract.proxy.js" time="0.0330" failures="0">
+    <testcase name="Minting Success should mint properly as admin and return token 0" time="0.0330" classname="should mint properly as admin and return token 0">
+    </testcase>
+  </testsuite>
+  <testsuite name="Reversion" timestamp="2021-02-12T03:32:01" tests="4" file="/home/ethnode/workplace/nft_canvas/packages/hardhat/test/YourContract.proxy.js" time="0.0510" failures="0">
+    <testcase name="Minting Reversion should only allow minter to mint" time="0.0100" classname="should only allow minter to mint">
+    </testcase>
+    <testcase name="Minting Reversion should not allow minting to the zero address" time="0.0180" classname="should not allow minting to the zero address">
+    </testcase>
+    <testcase name="Minting Reversion should not allow the creator to be the zero address" time="0.0110" classname="should not allow the creator to be the zero address">
+    </testcase>
+    <testcase name="Minting Reversion should not allow the uri to be empty" time="0.0120" classname="should not allow the uri to be empty">
+    </testcase>
+  </testsuite>
+</testsuites>

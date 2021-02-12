@@ -1,0 +1,195 @@
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity >=0.6.2 <0.8.0;
+
+import "hardhat/console.sol";
+//import "@openzeppelin/contracts/access/Ownable.sol"; //https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/access/Ownable.sol
+
+import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/presets/ERC1155PresetMinterPauserUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
+
+contract YourContract is ERC1155PresetMinterPauserUpgradeable {
+    
+    using CountersUpgradeable for CountersUpgradeable.Counter;
+    using SafeMathUpgradeable for uint256;
+    using AddressUpgradeable for address;
+
+    // bytes32[] public constant DEFAULT_PRIMARY_TYPES = ["ARTPIECE_TYPE", "LAYER_TYPE", "CONTROLLER_TYPE"];
+    
+    uint8 public constant PRIMARY_TYPE_INDEX = 248;
+    uint8 public constant SECONDARY_TYPE_INDEX = 232;
+    uint8 public constant UNIQUE_ID_INDEX = 132;
+
+    bytes32 public constant ARTPIECE_TYPE = keccak256("ARTPIECE_TYPE");
+    bytes32 public constant LAYER_TYPE = keccak256("LAYER_TYPE");
+    bytes32 public constant CONTROLLER_TYPE = keccak256("CONTROLLER_TYPE");
+
+    CountersUpgradeable.Counter private _tokenIdTracker;
+
+    string private _contractURI;
+    string private _baseURI;
+    uint256 nonce;
+    
+
+    // create the primary type with name and the index in the array as the id. Can access what type it is based on this indexed id.
+    // for secondary types, just store as an array per type, and reverse lookup works here too.
+    struct PrimaryType {
+        // should be 8
+        uint8 id;
+        bytes32[] secondaryTypes;
+        mapping (bytes32 => uint16) secondaryTypeIds;
+    }
+    bytes32[] primaryTypes;
+    mapping(bytes32 => PrimaryType) public primaryTypeIds;
+
+    mapping(uint256 => mapping(uint256 => bool)) uniqueIdsPerType;
+
+    
+    // when upgrading this contract, these must not exceed 256 values, though they likely wouldn't anyway.
+    // enum PrimaryType { ARTPIECE, LAYER, CONTROLLER }
+    // enum LayerType { IMAGE, AUDIO, VIDEO, DIMENSIONAL, VR }
+        
+    // map 
+    // mapping from the address of the art/layer/controller to the creator
+    mapping(uint256 => address) public creators;
+    mapping (uint256 => address) owners;
+    // mapping(uint256 => bytes32) public ipfsHashes;
+    mapping(uint256 => string) public ipfsHashes;
+    struct Artpiece {
+        bytes32 ipfsHash;
+        Layer[] layers;
+    }
+
+    struct Layer {
+        bytes32 ipfsHash;
+        Controller[] controllers;
+    }
+    
+    struct Controller {
+        int256 minimum;
+        int256 maximum;
+        int256 current;
+    }
+    
+    modifier onlyAdmin() {
+        require(
+            hasRole(DEFAULT_ADMIN_ROLE, _msgSender()),
+            "ERC1155PresetMinterPauser: must have admin role to mint"
+        );
+        _;
+    }
+
+    function currentTokenId() public view returns (uint256) {
+        return _tokenIdTracker.current();
+    }
+
+    function increaseTokenId() internal {
+        _tokenIdTracker.increment();
+    }
+    
+    // modifier onlyCollaborators(bytes32 collaboratorRole, ) {
+    //     require
+    // }
+    
+    function initializeYourContract() internal initializer {
+        ERC1155PresetMinterPauserUpgradeable.initialize("");
+        _baseURI = "https://ipfs.io/ipfs/";
+        _setupPrimaryType(ARTPIECE_TYPE);
+        _setupPrimaryType(LAYER_TYPE);
+        _setupPrimaryType(CONTROLLER_TYPE);
+    }
+
+    function _setupPrimaryType(bytes32 primaryType) internal {
+        require(primaryTypeIds[primaryType] == 0, "Primary type already exists.");
+
+        primaryTypes.push(primaryType);
+        primaryTypeIds[primaryType] = PrimaryType(uint256(primaryTypes.length) << PRIMARY_TYPE_INDEX, []);
+    }
+
+    function _setupSecondaryType(bytes32 primaryType, bytes32 secondaryType) internal {
+        require(primaryTypeIds[primaryType] != 0, "Primary type: {} must exist before adding secondary type");
+        require(!primaryTypeIds[primaryType].secondaryTypeIds[secondaryType] != 0, "Secondary type already exists for this primary type.");
+
+        // will be using "1" indexing so that zero is always uninitialized
+        primaryTypeIds[primaryType].secondaryTypeIds.push(secondaryType);
+
+        primaryTypeIds[primaryType].secondaryTypeIds[secondaryType] = uint256(primaryTypeIds[primaryType].secondaryTypeIds.length) << SECONDARY_TYPE_INDEX;
+    }
+    
+    // store the primary type in the upper 8 bits (split-bit)
+    uint256 constant PRIMARY_TYPE_MASK = uint256(uint8(~0)) << PRIMARY_TYPE_INDEX;
+    
+    // store the secondary type in the upper 9-25 bits (split-bit)
+    uint256 constant SECONDARY_TYPE_MASK = uint256(uint32(~0)) << SECONDARY_TYPE_INDEX;
+
+    // ..and the non-fungible index in the lower 128
+    uint256 constant NF_INDEX_MASK = uint128(~0);
+    
+    function isPrimaryType(uint256 _id, PrimaryType primaryType) public pure returns(bool) {
+        return _id & PRIMARY_TYPE_MASK == uint256(primaryType);
+    }
+    
+    function isSecondaryType(uint256 _id, uint256 secondaryType) public pure returns(bool) {
+        return _id & SECONDARY_TYPE_MASK == uint256(secondaryType);
+    }
+    
+    function isLayerType(uint256 _id, LayerType layerType) public pure returns(bool) {
+        return isSecondaryType(_id, uint256(layerType));
+    }
+    
+    function createLayer(uint256 artworkId, uint256 amount, string memory ipfsHash) public virtual {
+
+        uint256 tokenId = currentTokenId();
+
+        super.mint(msg.sender, layerId, amount, "");
+        // if not reverted, assign creator
+        creators[layerId] = msg.sender;
+        ipfsHashes[layerId] = ipfsHash;
+    }
+
+    function buildLayerId(uint16 layerType, uint100 artworkUniqueId, bytes32 ipfsHash, uint256[] controllerIds, uint32 index) public returns(uint256) {
+        require(primaryTypes[LAYER_TYPE].secondaryTypeIds[layerType] != 0, "Secondary type must be created before making a layer of that type.");
+        // layerId = primary|secondary|uniqueId|referenceId|#
+        uint256 newLayerId;
+        
+        // primary type
+        newLayerId = newLayerId | primaryTypeIds[LAYER_TYPE].id;
+        newLayerId = newLayerId | primaryTypeIds[LAYER_TYPE].secondaryTypeIds[layerType];
+
+        // generate the layer's unique id
+        uint100 uniqueId = uint100(keccak256(abi.encodePacked(ipfsHash, controllerIds)));
+        // Make sure this blobId has not been used before (could be in the same block).
+        while (uniqueIdsPerType[newLayerId][uniqueId]) {
+            uniqueId = uint100(keccak256(uniqueId));
+        }
+
+        uniqueIdsPerType[newLayerId][uniqueId] = true;
+
+        newLayerId = newLayerId | uint256(uniqueId) << UNIQUE_ID_INDEX;
+
+
+    }
+
+        
+    // function to mint the artpiece, minting it all as a batch 
+    function createArtpiece(address to, uint256[] memory ids, uint256[] memory amounts, bytes memory data) public virtual {
+        // needs to check that those with the type layer have the required fields
+        
+        super.mintBatch(to, ids, amounts, data);
+    }
+    
+    
+    
+    function setContractURI(string memory ipfsUrl) external onlyAdmin {
+        _contractURI = ipfsUrl;
+    }
+
+    function setBaseURI(string memory baseURI) external onlyAdmin {
+        _baseURI = baseURI;
+    }
+
+    function supportsInterface(bytes4 interfaceID) external view returns (bool) {
+        return  interfaceID == 0x01ffc9a7 ||    // ERC-165 support (i.e. `bytes4(keccak256('supportsInterface(bytes4)'))`).
+                interfaceID == 0x4e2312e0;      // ERC-1155 `ERC1155TokenReceiver` support (i.e. `bytes4(keccak256("onERC1155Received(address,address,uint256,uint256,bytes)")) ^ bytes4(keccak256("onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)"))`).
+    }
+}
