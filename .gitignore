@@ -9,6 +9,7 @@ packages/hardhat/.openzeppelin
 packages/hardhat/artifacts
 packages/react-app/src/contracts
 packages/hardhat/cache
+packages/hardhat/typechain
 
 docker/**/data
 

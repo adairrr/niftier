@@ -56,5 +56,9 @@
       "**/@graphprotocol/graph-ts",
       "**/@graphprotocol/graph-ts/**"
     ]
+  },
+  "dependencies": {
+    "@typechain/ethers-v5": "^5.0.0",
+    "hardhat": "^2.0.10"
   }
 }

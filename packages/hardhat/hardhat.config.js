@@ -8,6 +8,7 @@ require("@nomiclabs/hardhat-waffle");
 require('@openzeppelin/hardhat-upgrades');
 // see codechecks.io
 require("hardhat-gas-reporter");
+require("hardhat-typechain");
 require("solidity-coverage");
 
 const { isAddress, getAddress, formatUnits, parseUnits } = utils;
