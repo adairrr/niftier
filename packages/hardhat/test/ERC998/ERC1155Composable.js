@@ -2,8 +2,6 @@ const { ethers, upgrades } = require("hardhat");
 const { BigNumber, utils } = require("ethers");
 const { use, expect } = require("chai");
 const { solidity } = require("ethereum-waffle");
-const { ZERO_BYTES32 } = require('@openzeppelin/test-helpers').constants;
-const { BN, constants, expectEvent, expectRevert } = require('@openzeppelin/test-helpers');
 
 use(solidity);
 
@@ -259,7 +257,7 @@ describe("ERC1155Composable", async function () {
 
         // check that the childTokensOf method also returns the correct value
         expect(await composableToken.childTokensOf(TOKEN_ONE_ID, childComposableToken.address))
-          .to.deep.equal([childTokenId]);
+          .to.deep.include.keys([childTokenId]);
 
         // check that the creator no longer has the child token
         expect(await childComposableToken.balanceOf(creator.address, TOKEN_ONE_ID))
@@ -267,7 +265,7 @@ describe("ERC1155Composable", async function () {
 
         // check that the parent token is listed for the parent tokens of the child token
         expect(await composableToken.parentTokensOf(childComposableToken.address, childTokenId))
-        //   .to.deep.equal([TOKEN_ONE_ID]);
+          .to.deep.include.keys([TOKEN_ONE_ID]);
       });
 
       it('should allow minting of authorized ERC1155 tokens directly to a token', async () => {
@@ -295,11 +293,11 @@ describe("ERC1155Composable", async function () {
 
         // check that the childTokensOf method also returns the correct value
         expect(await composableToken.childTokensOf(TOKEN_ONE_ID, childComposableToken.address))
-          .to.deep.equal([childTokenId]);
+          .to.deep.include.keys([childTokenId]);
 
         // check that the parent token is listed for the parent tokens of the child token
         expect(await composableToken.parentTokensOf(childComposableToken.address, childTokenId))
-          .to.deep.equal([TOKEN_ONE_ID]);
+          .to.deep.include.keys([TOKEN_ONE_ID]);
       });
     });
 

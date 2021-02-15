@@ -1,7 +1,6 @@
 const { ethers, upgrades } = require("hardhat");
 const { use, expect } = require("chai");
 const { solidity } = require("ethereum-waffle");
-const { ZERO_BYTES32 } = require('@openzeppelin/test-helpers').constants;
 
 use(solidity);
 
@@ -28,7 +27,7 @@ describe("AccessRestriction", function () {
     // Test case
     it('should grant default admin role to deployer', async function () {
         // DEFAULT_ADMIN_ROLE == ZERO_BYTES32
-        expect(await accessRestriction.getRoleMemberCount(ZERO_BYTES32)).to.equal(1);
+        expect(await accessRestriction.getRoleMemberCount(ethers.constants.HashZero)).to.equal(1);
         expect(await accessRestriction.isAdmin(deployer.address)).to.equal(true);
     });
 });
