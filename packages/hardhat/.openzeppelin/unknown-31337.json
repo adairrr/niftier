@@ -758,9 +758,9 @@
         }
       }
     },
-    "3138b0fcb558c0bd948edaeb897e26cc18befe1c24dd680030751ba1ab7f556c": {
+    "3137d0c26c4c596e0426b1937084560f15f5a45e8baa2b452ed1f4c5bdac4a61": {
       "address": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
-      "txHash": "0x67035fb2de8b8171168487ecd35ed4641f957ea3689f3e5e32612b0efdf74f4e",
+      "txHash": "0x5cb639b5f1b9ea96d66a676da86c98862a0faeb92113ffc23f8a53929b8d632f",
       "layout": {
         "storage": [
           {
@@ -824,14 +824,20 @@
             "src": "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155ReceiverUpgradeable.sol:24"
           },
           {
-            "contract": "ERC1155Composable",
+            "contract": "AccessRestrictable",
             "label": "accessRestriction",
-            "type": "t_contract(AccessRestriction)5422",
-            "src": "contracts/ERC998/ERC1155Composable.sol:35"
+            "type": "t_contract(AccessRestriction)5493",
+            "src": "contracts/access/AccessRestrictable.sol:26"
           },
           {
             "contract": "ERC1155Composable",
             "label": "baseUri",
+            "type": "t_string_storage",
+            "src": "contracts/ERC998/ERC1155Composable.sol:35"
+          },
+          {
+            "contract": "ERC1155Composable",
+            "label": "name",
             "type": "t_string_storage",
             "src": "contracts/ERC998/ERC1155Composable.sol:38"
           },
@@ -891,9 +897,6 @@
           }
         ],
         "types": {
-          "t_contract(AccessRestriction)5422": {
-            "label": "contract AccessRestriction"
-          },
           "t_string_storage": {
             "label": "string"
           },
@@ -1013,6 +1016,9 @@
           },
           "t_mapping(t_uint256,t_struct(UintSet)3607_storage)": {
             "label": "mapping(uint256 => struct EnumerableSetUpgradeable.UintSet)"
+          },
+          "t_contract(AccessRestriction)5493": {
+            "label": "contract AccessRestriction"
           },
           "t_array(t_uint256)50_storage": {
             "label": "uint256[50]"

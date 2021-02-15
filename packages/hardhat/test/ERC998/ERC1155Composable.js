@@ -215,7 +215,7 @@ describe("ERC1155Composable", async function () {
       it('should not be callable by non-admins', async () => {
         // using deployer address because it will fail on admin check first
         await expect(composableTokenAsUser.authorizeChildContract(deployer.address))
-          .to.be.revertedWith("ERC1155Composable.authorizeChildContract: only admin may authorize child contracts.")
+          .to.be.revertedWith("AccessRestrictable.onlyAdmin: Sender must have admin role.")
       });
     });
   });
