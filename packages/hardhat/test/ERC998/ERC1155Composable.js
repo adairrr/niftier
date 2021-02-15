@@ -23,6 +23,7 @@ describe("ERC1155Composable", async function () {
 
   // constants
   const BASE_URI = "BASE_URI";
+  const TOKEN_NAME = "TEST_COMPOSABLE";
   const TOKEN_URI = "TOKEN_URI";
   const TOKEN_ONE_ID = BigNumber.from(0);
   const TOKEN_TWO_ID = BigNumber.from(1);
@@ -51,7 +52,7 @@ describe("ERC1155Composable", async function () {
     // deploy erc1155Composable
     composableToken = await upgrades.deployProxy(
       ERC1155Composable,
-      [accessRestriction.address, BASE_URI],
+      [accessRestriction.address, TOKEN_NAME, BASE_URI],
       {unsafeAllowCustomTypes: true}
     );
 
@@ -63,6 +64,7 @@ describe("ERC1155Composable", async function () {
   describe('Initialization', async () => {
     it('should set all the defaults properly', async function () {
       expect(await composableToken.baseUri()).to.equal(BASE_URI);
+      expect(await composableToken.name()).to.equal(TOKEN_NAME);
     });
 
     it("should reject any ether transfers", async function () {
@@ -105,6 +107,24 @@ describe("ERC1155Composable", async function () {
 
       it('should not be callable non-admins', async () => {
         await expect(composableTokenAsUser.setBaseUri("YEET")).to.be.reverted;
+      });
+    });
+
+    describe('setName', async () => {
+      it('should update the token name', async () => {
+        const newName = "NEW_NAME_HERE";
+      
+        // set the new name
+        await expect(composableToken.setName(newName))
+          .to.emit(composableToken, "TokenNameUpdated")
+          .withArgs(newName);
+
+        // ensure that the name was changed
+        expect(await composableToken.name()).to.equal(newName);
+      });
+
+      it('should not be callable non-admins', async () => {
+        await expect(composableTokenAsUser.setName("PORRIDGE")).to.be.reverted;
       });
     });
 
@@ -171,7 +191,7 @@ describe("ERC1155Composable", async function () {
         // deploy a new ERC1155Composable
         const newComposable = await upgrades.deployProxy(
           ERC1155Composable,
-          [accessRestrictionAddress, BASE_URI],
+          [accessRestrictionAddress, TOKEN_NAME, BASE_URI],
           {unsafeAllowCustomTypes: true}
         );
 
@@ -210,7 +230,7 @@ describe("ERC1155Composable", async function () {
       // deploy another ERC1155Composable contract
       childComposableToken = await upgrades.deployProxy(
         ERC1155Composable,
-        [accessRestriction.address, BASE_URI],
+        [accessRestriction.address, TOKEN_NAME, BASE_URI],
         {unsafeAllowCustomTypes: true}
       );
     });
@@ -347,11 +367,4 @@ describe("ERC1155Composable", async function () {
   describe('Transactions', () => {
 
   });
-  
-  // // Test case
-  // it('should grant default admin role to deployer', async function () {
-  //   // DEFAULT_ADMIN_ROLE == ZERO_BYTES32
-  //   expect(await composableToken.getRoleMemberCount(ZERO_BYTES32)).to.equal(1);
-  //   expect(await composableToken.isAdmin(deployer.address)).to.equal(true);
-  // });
 });

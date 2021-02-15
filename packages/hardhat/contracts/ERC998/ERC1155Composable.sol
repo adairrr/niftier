@@ -7,17 +7,17 @@ import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155ReceiverUpgrade
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/EnumerableSetUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/EnumerableMapUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/introspection/ERC165CheckerUpgradeable.sol";
 import "../access/AccessRestriction.sol";
+import "../access/AccessRestrictable.sol";
 import "./IERC1155Composable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
 
 /**
  * This contract handles represents an ERC1155 token that can hold ERC1155 tokens.
  */
-contract ERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155ReceiverUpgradeable, IERC1155Composable {
+contract ERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155ReceiverUpgradeable, IERC1155Composable, AccessRestrictable {
 
     using CountersUpgradeable for CountersUpgradeable.Counter;
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.UintSet;
@@ -31,11 +31,11 @@ contract ERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Receiver
      */
     bytes4 private constant _INTERFACE_ID_ERC1155COMPOSABLE = 0x1234abcd;
 
-    /// @dev governs access control
-    AccessRestriction public accessRestriction;
-
     /// @dev prefix for uri retrieval
     string public baseUri;
+
+    /// @dev name of this token
+    string public name;
 
     /// @dev tokenId tracking
     /// TODO 
@@ -71,37 +71,42 @@ contract ERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Receiver
     mapping(address => mapping(uint256 => EnumerableSetUpgradeable.UintSet)) childToParentHolders;
 
     event BaseUriUpdated(string _baseUri);
-    event AccessRestrictionUpdated(AccessRestriction _accessRestriction);
+    event TokenNameUpdated(string _name);
     event UriUpdated(uint256 indexed _tokenId, string _tokenUri);
 
     /**
      * @notice initializer
-     * @param _accessRestriction address for deployed access restriction used for access control
-     * @param _baseUri base URI for all tokens represented by this contract
+     * @param _accessRestriction address for deployed access restriction used for access control.
+     * @param _name Name of the token that this contract will represent.
+     * @param _baseUri base URI for all tokens represented by this contract.
      */
     function initialize(
-        AccessRestriction _accessRestriction, 
+        AccessRestriction _accessRestriction,
+        string memory _name,
         string memory _baseUri
     ) public virtual initializer {
-        __ERC1155Composable_init(_accessRestriction, _baseUri);
+        __ERC1155Composable_init(_accessRestriction, _name, _baseUri);
     }
 
     function __ERC1155Composable_init(
         AccessRestriction _accessRestriction,
+        string memory _name,
         string memory _baseUri
     ) internal initializer {
         __Context_init_unchained();
         __ERC165_init_unchained();
         __ERC1155_init_unchained(_baseUri);
-        __ERC1155Composable_init_unchained(_accessRestriction, _baseUri);
+        __AccessRestrictable_init_unchained(_accessRestriction);
+        __ERC1155Composable_init_unchained(_name, _baseUri);
     }
 
     function __ERC1155Composable_init_unchained(
-        AccessRestriction _accessRestriction, 
+        string memory _name,
         string memory _baseUri
     ) internal initializer {
+        _setName(_name);
         _setBaseUri(_baseUri);
-        _setAccessRestriction(_accessRestriction);
+        // _setAccessRestriction(_accessRestriction);
 
         // register the supported interfaces to conform to ERC1155Composable via ERC165
         _registerInterface(_INTERFACE_ID_ERC1155COMPOSABLE);
@@ -121,10 +126,10 @@ contract ERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Receiver
       * @return tokenId The token ID of the token that was minted
      */
     function mint(
-        address _to, 
-        string calldata _tokenUri, 
-        uint256 _amount, 
-        address _creator, 
+        address _to,
+        string calldata _tokenUri,
+        uint256 _amount,
+        address _creator,
         bytes memory _data
     ) external returns (uint256 tokenId) {
         // TODO minter role
@@ -140,6 +145,7 @@ contract ERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Receiver
         // Check URI and creator
         _validateIncomingMint(_tokenUri, _creator, _amount);
 
+        // TODO this will increment on EVERY mint, even those that already exist...
         tokenId = tokenIdTracker.current();
 
         // call super minting method
@@ -176,11 +182,7 @@ contract ERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Receiver
      * @dev Checks for the _INTERFACE_ID_ERC1155 interface ID.
      * @param _childContract address to be authorized
      */
-    function authorizeChildContract(address _childContract) external {
-        require(
-            accessRestriction.isAdmin(_msgSender()),
-            "ERC1155Composable.authorizeChildContract: only admin may authorize child contracts."
-        );
+    function authorizeChildContract(address _childContract) external onlyAdmin {
         require(
             IERC1155Upgradeable(_childContract).supportsInterface(0xd9b67a26),
             "ERC1155Composable.authorizeChildContract: only ERC1155 contracts may be authorized."
@@ -253,6 +255,7 @@ contract ERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Receiver
     function isAuthorizedChildContract(address _childContract) public view returns (bool) {
         return authorizedChildContracts.contains(_childContract);
     }
+
     /**
      * @dev Transfers child token from a token ID.
      * This method would be called to remove a child from a token and tranfer it to a new owner.
@@ -351,12 +354,7 @@ contract ERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Receiver
         uint256 _childTokenId,
         uint256 _amount,
         bytes memory _data
-    )
-        virtual
-        external
-        override
-        returns (bytes4) 
-    {
+    ) virtual external override returns (bytes4) {
         // check that the _data can support the recipient token ID
         require(_data.length == 32, "ERC998: data must contain the unique uint256 tokenId to transfer the child token to");
 
@@ -522,43 +520,35 @@ contract ERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Receiver
     // onlyAdmin
     // ----------------------------------------------------------------------------
 
-
-    /**
-     * @notice Update the access restriction for new deploments or other.
-     * @dev onlyAdmin
-     * @param _accessRestriction new AccessRestriction address
-     */
-    function updateAccessRestriction(AccessRestriction _accessRestriction) external {
-        require(
-            accessRestriction.isAdmin(_msgSender()),
-            "ERC1155Composable.updateAccessRestriction: Sender must be admin"
-        );
-        _setAccessRestriction(_accessRestriction);
-        emit AccessRestrictionUpdated(_accessRestriction);
-    }
-
-    function _setAccessRestriction(AccessRestriction _accessRestriction) internal {
-        // test to ensure correct instance
-        AccessRestriction candidateContract = AccessRestriction(_accessRestriction);
-        require(candidateContract.isAccessRestriction());
-
-        accessRestriction = _accessRestriction;
-    }
-
-    
-    function setBaseUri(string calldata _baseUri) external {
-        require(
-            accessRestriction.isAdmin(_msgSender()),
-            "ERC1155Composable.setBaseUri: Sender must be admin to set base URI."
-        );
+    function setBaseUri(string calldata _baseUri) external onlyAdmin {
         _setBaseUri(_baseUri);
         emit BaseUriUpdated(_baseUri);
     }
 
     /**
-    */
+     * @dev Sets the base URI for this contract.
+     */
     function _setBaseUri(string memory _baseUri) internal {
         baseUri = _baseUri;
+    }
+
+    
+    /**
+     * @notice Sets the name of the token represented by this contract.
+     * @dev Only admin
+     * @param _name New name for all tokens represented by this contract.
+     */
+     function setName(string calldata _name) external onlyAdmin {
+        _setName(_name);
+        emit TokenNameUpdated(_name);
+    }
+
+    /**
+     * @dev Sets the name of the token represented by this contract.
+     * @param _name New name for all tokens represented by this contract.
+     */
+    function _setName(string memory _name) internal {
+        name = _name;
     }
 
     /**
@@ -567,11 +557,7 @@ contract ERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Receiver
      * @param _tokenId The ID of the token being updated
      * @param _tokenUri The new URI
      */
-    function updateTokenUri(uint256 _tokenId, string calldata _tokenUri) external {
-        require(
-            accessRestriction.isAdmin(_msgSender()),
-            "ERC1155Composable.updateTokenUri: Sender must be admin to set URI."
-        );
+    function updateTokenUri(uint256 _tokenId, string calldata _tokenUri) external onlyAdmin {
         _setTokenUri(_tokenId, _tokenUri);
         emit UriUpdated(_tokenId, _tokenUri);
     }
