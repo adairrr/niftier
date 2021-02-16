@@ -19,7 +19,7 @@ describe("ERC1155Composable", async function () {
   let deployer: SignerWithAddress;
   let minter: SignerWithAddress;
   let creator: SignerWithAddress;
-  let randomSignerWithAddress: SignerWithAddress;
+  let randomSigner: SignerWithAddress;
   let accounts: SignerWithAddress[];
 
   // constants
@@ -32,7 +32,7 @@ describe("ERC1155Composable", async function () {
   const AccessRestriction: ContractFactory = await ethers.getContractFactory("AccessRestriction");
   const ERC1155Composable: ContractFactory = await ethers.getContractFactory("ERC1155Composable");
 
-  [deployer, minter, creator, randomSignerWithAddress, ...accounts] = await ethers.getSigners();
+  [deployer, minter, creator, randomSigner, ...accounts] = await ethers.getSigners();
 
 
   beforeEach(async () => {
@@ -57,7 +57,7 @@ describe("ERC1155Composable", async function () {
     ) as ERC1155Composable;
 
     // have an instance of this token with a random account as caller
-    composableTokenAsUser = composableToken.connect(randomSignerWithAddress);
+    composableTokenAsUser = composableToken.connect(randomSigner);
   });
 
   describe('Initialization', async () => {
