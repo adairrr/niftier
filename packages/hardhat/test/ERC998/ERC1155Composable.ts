@@ -1,23 +1,26 @@
-const { ethers, upgrades } = require("hardhat");
-const { BigNumber, utils } = require("ethers");
-const { use, expect } = require("chai");
-const { solidity } = require("ethereum-waffle");
+import { BigNumber, constants, utils, ContractFactory } from "ethers";
+import { ethers, upgrades } from "hardhat";
+import { use, expect } from 'chai';
+import { AccessRestriction, ERC1155Composable } from "../../typechain";
+import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-with-address';
+
+import { solidity } from "ethereum-waffle";
 
 use(solidity);
 
 describe("ERC1155Composable", async function () {
 
   // contract instances
-  let accessRestriction;
-  let composableToken;
-  let composableTokenAsUser;
+  let accessRestriction: AccessRestriction;
+  let composableToken: ERC1155Composable;
+  let composableTokenAsUser: ERC1155Composable;
 
   // signers
-  let deployer;
-  let minter;
-  let creator;
-  let randomSigner;
-  let accounts;
+  let deployer: SignerWithAddress;
+  let minter: SignerWithAddress;
+  let creator: SignerWithAddress;
+  let randomSignerWithAddress: SignerWithAddress;
+  let accounts: SignerWithAddress[];
 
   // constants
   const BASE_URI = "BASE_URI";
@@ -26,10 +29,10 @@ describe("ERC1155Composable", async function () {
   const TOKEN_ONE_ID = BigNumber.from(0);
   const TOKEN_TWO_ID = BigNumber.from(1);
 
-  const AccessRestriction = await ethers.getContractFactory("AccessRestriction");
-  const ERC1155Composable = await ethers.getContractFactory("ERC1155Composable");
+  const AccessRestriction: ContractFactory = await ethers.getContractFactory("AccessRestriction");
+  const ERC1155Composable: ContractFactory = await ethers.getContractFactory("ERC1155Composable");
 
-  [deployer, minter, creator, randomSigner, ...accounts] = await ethers.getSigners();
+  [deployer, minter, creator, randomSignerWithAddress, ...accounts] = await ethers.getSigners();
 
 
   beforeEach(async () => {
@@ -41,22 +44,20 @@ describe("ERC1155Composable", async function () {
       AccessRestriction,
       [deployer.address],
       {unsafeAllowCustomTypes: true}
-    );
+    ) as AccessRestriction;
 
     // add minter role to minter
     await accessRestriction.addMinter(minter.address);
 
-
     // deploy erc1155Composable
     composableToken = await upgrades.deployProxy(
       ERC1155Composable,
-      [accessRestriction.address, TOKEN_NAME, BASE_URI],
+      [await accessRestriction.address, TOKEN_NAME, BASE_URI],
       {unsafeAllowCustomTypes: true}
-    );
+    ) as ERC1155Composable;
 
     // have an instance of this token with a random account as caller
-    composableTokenAsUser = composableToken.connect(randomSigner);
-
+    composableTokenAsUser = composableToken.connect(randomSignerWithAddress);
   });
 
   describe('Initialization', async () => {
@@ -161,7 +162,7 @@ describe("ERC1155Composable", async function () {
           AccessRestriction,
           [deployer.address],
           {unsafeAllowCustomTypes: true}
-        );
+        ) as AccessRestriction;
 
         // update
         await composableToken.updateAccessRestriction(newAccessRestriction.address);
@@ -191,7 +192,7 @@ describe("ERC1155Composable", async function () {
           ERC1155Composable,
           [accessRestrictionAddress, TOKEN_NAME, BASE_URI],
           {unsafeAllowCustomTypes: true}
-        );
+        ) as ERC1155Composable;
 
         // check that the contract was not previously authorized
         expect(await composableToken.isAuthorizedChildContract(newComposable.address)).false;
@@ -230,7 +231,7 @@ describe("ERC1155Composable", async function () {
         ERC1155Composable,
         [accessRestriction.address, TOKEN_NAME, BASE_URI],
         {unsafeAllowCustomTypes: true}
-      );
+      ) as ERC1155Composable;
     });
 
     describe('Authorized child contracts', async () => {
@@ -248,7 +249,8 @@ describe("ERC1155Composable", async function () {
           composableToken.address,
           childTokenId,
           1,
-          utils.formatBytes32String(TOKEN_ONE_ID)
+          ethers.utils.solidityPack(['uint256'], [TOKEN_ONE_ID])
+          // TOKEN_ONE_ID
         );
 
         // check the main token's balance was updated 
@@ -280,7 +282,7 @@ describe("ERC1155Composable", async function () {
           TOKEN_URI,
           1,
           creator.address,
-          ethers.utils.formatBytes32String(TOKEN_ONE_ID))
+          ethers.utils.solidityPack(['uint256'], [TOKEN_ONE_ID]))
         ).to.not.be.reverted;
 
         // check the main token's balance was updated 
@@ -309,7 +311,7 @@ describe("ERC1155Composable", async function () {
           TOKEN_URI,
           1,
           creator.address,
-          ethers.utils.formatBytes32String(TOKEN_ONE_ID))
+          ethers.utils.solidityPack(['bytes'], [TOKEN_ONE_ID]))
         ).to.be.revertedWith("");
       });
     });
