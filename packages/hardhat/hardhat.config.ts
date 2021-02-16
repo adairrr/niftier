@@ -1,15 +1,22 @@
-const { utils } = require("ethers");
-const fs = require("fs");
-const chalk = require("chalk");
+import { utils } from "ethers";
+import { task, HardhatUserConfig } from "hardhat/config";
+import { HttpNetworkUserConfig } from "hardhat/types";
+import fs from 'fs'
+import chalk from 'chalk'
 
-require("@nomiclabs/hardhat-waffle");
-// require("@nomiclabs/hardhat-solhint");
+import "@nomiclabs/hardhat-waffle";
+// import "@nomiclabs/hardhat-solhint";
 // hardhat-ethers is included with waffle.
-require('@openzeppelin/hardhat-upgrades');
+import '@openzeppelin/hardhat-upgrades';
 // see codechecks.io
-require("hardhat-gas-reporter");
-require("hardhat-typechain");
-require("solidity-coverage");
+import "hardhat-gas-reporter";
+import "hardhat-typechain";
+import "solidity-coverage";
+import "@typechain/ethers-v5"
+
+
+// ts modified from https://github.com/magnet-finance/magnet-ui/blob/cbbc3fb6d999c2f9a5638bcc65c3a8792072d4bd/packages/hardhat/hardhat.config.ts
+
 
 const { isAddress, getAddress, formatUnits, parseUnits } = utils;
 
@@ -38,7 +45,7 @@ function mnemonic() {
   return "";
 }
 
-module.exports = {
+const config: HardhatUserConfig = {
   defaultNetwork,
 
   // don't forget to set your provider like:
@@ -120,10 +127,13 @@ module.exports = {
         }
       }
     ],
-
   },
   gasReporter: {
     enabled: (process.env.REPORT_GAS) ? true : false
+  },
+  typechain: {
+    outDir: 'typechain',
+    target: 'ethers-v5',
   },
   mocha: {
     timeout: 20000,
@@ -184,7 +194,7 @@ task("fundedwallet", "Create a wallet (pk) link and fund it with deployer?")
     //SEND USING LOCAL DEPLOYER MNEMONIC IF THERE IS ONE
     // IF NOT SEND USING LOCAL HARDHAT NODE:
     if(localDeployerMnemonic){
-      let deployerWallet = new ethers.Wallet.fromMnemonic(localDeployerMnemonic)
+      let deployerWallet = ethers.Wallet.fromMnemonic(localDeployerMnemonic)
       deployerWallet = deployerWallet.connect(ethers.provider)
       console.log("💵 Sending "+amount+" ETH to "+randomWallet.address+" using deployer account");
       let sendresult = await deployerWallet.sendTransaction(tx)
@@ -301,7 +311,7 @@ task("account", "Get balance informations for the deployment account.", async (_
     //console.log(config.networks[n],n)
     try {
 
-      let provider = new ethers.providers.JsonRpcProvider(config.networks[n].url)
+      let provider = new ethers.providers.JsonRpcProvider((config.networks[n] as HttpNetworkUserConfig).url)
       let balance = (await provider.getBalance(address))
       console.log(" -- " + n + " --  -- -- 📡 ")
       console.log("   balance: " + ethers.utils.formatEther(balance))
@@ -389,14 +399,17 @@ task("send", "Send ETH")
       ).toHexString(),
       gasLimit: taskArgs.gasLimit ? taskArgs.gasLimit : 24000,
       chainId: network.config.chainId,
+      data: undefined,
     };
 
     if (taskArgs.data !== undefined) {
       txRequest.data = taskArgs.data;
       debug(`Adding data to payload: ${txRequest.data}`);
     }
-    debug(txRequest.gasPrice / 1000000000 + " gwei");
+    debug(ethers.BigNumber.from(txRequest.gasPrice).div(1000000000).toHexString() + ' gwei');
     debug(JSON.stringify(txRequest, null, 2));
 
     return send(fromSigner, txRequest);
 });
+
+export default config;
