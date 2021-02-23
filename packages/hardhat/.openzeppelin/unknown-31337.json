@@ -1,6 +1,67 @@
 {
   "manifestVersion": "3.1",
   "impls": {
+    "f7bc02991109b43d49d47000b5fac92e6391e01b8fa9a9e44d079ea4320001d7": {
+      "address": "0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82",
+      "txHash": "0xb2b9e6c1090e1019266624c03089b79d795cb76c8f04133257c536aa46e84dd8",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol:25"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol:30"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "AccessRestrictable",
+            "label": "accessRestriction",
+            "type": "t_contract(AccessRestriction)7321",
+            "src": "contracts/access/AccessRestrictable.sol:26"
+          },
+          {
+            "contract": "ERC1155ComposableFactory",
+            "label": "parentToken",
+            "type": "t_contract(ERC1155Composable)5044",
+            "src": "contracts/ERC998/ERC1155ComposableFactory.sol:22"
+          },
+          {
+            "contract": "ERC1155ComposableFactory",
+            "label": "childToken",
+            "type": "t_contract(ERC1155Composable)5044",
+            "src": "contracts/ERC998/ERC1155ComposableFactory.sol:23"
+          }
+        ],
+        "types": {
+          "t_contract(ERC1155Composable)5044": {
+            "label": "contract ERC1155Composable"
+          },
+          "t_contract(AccessRestriction)7321": {
+            "label": "contract AccessRestriction"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_bool": {
+            "label": "bool"
+          }
+        }
+      }
+    },
     "054344b79bb31e3b68fab850bb1a82560bd82f0ba8f4c2aaf91f78a0e3b80207": {
       "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
       "txHash": "0xfc4d19fb609a0e5c870eba94e218f4d36cf224865b090fb65d341dc6e3cb8ad5",
@@ -112,9 +173,43 @@
         }
       }
     },
-    "3137d0c26c4c596e0426b1937084560f15f5a45e8baa2b452ed1f4c5bdac4a61": {
-      "address": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
-      "txHash": "0x5cb639b5f1b9ea96d66a676da86c98862a0faeb92113ffc23f8a53929b8d632f",
+    "853d53bcb53f63d73612f952bfb3c164a06784006b69c920bf174ae54e0c4c3f": {
+      "address": "0x0B306BF915C4d645ff596e518fAf3F9669b97016",
+      "txHash": "0xb497e6d17a292b20f77c39c229c3e1281ea114b5eb82261886669ba93bacbe0f",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol:25"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol:30"
+          },
+          {
+            "contract": "YourContract",
+            "label": "purpose",
+            "type": "t_string_storage",
+            "src": "contracts/YourContract.sol:12"
+          }
+        ],
+        "types": {
+          "t_string_storage": {
+            "label": "string"
+          },
+          "t_bool": {
+            "label": "bool"
+          }
+        }
+      }
+    },
+    "a4c5d2767e3c55b9b8936c676e2bb9d177e68de1326f41b458ce67371d067642": {
+      "address": "0x610178dA211FEF7D417bC0e6FeD39F05609AD788",
+      "txHash": "0xbbfb8edd80da33ffc37c84050289da1608a50ee0f7ae0de4b7ad4941169ab54f",
       "layout": {
         "storage": [
           {
@@ -180,7 +275,7 @@
           {
             "contract": "AccessRestrictable",
             "label": "accessRestriction",
-            "type": "t_contract(AccessRestriction)5610",
+            "type": "t_contract(AccessRestriction)7321",
             "src": "contracts/access/AccessRestrictable.sol:26"
           },
           {
@@ -217,37 +312,37 @@
             "contract": "ERC1155Composable",
             "label": "tokenUris",
             "type": "t_mapping(t_uint256,t_string_storage)",
-            "src": "contracts/ERC998/ERC1155Composable.sol:52"
+            "src": "contracts/ERC998/ERC1155Composable.sol:53"
           },
           {
             "contract": "ERC1155Composable",
             "label": "tokenCreators",
             "type": "t_struct(UintToAddressMap)2987_storage",
-            "src": "contracts/ERC998/ERC1155Composable.sol:54"
+            "src": "contracts/ERC998/ERC1155Composable.sol:55"
           },
           {
             "contract": "ERC1155Composable",
             "label": "tokenOwners",
             "type": "t_struct(UintToAddressMap)2987_storage",
-            "src": "contracts/ERC998/ERC1155Composable.sol:55"
+            "src": "contracts/ERC998/ERC1155Composable.sol:56"
           },
           {
             "contract": "ERC1155Composable",
             "label": "parentToChildBalances",
             "type": "t_mapping(t_uint256,t_mapping(t_address,t_mapping(t_uint256,t_uint256)))",
-            "src": "contracts/ERC998/ERC1155Composable.sol:62"
+            "src": "contracts/ERC998/ERC1155Composable.sol:63"
           },
           {
             "contract": "ERC1155Composable",
             "label": "parentToChildTokens",
             "type": "t_mapping(t_uint256,t_mapping(t_address,t_struct(UintSet)3610_storage))",
-            "src": "contracts/ERC998/ERC1155Composable.sol:66"
+            "src": "contracts/ERC998/ERC1155Composable.sol:67"
           },
           {
             "contract": "ERC1155Composable",
             "label": "childToParentHolders",
             "type": "t_mapping(t_address,t_mapping(t_uint256,t_struct(UintSet)3610_storage))",
-            "src": "contracts/ERC998/ERC1155Composable.sol:71"
+            "src": "contracts/ERC998/ERC1155Composable.sol:72"
           }
         ],
         "types": {
@@ -371,7 +466,7 @@
           "t_mapping(t_uint256,t_struct(UintSet)3610_storage)": {
             "label": "mapping(uint256 => struct EnumerableSetUpgradeable.UintSet)"
           },
-          "t_contract(AccessRestriction)5610": {
+          "t_contract(AccessRestriction)7321": {
             "label": "contract AccessRestriction"
           },
           "t_array(t_uint256)50_storage": {
@@ -407,9 +502,9 @@
         }
       }
     },
-    "f7bc02991109b43d49d47000b5fac92e6391e01b8fa9a9e44d079ea4320001d7": {
-      "address": "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e",
-      "txHash": "0xaf0408bb1f56883171b9de021a6b164d9e898ef14bf4e8c6292cdf5ab969fa54",
+    "5a28c8e56a4a5b7cb07025ee0281081677aacae91e6a9ebb6fdaf659257c6f99": {
+      "address": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
+      "txHash": "0x7c6be21e61d1cafcaf6a42ba656bd00d70ca63471fcf8e585b0a242c2e184aa9",
       "layout": {
         "storage": [
           {
@@ -431,73 +526,301 @@
             "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:31"
           },
           {
+            "contract": "ERC165Upgradeable",
+            "label": "_supportedInterfaces",
+            "type": "t_mapping(t_bytes4,t_bool)",
+            "src": "@openzeppelin/contracts-upgradeable/introspection/ERC165Upgradeable.sol:23"
+          },
+          {
+            "contract": "ERC165Upgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/introspection/ERC165Upgradeable.sol:59"
+          },
+          {
+            "contract": "ERC1155Upgradeable",
+            "label": "_balances",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol:27"
+          },
+          {
+            "contract": "ERC1155Upgradeable",
+            "label": "_operatorApprovals",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_bool))",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol:30"
+          },
+          {
+            "contract": "ERC1155Upgradeable",
+            "label": "_uri",
+            "type": "t_string_storage",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol:33"
+          },
+          {
+            "contract": "ERC1155Upgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)47_storage",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol:421"
+          },
+          {
+            "contract": "ERC1155ReceiverUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155ReceiverUpgradeable.sol:24"
+          },
+          {
             "contract": "AccessRestrictable",
             "label": "accessRestriction",
-            "type": "t_contract(AccessRestriction)5610",
+            "type": "t_contract(AccessRestriction)7321",
             "src": "contracts/access/AccessRestrictable.sol:26"
           },
           {
-            "contract": "ERC1155ComposableFactory",
-            "label": "parentToken",
-            "type": "t_contract(ERC1155Composable)5044",
-            "src": "contracts/ERC998/ERC1155ComposableFactory.sol:22"
-          },
-          {
-            "contract": "ERC1155ComposableFactory",
-            "label": "childToken",
-            "type": "t_contract(ERC1155Composable)5044",
-            "src": "contracts/ERC998/ERC1155ComposableFactory.sol:23"
-          }
-        ],
-        "types": {
-          "t_contract(ERC1155Composable)5044": {
-            "label": "contract ERC1155Composable"
-          },
-          "t_contract(AccessRestriction)5610": {
-            "label": "contract AccessRestriction"
-          },
-          "t_array(t_uint256)50_storage": {
-            "label": "uint256[50]"
-          },
-          "t_uint256": {
-            "label": "uint256"
-          },
-          "t_bool": {
-            "label": "bool"
-          }
-        }
-      }
-    },
-    "853d53bcb53f63d73612f952bfb3c164a06784006b69c920bf174ae54e0c4c3f": {
-      "address": "0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82",
-      "txHash": "0x30d2b82bcdcccc5cf670cd83cfae527e765eaebaa92231d3861708215a41ef40",
-      "layout": {
-        "storage": [
-          {
-            "contract": "Initializable",
-            "label": "_initialized",
-            "type": "t_bool",
-            "src": "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol:25"
-          },
-          {
-            "contract": "Initializable",
-            "label": "_initializing",
-            "type": "t_bool",
-            "src": "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol:30"
-          },
-          {
-            "contract": "YourContract",
-            "label": "purpose",
+            "contract": "TypedERC1155Composable",
+            "label": "baseUri",
             "type": "t_string_storage",
-            "src": "contracts/YourContract.sol:12"
+            "src": "contracts/ERC998/TypedERC1155Composable.sol:38"
+          },
+          {
+            "contract": "TypedERC1155Composable",
+            "label": "name",
+            "type": "t_string_storage",
+            "src": "contracts/ERC998/TypedERC1155Composable.sol:41"
+          },
+          {
+            "contract": "TypedERC1155Composable",
+            "label": "tokenIdTracker",
+            "type": "t_struct(Counter)2613_storage",
+            "src": "contracts/ERC998/TypedERC1155Composable.sol:45"
+          },
+          {
+            "contract": "TypedERC1155Composable",
+            "label": "authorizedChildContracts",
+            "type": "t_struct(AddressSet)3489_storage",
+            "src": "contracts/ERC998/TypedERC1155Composable.sol:49"
+          },
+          {
+            "contract": "TypedERC1155Composable",
+            "label": "tokenSupply",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ERC998/TypedERC1155Composable.sol:52"
+          },
+          {
+            "contract": "TypedERC1155Composable",
+            "label": "tokenUris",
+            "type": "t_mapping(t_uint256,t_string_storage)",
+            "src": "contracts/ERC998/TypedERC1155Composable.sol:55"
+          },
+          {
+            "contract": "TypedERC1155Composable",
+            "label": "tokenTypes",
+            "type": "t_array(t_struct(TokenType)5355_storage)dyn_storage",
+            "src": "contracts/ERC998/TypedERC1155Composable.sol:63"
+          },
+          {
+            "contract": "TypedERC1155Composable",
+            "label": "tokenTypeIndexes",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ERC998/TypedERC1155Composable.sol:66"
+          },
+          {
+            "contract": "TypedERC1155Composable",
+            "label": "tokenCreators",
+            "type": "t_struct(UintToAddressMap)2987_storage",
+            "src": "contracts/ERC998/TypedERC1155Composable.sol:68"
+          },
+          {
+            "contract": "TypedERC1155Composable",
+            "label": "tokenOwners",
+            "type": "t_struct(UintToAddressMap)2987_storage",
+            "src": "contracts/ERC998/TypedERC1155Composable.sol:69"
+          },
+          {
+            "contract": "TypedERC1155Composable",
+            "label": "parentToChildBalances",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_mapping(t_uint256,t_uint256)))",
+            "src": "contracts/ERC998/TypedERC1155Composable.sol:72"
+          },
+          {
+            "contract": "TypedERC1155Composable",
+            "label": "parentToChildTokens",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_struct(UintSet)3610_storage))",
+            "src": "contracts/ERC998/TypedERC1155Composable.sol:75"
+          },
+          {
+            "contract": "TypedERC1155Composable",
+            "label": "childToParentHolders",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_struct(UintSet)3610_storage))",
+            "src": "contracts/ERC998/TypedERC1155Composable.sol:79"
           }
         ],
         "types": {
           "t_string_storage": {
             "label": "string"
           },
+          "t_struct(Counter)2613_storage": {
+            "label": "struct CountersUpgradeable.Counter",
+            "members": [
+              {
+                "label": "_value",
+                "type": "t_uint256"
+              }
+            ]
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_struct(AddressSet)3489_storage": {
+            "label": "struct EnumerableSetUpgradeable.AddressSet",
+            "members": [
+              {
+                "label": "_inner",
+                "type": "t_struct(Set)3224_storage"
+              }
+            ]
+          },
+          "t_struct(Set)3224_storage": {
+            "label": "struct EnumerableSetUpgradeable.Set",
+            "members": [
+              {
+                "label": "_values",
+                "type": "t_array(t_bytes32)dyn_storage"
+              },
+              {
+                "label": "_indexes",
+                "type": "t_mapping(t_bytes32,t_uint256)"
+              }
+            ]
+          },
+          "t_array(t_bytes32)dyn_storage": {
+            "label": "bytes32[]"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_mapping(t_bytes32,t_uint256)": {
+            "label": "mapping(bytes32 => uint256)"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_mapping(t_uint256,t_string_storage)": {
+            "label": "mapping(uint256 => string)"
+          },
+          "t_array(t_struct(TokenType)5355_storage)dyn_storage": {
+            "label": "struct TypedERC1155Composable.TokenType[]"
+          },
+          "t_struct(TokenType)5355_storage": {
+            "label": "struct TypedERC1155Composable.TokenType",
+            "members": [
+              {
+                "label": "tokenTypeName",
+                "type": "t_bytes32"
+              },
+              {
+                "label": "childTypesBitmap",
+                "type": "t_uint256"
+              }
+            ]
+          },
+          "t_struct(UintToAddressMap)2987_storage": {
+            "label": "struct EnumerableMapUpgradeable.UintToAddressMap",
+            "members": [
+              {
+                "label": "_inner",
+                "type": "t_struct(Map)2669_storage"
+              }
+            ]
+          },
+          "t_struct(Map)2669_storage": {
+            "label": "struct EnumerableMapUpgradeable.Map",
+            "members": [
+              {
+                "label": "_entries",
+                "type": "t_array(t_struct(MapEntry)2661_storage)dyn_storage"
+              },
+              {
+                "label": "_indexes",
+                "type": "t_mapping(t_bytes32,t_uint256)"
+              }
+            ]
+          },
+          "t_array(t_struct(MapEntry)2661_storage)dyn_storage": {
+            "label": "struct EnumerableMapUpgradeable.MapEntry[]"
+          },
+          "t_struct(MapEntry)2661_storage": {
+            "label": "struct EnumerableMapUpgradeable.MapEntry",
+            "members": [
+              {
+                "label": "_key",
+                "type": "t_bytes32"
+              },
+              {
+                "label": "_value",
+                "type": "t_bytes32"
+              }
+            ]
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_mapping(t_uint256,t_uint256)))": {
+            "label": "mapping(uint256 => mapping(address => mapping(uint256 => uint256)))"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_uint256))": {
+            "label": "mapping(address => mapping(uint256 => uint256))"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_struct(UintSet)3610_storage))": {
+            "label": "mapping(uint256 => mapping(address => struct EnumerableSetUpgradeable.UintSet))"
+          },
+          "t_mapping(t_address,t_struct(UintSet)3610_storage)": {
+            "label": "mapping(address => struct EnumerableSetUpgradeable.UintSet)"
+          },
+          "t_struct(UintSet)3610_storage": {
+            "label": "struct EnumerableSetUpgradeable.UintSet",
+            "members": [
+              {
+                "label": "_inner",
+                "type": "t_struct(Set)3224_storage"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_struct(UintSet)3610_storage))": {
+            "label": "mapping(address => mapping(uint256 => struct EnumerableSetUpgradeable.UintSet))"
+          },
+          "t_mapping(t_uint256,t_struct(UintSet)3610_storage)": {
+            "label": "mapping(uint256 => struct EnumerableSetUpgradeable.UintSet)"
+          },
+          "t_contract(AccessRestriction)7321": {
+            "label": "contract AccessRestriction"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(uint256 => mapping(address => uint256))"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_bool))": {
+            "label": "mapping(address => mapping(address => bool))"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
           "t_bool": {
             "label": "bool"
+          },
+          "t_array(t_uint256)47_storage": {
+            "label": "uint256[47]"
+          },
+          "t_mapping(t_bytes4,t_bool)": {
+            "label": "mapping(bytes4 => bool)"
+          },
+          "t_bytes4": {
+            "label": "bytes4"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
           }
         }
       }

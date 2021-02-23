@@ -220,7 +220,7 @@ describe("ERC1155Composable", async function () {
   });
   
   describe('Composability', async () => {
-    let childComposableToken;
+    let childComposableToken: ERC1155Composable;
     
     beforeEach(async () => {
       // mint a token in the parent contract
@@ -250,7 +250,6 @@ describe("ERC1155Composable", async function () {
           childTokenId,
           1,
           ethers.utils.solidityPack(['uint256'], [TOKEN_ONE_ID])
-          // TOKEN_ONE_ID
         );
 
         // check the main token's balance was updated 
@@ -300,6 +299,39 @@ describe("ERC1155Composable", async function () {
         // check that the parent token is listed for the parent tokens of the child token
         expect(await composableToken.parentTokensOf(childComposableToken.address, childTokenId))
           .to.deep.include.keys([TOKEN_ONE_ID]);
+      });
+
+      it('should allow transfer of child tokens to a new owner', async () => {
+        const childTokenId = BigNumber.from(0);
+        // authorize the composableToken to have the childComposableToken
+        await composableToken.authorizeChildContract(childComposableToken.address);
+        
+        // mint a token in the child contract
+        await childComposableToken.mint(creator.address, TOKEN_URI, 1, creator.address, utils.id(''));
+
+        // send from childContract to composableContract
+        await childComposableToken.connect(creator).safeTransferFrom(
+          creator.address,
+          composableToken.address,
+          childTokenId,
+          1,
+          ethers.utils.solidityPack(['uint256'], [TOKEN_ONE_ID])
+        );
+
+        await expect(composableToken.safeTransferChildFrom(
+          TOKEN_ONE_ID,
+          randomSigner.address,
+          childComposableToken.address,
+          childTokenId,
+          1,
+          utils.id('')
+        )).to.emit(composableToken, "TransferChildToken")
+          .withArgs(TOKEN_ONE_ID, randomSigner.address, childComposableToken.address, childTokenId, 1);
+          
+      });
+
+      it('should allow transfer of child tokens to a new token', async () => {
+        
       });
     });
 

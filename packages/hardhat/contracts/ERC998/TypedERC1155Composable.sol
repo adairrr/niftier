@@ -14,10 +14,13 @@ import "../access/AccessRestrictable.sol";
 import "./IERC1155Composable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
 
+// testing 
+import "hardhat/console.sol";
+
 /**
  * This contract handles represents an ERC1155 token that can hold ERC1155 tokens.
  */
-contract ERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155ReceiverUpgradeable, IERC1155Composable, AccessRestrictable {
+contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155ReceiverUpgradeable, IERC1155Composable, AccessRestrictable {
 
     using CountersUpgradeable for CountersUpgradeable.Counter;
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.UintSet;
@@ -48,31 +51,42 @@ contract ERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Receiver
     /// @dev Used to keep track of all the tokens represented by this contract
     mapping(uint256 => uint256) public tokenSupply;
 
-    /// @dev mapping for token URIs
-    /// This could be made more efficient by storing bytes32 and using base58mod
+    /// @dev mapping for token URIs TODO this should be bytes32? with base58mod
     mapping(uint256 => string) public tokenUris;
+
+    struct TokenType {
+        bytes32 tokenTypeName;
+        uint256 childTypesBitmap;
+    }
+
+    /// @dev array of TokenType structs, indexed
+    TokenType[] public tokenTypes;
+
+    /// @dev mapping from TokenTypeId -> TokenType index in tokenTypes
+    mapping(uint256 => uint256) public tokenTypeIndexes;
 
     EnumerableMapUpgradeable.UintToAddressMap private tokenCreators;
     EnumerableMapUpgradeable.UintToAddressMap private tokenOwners;
-
-
-    /// @dev child contract address -> ERC1155 parent token ID -> ERC1155 child IDs owned by token ID
-    // mapping(address => mapping(uint256 => EnumerableSetUpgradeable.UintSet)) parentToChildTokens;
 
     /// @dev Token ID -> Child contract address -> ERC1155 child Token IDs owned by Token ID -> balance
     mapping(uint256 => mapping(address => mapping(uint256 => uint256))) parentToChildBalances;
 
     // TODO this could be more efficient with the generation of a sort of reference ID between this and balances
-    //
     mapping(uint256 => mapping(address => EnumerableSetUpgradeable.UintSet)) parentToChildTokens;
-
 
     /// @dev Child contract address -> ERC1155 child Token IDs -> TokenIDs
     /// Used for more efficient backwards lookup 
     mapping(address => mapping(uint256 => EnumerableSetUpgradeable.UintSet)) childToParentHolders;
 
+    /// @dev store the type of the token in the upper 16 bits
+    uint256 public constant TOKEN_TYPE_SHIFT = 250;
+    uint256 public constant TOKEN_TYPE_MASK = uint256(uint128(~0)) << TOKEN_TYPE_SHIFT;
+
     event BaseUriUpdated(string _baseUri);
+    // TODO this will be per type!!
     event TokenNameUpdated(string _name);
+    event TokenTypeCreated(bytes32 _tokenTypeName, uint256 tokenTypeId);
+    event ChildTypeAuthorized(uint256 _parentType, uint256 _childType);
     event UriUpdated(uint256 indexed _tokenId, string _tokenUri);
 
     /**
@@ -108,8 +122,12 @@ contract ERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Receiver
         _setName(_name);
         _setBaseUri(_baseUri);
 
-        // register the supported interfaces to conform to ERC1155Composable via ERC165
+        // register the supported interfaces to conform to TypedERC1155Composable via ERC165
         _registerInterface(_INTERFACE_ID_ERC1155COMPOSABLE);
+
+        // TODO there has to be a better way to use 1-based indexing....
+        TokenType memory emptyTokenType;
+        tokenTypes.push(emptyTokenType);
     }
 
     // ----------------------------------------------------------------------------
@@ -117,7 +135,7 @@ contract ERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Receiver
     // ----------------------------------------------------------------------------
 
     /**
-      * @notice Mints an ERC1155Composable Token 
+      * @notice Mints an TypedERC1155Composable Token 
       * @dev Only minter may call this 
       * @param _to Recipient of the NFT
       * @param _tokenUri URI for the token being minted
@@ -127,6 +145,7 @@ contract ERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Receiver
      */
     function mint(
         address _to,
+        bytes32 _tokenTypeName,
         string calldata _tokenUri,
         uint256 _amount,
         address _creator,
@@ -138,26 +157,140 @@ contract ERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Receiver
             "Must have minter role to mint."
         );
 
-        // if (ERC165CheckerUpgradeable.supportsInterface(_to, _INTERFACE_ID_ERC1155COMPOSABLE)) {
-
-        // }
-
         // Check URI and creator
         _validateIncomingMint(_tokenUri, _creator, _amount);
 
-        // TODO this will increment on EVERY mint, even those that already exist...
-        tokenId = tokenIdTracker.current();
+        // Check the token type and possible parent token before to save gas
+        uint256 tokenTypeId = _validateAndGetTokenType(_tokenTypeName);
+
+        // check recipient token IFF exists within this typed composable
+        if (_to == address(this) && _data.length == 32) {
+            _validateSelfComposability(tokenTypeId);
+        }
+
+        tokenId = _generateTokenId(tokenTypeId, _tokenUri);
+
+        // Check that the sender has the rights to create the token
+        if (_exists(tokenId)) {
+            require(
+                _creator == tokenCreators.get(tokenId),
+                "Only the creator of the token may mint more"
+            );
+        }
 
         // call super minting method
         _mint(_to, tokenId, _amount, _data);
-        // add to token id supply
-        tokenSupply[tokenId] = _amount;
-        // associate URI
-        tokenUris[tokenId] = _tokenUri;
-        //  associate creator
-        tokenCreators.set(tokenId, _creator);
 
-        tokenIdTracker.increment();
+        if (!_exists(tokenId)) {
+            // associate URI
+            tokenUris[tokenId] = _tokenUri;
+            //  associate creator
+            tokenCreators.set(tokenId, _creator);
+        }
+
+        // add to token id supply
+        tokenSupply[tokenId] = tokenSupply[tokenId].add(_amount);
+    }
+
+    function _validateSelfComposability(uint256 _tokenTypeId) internal view {
+        uint256 recipientTokenId = _loadRecipientTokenId();
+
+        require(
+            this.isAuthorizedChildType(recipientTokenId, _tokenTypeId),
+            "Recipient token has not been authorized to receive this child"
+        );
+    }
+
+    function _generateTokenId(
+        uint256 _tokenType, 
+        string memory _tokenUri
+    ) internal pure returns (uint256 tokenId) {
+        // |--TokenType(16)--||--Unique hash of token URI (240)--|
+        tokenId = _tokenType | 
+            uint256(keccak256(abi.encodePacked(_tokenUri))) >> 256 - TOKEN_TYPE_SHIFT;
+    }
+
+    /**
+     * @dev onlyAdmin
+     */
+    function createTokenType(
+        bytes32 _tokenTypeName
+    ) external onlyAdmin returns (uint256 newTypeId) {
+        newTypeId = _encodeTokenType(_tokenTypeName, '');
+
+        require(
+            tokenTypeIndexes[newTypeId] == 0 // the type does not exist
+                || tokenTypes[tokenTypeIndexes[newTypeId]].tokenTypeName != _tokenTypeName,
+            "Already a type"
+        );
+
+        // attempt to create a new hash for the type if there is clashing... this should be very rare
+        while (tokenTypeIndexes[newTypeId] != 0) {
+            newTypeId = _encodeTokenType(_tokenTypeName, bytes32(newTypeId));
+            // prevent a double clash... even rarer but possible
+            require(
+                tokenTypes[tokenTypeIndexes[newTypeId]].tokenTypeName != _tokenTypeName,
+                "Already a type"
+            );
+        }
+
+        // create the TokenType
+        tokenTypes.push(TokenType({
+                tokenTypeName: _tokenTypeName,
+                childTypesBitmap: 0
+            })
+        );
+        
+        // we are using 1 based indexing because all indexes are initialized to zero... easy existence check
+        tokenTypeIndexes[newTypeId] = tokenTypes.length - 1;
+
+        emit TokenTypeCreated(_tokenTypeName, newTypeId);
+    }
+
+    /** 
+     * @dev can pass in type or token ids
+     */
+     function authorizeChildType(
+         uint256 _parentType, 
+         uint256 _childType
+    ) external onlyAdmin {
+        uint256 parentTypeIndex = tokenTypeIndexes[_parentType & TOKEN_TYPE_MASK];
+        uint256 childTypeIndex = tokenTypeIndexes[_childType & TOKEN_TYPE_MASK];
+
+        require(
+            parentTypeIndex > 0 && childTypeIndex > 0,
+            "Parent and child types must exist before being authorized"
+        );
+
+        // storage because we're modifying its value
+        TokenType storage parentTokenType = tokenTypes[parentTypeIndex];
+
+        // set the index of the child token type to 1 in the parent TokenType's child bitmap 
+        parentTokenType.childTypesBitmap = parentTokenType.childTypesBitmap | (1 << childTypeIndex);
+        
+        emit ChildTypeAuthorized(_parentType & TOKEN_TYPE_MASK, _childType & TOKEN_TYPE_MASK);
+    }
+
+    /** 
+     * @notice Returns a bool representing whether the _parentType is authorized to hald the _childType
+     * @dev can pass in type or token ids
+     * @param _parentType TokenID or TokenTypeId of the parent token
+     * @param _parentType TokenID or TokenTypeId of the parent token
+     */
+    function isAuthorizedChildType(
+        uint256 _parentType, 
+        uint256 _childType
+    ) external view returns (bool) {
+        uint256 parentTypeIndex = tokenTypeIndexes[_parentType & TOKEN_TYPE_MASK];
+        uint256 childTypeIndex = tokenTypeIndexes[_childType & TOKEN_TYPE_MASK];
+        
+        require(
+            parentTypeIndex > 0 && childTypeIndex > 0,
+            "Parent and child types must exist before being authorized"
+        );
+
+        // if the bit at the child type's index is set to 1, then it has been authorized
+        return (tokenTypes[parentTypeIndex].childTypesBitmap & (1 << childTypeIndex)) != 0;
     }
 
     /**
@@ -176,18 +309,11 @@ contract ERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Receiver
         return string(abi.encodePacked(baseUri, StringsUpgradeable.toString(_tokenId)));
     }
 
-    /**
-     * @notice Adds an address to the authorizedChildContracts that can be held by this contract.
-     * TODO there should be a paired deauthorize, but this leads to complications if there are already attached tokens.
-     * @dev Checks for the _INTERFACE_ID_ERC1155 interface ID.
-     * @param _childContract address to be authorized
-     */
-    function authorizeChildContract(address _childContract) external onlyAdmin {
-        require(
-            IERC1155Upgradeable(_childContract).supportsInterface(0xd9b67a26),
-            "ERC1155Composable.authorizeChildContract: only ERC1155 contracts may be authorized."
-        );
-        authorizedChildContracts.add(_childContract);
+    function tokenType(
+        uint256 _tokenId
+    ) external view returns (uint256 tokenTypeId, bytes32 tokenTypeName) {
+        tokenTypeId = _tokenId & TOKEN_TYPE_MASK;
+        tokenTypeName = tokenTypes[tokenTypeIndexes[tokenTypeId]].tokenTypeName;
     }
 
     /**
@@ -215,7 +341,8 @@ contract ERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Receiver
         uint256 _tokenId, 
         address _childContract
     ) override external view returns (uint256[] memory childTokens) {
-        if (!_exists(_tokenId) || !authorizedChildContracts.contains(_childContract)) {
+        //  || !authorizedChildContracts.contains(_childContract)
+        if (!_exists(_tokenId)) {
             return new uint256[](0);
         }
 
@@ -236,9 +363,9 @@ contract ERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Receiver
         address _childContract, 
         uint256 _childTokenId
     ) override external view returns (uint256[] memory parentTokens) {
-        if (!authorizedChildContracts.contains(_childContract)) {
-            return new uint256[](0);
-        }
+        // if (!authorizedChildContracts.contains(_childContract)) {
+        //     return new uint256[](0);
+        // }
 
         parentTokens = new uint256[](childToParentHolders[_childContract][_childTokenId].length());
 
@@ -419,6 +546,53 @@ contract ERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Receiver
     }
 
     /**
+     * @notice Checks that the URI is not empty and the artist is not the zero address
+     * @param _tokenUri URI supplied on minting
+     * @param _creator Address supplied on minting
+     */
+    function _validateIncomingMint(
+        string calldata _tokenUri, 
+        address _creator, 
+        uint256 _amount
+    ) pure private {
+        require(bytes(_tokenUri).length > 0, "TypedERC1155Composable._validateIncomingMint: Token URI is empty.");
+        require(_creator != address(0), "TypedERC1155Composable._validateIncomingMint: Artist is zero address.");
+        require(_amount > 0, "TypedERC1155Composable._validateIncomingMint: Must have a mint amount greater than zero.");
+    }
+
+    
+    /**
+     * @notice 
+     */
+    function _encodeTokenType(
+        bytes32 _tokenTypeName, 
+        bytes32 _addedHashData
+    ) internal pure returns (uint256) {
+        return uint256(keccak256(abi.encodePacked(_tokenTypeName, _addedHashData))) << TOKEN_TYPE_SHIFT;
+    }
+    
+    function _validateAndGetTokenType(
+        bytes32 _tokenType
+    ) internal view returns (uint256 tokenTypeId) {
+        // get the token type id
+        tokenTypeId = _encodeTokenType(_tokenType, "");
+
+        require(
+            tokenTypeIndexes[tokenTypeId] != 0,
+            "TokenType does not exist and must be created first."
+        );
+
+        // if there's a clash, will need to account for that... this should be very rare
+        while (tokenTypes[tokenTypeIndexes[tokenTypeId]].tokenTypeName != _tokenType) {
+            require(
+                tokenTypeIndexes[tokenTypeId] != 0,
+                "TokenType does not exist and must be created first."
+            );
+            tokenTypeId = _encodeTokenType(_tokenType, bytes32(tokenTypeId));
+        }
+    }
+
+    /**
      * @dev Validates:
      *  - Recipient token exists
      *  - Child contract has been authorized
@@ -434,37 +608,23 @@ contract ERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Receiver
     ) internal view {
         require(_exists(_recipientTokenId), "Recipient token does not exist.");
 
-        // Require prior authorization to accept tokens 
+        // Require prior authorization to accept tokens
         require(
-            authorizedChildContracts.contains(_msgSender()), 
-            "ERC1155Composable.This contract has not been authorized to receive this token"
+            authorizedChildContracts.contains(_msgSender())
+                || _msgSender() == address(this), // can transfer tokens within self
+            "This contract has not been authorized to receive this token"
         );
 
         // Sender must be creator OR newly minted
         if (_from != address(0)) {
             require(
                 creatorOf(_recipientTokenId) == _from,
-                "ERC1155Composable.Only the owner of the parent token may add aditional child tokens."
+                "Only the owner of the parent token may add aditional child tokens."
             );
 
             // Ensure approved addresses cannot transfer child tokens.
-            require(_operator == _from, "ERC1155Composable._validateRecipientToken: Operator is not owner");
+            require(_operator == _from, "Operator is not owner");
         }
-    }
-
-    /**
-     * @notice Checks that the URI is not empty and the artist is not the zero address
-     * @param _tokenUri URI supplied on minting
-     * @param _creator Address supplied on minting
-     */
-    function _validateIncomingMint(
-        string calldata _tokenUri, 
-        address _creator, 
-        uint256 _amount
-    ) pure private {
-        require(bytes(_tokenUri).length > 0, "ERC1155Composable._validateIncomingMint: Token URI is empty.");
-        require(_creator != address(0), "ERC1155Composable._validateIncomingMint: Artist is zero address.");
-        require(_amount > 0, "ERC1155Composable._validateIncomingMint: Must have a mint amount greater than zero.");
     }
 
     // ----------------------------------------------------------------------------
@@ -478,9 +638,21 @@ contract ERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Receiver
      * @param _childTokenId id of the child token of the _childContract to be received
      * @param _amount amount of the _childTokenIds to be received
      */
-    function _receiveChild(uint256 _tokenId, address _childContract, uint256 _childTokenId, uint256 _amount) private {
+    function _receiveChild(
+        uint256 _tokenId, 
+        address _childContract, 
+        uint256 _childTokenId, 
+        uint256 _amount
+    ) private {
         require(_amount > 0, "Must be receiving at least one child token.");
-        // TODO sanity check for authorized child contracts?
+
+        // check that the parent is allowed to receive the child if it is a self transfer
+        if (_childContract == address(this)) {
+            require(
+                this.isAuthorizedChildType(_tokenId, _childTokenId),
+                "The parent token is not authorized to hold the child token."
+            );
+        }
 
         // Add the child token to the parent token's balance
         uint256 finalBalance = parentToChildBalances[_tokenId][_childContract][_childTokenId] = 
@@ -500,10 +672,16 @@ contract ERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Receiver
      * @param _childTokenId id of the child token of the _childContract to be removed
      * @param _amount amount of the _childTokenIds to be removed
      */
-    function _removeChild(uint256 _tokenId, address _childContract, uint256 _childTokenId, uint256 _amount) private {
-        require(_amount != 0 || parentToChildBalances[_tokenId][_childContract][_childTokenId] >= _amount, 
-            "ERC998: insufficient child balance for transfer");
-
+    function _removeChild(
+        uint256 _tokenId,
+        address _childContract,
+        uint256 _childTokenId,
+        uint256 _amount
+    ) private {
+        require(
+            _amount != 0 || parentToChildBalances[_tokenId][_childContract][_childTokenId] >= _amount, 
+            "ERC998: insufficient child balance for transfer"
+        );
 
         uint256 finalBalance = parentToChildBalances[_tokenId][_childContract][_childTokenId] = 
             parentToChildBalances[_tokenId][_childContract][_childTokenId].sub(_amount);
@@ -518,6 +696,25 @@ contract ERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Receiver
     // ----------------------------------------------------------------------------
     // onlyAdmin
     // ----------------------------------------------------------------------------
+    
+    /**
+     * @notice Adds an address to the authorizedChildContracts that can be held by this contract.
+     * TODO there should be a paired deauthorize, but this leads to complications if there are already attached tokens.
+     * @dev Checks for the _INTERFACE_ID_ERC1155 interface ID.
+     * @param _childContract address to be authorized
+     */
+    function authorizeChildContract(address _childContract) external onlyAdmin {
+        require(
+            IERC1155Upgradeable(_childContract).supportsInterface(0xd9b67a26),
+            "authorizeChildContract: only ERC1155 contracts may be authorized."
+        );
+        authorizedChildContracts.add(_childContract);
+
+        // TODO create type for the child contract to add to the authorized types?
+        // this shouldn't be necessary because if the token does not match any of the type 
+        // masks then it's obviously  from somewhere else?
+        // bytes32(uint256(uint160(_childContract))))
+    }
 
     function setBaseUri(string calldata _baseUri) external onlyAdmin {
         _setBaseUri(_baseUri);
@@ -531,7 +728,6 @@ contract ERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Receiver
         baseUri = _baseUri;
     }
 
-    
     /**
      * @notice Sets the name of the token represented by this contract.
      * @dev Only admin
