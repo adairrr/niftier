@@ -59,11 +59,14 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
         uint256 childTypesBitmap;
     }
 
-    /// @dev array of TokenType structs, indexed
-    TokenType[] public tokenTypes;
+    /// @dev Counter to track the current index of the token Types
+    CountersUpgradeable.Counter private tokenTypeCounter;
 
-    /// @dev mapping from TokenTypeId -> TokenType index in tokenTypes
-    mapping(uint256 => uint256) public tokenTypeIndexes;
+    /// @dev array of TokenType structs, indexed
+    TokenType[256] public tokenTypes;
+
+    /// @dev mapping from TokenTypeName -> TokenType index in tokenTypes
+    mapping(bytes32 => uint256) public tokenTypeNames;
 
     EnumerableMapUpgradeable.UintToAddressMap private tokenCreators;
     EnumerableMapUpgradeable.UintToAddressMap private tokenOwners;
@@ -80,7 +83,7 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
 
     /// @dev store the type of the token in the upper 16 bits
     uint256 public constant TOKEN_TYPE_SHIFT = 250;
-    uint256 public constant TOKEN_TYPE_MASK = uint256(uint128(~0)) << TOKEN_TYPE_SHIFT;
+    uint256 public constant TOKEN_TYPE_MASK = uint256(~0) << TOKEN_TYPE_SHIFT;
 
     event BaseUriUpdated(string _baseUri);
     // TODO this will be per type!!
@@ -124,10 +127,6 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
 
         // register the supported interfaces to conform to TypedERC1155Composable via ERC165
         _registerInterface(_INTERFACE_ID_ERC1155COMPOSABLE);
-
-        // TODO there has to be a better way to use 1-based indexing....
-        TokenType memory emptyTokenType;
-        tokenTypes.push(emptyTokenType);
     }
 
     // ----------------------------------------------------------------------------
@@ -161,7 +160,11 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
         _validateIncomingMint(_tokenUri, _creator, _amount);
 
         // Check the token type and possible parent token before to save gas
-        uint256 tokenTypeId = _validateAndGetTokenType(_tokenTypeName);
+        uint256 tokenTypeId = tokenTypeNames[_tokenTypeName];
+        require(
+            tokenTypeId > 0,
+            "Token type does not exist"
+        );
 
         // check recipient token IFF exists within this typed composable
         if (_to == address(this) && _data.length == 32) {
@@ -206,45 +209,39 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
         string memory _tokenUri
     ) internal pure returns (uint256 tokenId) {
         // |--TokenType(16)--||--Unique hash of token URI (240)--|
-        tokenId = _tokenType | 
+        tokenId = _tokenType << TOKEN_TYPE_SHIFT | 
             uint256(keccak256(abi.encodePacked(_tokenUri))) >> 256 - TOKEN_TYPE_SHIFT;
     }
 
     /**
      * @dev onlyAdmin
+     * TODO batch
      */
     function createTokenType(
         bytes32 _tokenTypeName
-    ) external onlyAdmin returns (uint256 newTypeId) {
-        newTypeId = _encodeTokenType(_tokenTypeName, '');
-
+    ) external onlyAdmin returns (uint256 tokenTypeId) {
         require(
-            tokenTypeIndexes[newTypeId] == 0 // the type does not exist
-                || tokenTypes[tokenTypeIndexes[newTypeId]].tokenTypeName != _tokenTypeName,
+            tokenTypeNames[_tokenTypeName] == 0, // the type does not exist
             "Already a type"
         );
 
-        // attempt to create a new hash for the type if there is clashing... this should be very rare
-        while (tokenTypeIndexes[newTypeId] != 0) {
-            newTypeId = _encodeTokenType(_tokenTypeName, bytes32(newTypeId));
-            // prevent a double clash... even rarer but possible
-            require(
-                tokenTypes[tokenTypeIndexes[newTypeId]].tokenTypeName != _tokenTypeName,
-                "Already a type"
-            );
-        }
+        // create the new Type
+        TokenType memory newType = TokenType({
+            tokenTypeName: _tokenTypeName, 
+            childTypesBitmap: 0
+        });
 
-        // create the TokenType
-        tokenTypes.push(TokenType({
-                tokenTypeName: _tokenTypeName,
-                childTypesBitmap: 0
-            })
-        );
-        
         // we are using 1 based indexing because all indexes are initialized to zero... easy existence check
-        tokenTypeIndexes[newTypeId] = tokenTypes.length - 1;
+        tokenTypeCounter.increment();
+        tokenTypeId = tokenTypeCounter.current();
 
-        emit TokenTypeCreated(_tokenTypeName, newTypeId);
+        // avoid weird opcode errors... we shouldn't ever have this many anyway
+        require(tokenTypeId < 256, "Too many types");
+
+        tokenTypes[tokenTypeId] = newType;
+        tokenTypeNames[_tokenTypeName] = tokenTypeId;
+
+        emit TokenTypeCreated(_tokenTypeName, tokenTypeId);
     }
 
     /** 
@@ -254,21 +251,22 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
          uint256 _parentType, 
          uint256 _childType
     ) external onlyAdmin {
-        uint256 parentTypeIndex = tokenTypeIndexes[_parentType & TOKEN_TYPE_MASK];
-        uint256 childTypeIndex = tokenTypeIndexes[_childType & TOKEN_TYPE_MASK];
+        // shift right because shifted left on creation, now need index
+        uint256 parentTypeId = (_parentType & TOKEN_TYPE_MASK) >> TOKEN_TYPE_SHIFT;
+        uint256 childTypeId = (_childType & TOKEN_TYPE_MASK) >> TOKEN_TYPE_SHIFT;
 
         require(
-            parentTypeIndex > 0 && childTypeIndex > 0,
+            parentTypeId > 0 && childTypeId > 0,
             "Parent and child types must exist before being authorized"
         );
 
         // storage because we're modifying its value
-        TokenType storage parentTokenType = tokenTypes[parentTypeIndex];
+        TokenType storage parentTokenType = tokenTypes[parentTypeId];
 
         // set the index of the child token type to 1 in the parent TokenType's child bitmap 
-        parentTokenType.childTypesBitmap = parentTokenType.childTypesBitmap | (1 << childTypeIndex);
+        parentTokenType.childTypesBitmap = parentTokenType.childTypesBitmap | (1 << childTypeId);
         
-        emit ChildTypeAuthorized(_parentType & TOKEN_TYPE_MASK, _childType & TOKEN_TYPE_MASK);
+        emit ChildTypeAuthorized(parentTypeId, childTypeId);
     }
 
     /** 
@@ -281,16 +279,17 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
         uint256 _parentType, 
         uint256 _childType
     ) external view returns (bool) {
-        uint256 parentTypeIndex = tokenTypeIndexes[_parentType & TOKEN_TYPE_MASK];
-        uint256 childTypeIndex = tokenTypeIndexes[_childType & TOKEN_TYPE_MASK];
+        // shift right because shifted left on creation, now need index
+        uint256 parentTypeId = (_parentType & TOKEN_TYPE_MASK) >> TOKEN_TYPE_SHIFT;
+        uint256 childTypeId = (_childType & TOKEN_TYPE_MASK) >> TOKEN_TYPE_SHIFT;
         
         require(
-            parentTypeIndex > 0 && childTypeIndex > 0,
-            "Parent and child types must exist before being authorized"
+            parentTypeId > 0 && childTypeId > 0,
+            "Parent and child types must exist before checking authorization"
         );
 
         // if the bit at the child type's index is set to 1, then it has been authorized
-        return (tokenTypes[parentTypeIndex].childTypesBitmap & (1 << childTypeIndex)) != 0;
+        return (tokenTypes[parentTypeId].childTypesBitmap & (1 << childTypeId)) != 0;
     }
 
     /**
@@ -312,8 +311,8 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
     function tokenType(
         uint256 _tokenId
     ) external view returns (uint256 tokenTypeId, bytes32 tokenTypeName) {
-        tokenTypeId = _tokenId & TOKEN_TYPE_MASK;
-        tokenTypeName = tokenTypes[tokenTypeIndexes[tokenTypeId]].tokenTypeName;
+        tokenTypeId = (_tokenId & TOKEN_TYPE_MASK) >> TOKEN_TYPE_SHIFT;
+        tokenTypeName = tokenTypes[tokenTypeId].tokenTypeName;
     }
 
     /**
@@ -558,38 +557,6 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
         require(bytes(_tokenUri).length > 0, "TypedERC1155Composable._validateIncomingMint: Token URI is empty.");
         require(_creator != address(0), "TypedERC1155Composable._validateIncomingMint: Artist is zero address.");
         require(_amount > 0, "TypedERC1155Composable._validateIncomingMint: Must have a mint amount greater than zero.");
-    }
-
-    
-    /**
-     * @notice 
-     */
-    function _encodeTokenType(
-        bytes32 _tokenTypeName, 
-        bytes32 _addedHashData
-    ) internal pure returns (uint256) {
-        return uint256(keccak256(abi.encodePacked(_tokenTypeName, _addedHashData))) << TOKEN_TYPE_SHIFT;
-    }
-    
-    function _validateAndGetTokenType(
-        bytes32 _tokenType
-    ) internal view returns (uint256 tokenTypeId) {
-        // get the token type id
-        tokenTypeId = _encodeTokenType(_tokenType, "");
-
-        require(
-            tokenTypeIndexes[tokenTypeId] != 0,
-            "TokenType does not exist and must be created first."
-        );
-
-        // if there's a clash, will need to account for that... this should be very rare
-        while (tokenTypes[tokenTypeIndexes[tokenTypeId]].tokenTypeName != _tokenType) {
-            require(
-                tokenTypeIndexes[tokenTypeId] != 0,
-                "TokenType does not exist and must be created first."
-            );
-            tokenTypeId = _encodeTokenType(_tokenType, bytes32(tokenTypeId));
-        }
     }
 
     /**

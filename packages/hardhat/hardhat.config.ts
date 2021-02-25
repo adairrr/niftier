@@ -105,6 +105,31 @@ const config: HardhatUserConfig = {
         mnemonic: mnemonic(),
       },
     },
+    // Matic testnet
+    mumbai: {
+      url: 'https://rpc-mumbai.maticvigil.com/',
+      chainId: 80001,
+      gasPrice: 1000000000,
+      accounts: {
+        mnemonic: mnemonic(),
+      },
+    },
+    // Moonbase Alpha network specification
+    moonbase: {
+      url: `https://rpc.testnet.moonbeam.network`,
+      chainId: 1287,
+      accounts: {
+        mnemonic: mnemonic(),
+      },
+    },
+    // moonbeam local node
+    dev: {
+      url: `http://127.0.0.1:9933`,
+      chainId: 1281,
+      accounts: {
+        mnemonic: mnemonic(),
+      },
+    },
   },
   solidity: {
     compilers: [

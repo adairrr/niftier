@@ -1,9 +1,11 @@
 import { BigNumber, constants, utils, ContractFactory, ContractTransaction, Contract } from "ethers";
 import { use, expect } from 'chai';
-
+import { ethers, upgrades } from "hardhat";
 import { solidity } from "ethereum-waffle";
 
 use(solidity);
+
+const TOKEN_URI = "TOKEN_URI";
 
 export function generateTokenId(tokenType: string, tokenUri: string, tokenCreator: string) {
   // TODO notice that this does not deal with clashes....
@@ -83,4 +85,34 @@ export async function expectChildToBeTransferred(
   //   .to.deep.include.keys([parentTokenId]);
 }
 
-// export funct
+export async function mintAndGetId(
+  composableContract: Contract,
+  to: string,
+  tokenType: string,
+  tokenUri: string,
+  amount: number,
+  creator: string,
+  toTokenId?: BigNumber
+) {
+
+  let tokenTx = await composableContract.mint(
+    to, 
+    tokenType, 
+    tokenUri,
+    BigNumber.from(amount), 
+    creator,
+    toTokenId ? ethers.utils.solidityPack(['bytes'], [toTokenId]) : utils.toUtf8Bytes('')
+  );
+
+  return await getTokenIdFromMint(tokenTx);
+}
+
+// function to just parse the token type from the id in case the contract's method is wrong
+export async function getTokenTypeFromId(
+  composableContract: Contract,
+  tokenId: BigNumber
+) {
+  return tokenId
+    .and(await composableContract.TOKEN_TYPE_MASK())
+    .shr(250);
+}

@@ -8,7 +8,7 @@ import { solidity } from "ethereum-waffle";
 
 use(solidity);
 
-describe("ERC1155Composable", async function () {
+describe("ERC1155ComposableFactory", async function () {
 
   // contract instances
   let accessRestriction: AccessRestriction;

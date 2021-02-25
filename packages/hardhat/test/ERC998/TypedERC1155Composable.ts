@@ -9,7 +9,7 @@ import { solidity } from "ethereum-waffle";
 
 use(solidity);
 
-describe("TypedERC1155Composable", async function () {
+describe("TypedERC1155Composable", async () => {
 
   // contract instances
   let accessRestriction: AccessRestriction;
@@ -57,6 +57,8 @@ describe("TypedERC1155Composable", async function () {
 
     // add a single artpiece type
     await composableToken.createTokenType(ARTPIECE_TYPE);
+
+    // console.log(await testtx.wait(1));
 
     // have an instance of this token with a random account as caller
     composableTokenAsUser = composableToken.connect(randomSigner);
@@ -220,13 +222,17 @@ describe("TypedERC1155Composable", async function () {
         ) as TypedERC1155Composable;
 
         // check that the contract was not previously authorized
-        expect(await composableToken.isAuthorizedChildContract(newComposable.address)).false;
+        expect(await composableToken.isAuthorizedChildContract(
+          newComposable.address
+        )).false;
 
         // add to authorized child contracts
         await composableToken.authorizeChildContract(newComposable.address);
 
         // compare
-        expect(await composableToken.isAuthorizedChildContract(newComposable.address)).true;
+        expect(await composableToken.isAuthorizedChildContract(
+          newComposable.address
+        )).true;
 
       });
 
@@ -243,24 +249,55 @@ describe("TypedERC1155Composable", async function () {
       });
     });
 
+    describe('createTokenType', async () => {
+      it('should create a token type', async () => {
+        let newTokenType = utils.formatBytes32String("THIS_IS_A_NEW_TYPE");
+        // this index is because we have only created one other type
+        let tokenTypeIndex = 2;
+        await expect(composableToken.createTokenType(
+          newTokenType
+        )).to.emit(composableToken, "TokenTypeCreated")
+          .withArgs(newTokenType, tokenTypeIndex);
+      });
+      
+      it('should disallow a token type of the same name', async () => {
+        await expect(composableToken.createTokenType(ARTPIECE_TYPE))
+          .to.be.revertedWith("Already a type");
+      });
+
+      it('should not allow more than 255 types', async () => {
+        // create 254 more
+        for (let index = 0; index < 254; index++) {
+          await composableToken.createTokenType(
+            utils.formatBytes32String(index.toString())
+          );
+        }
+        await expect(composableToken.createTokenType(
+          utils.formatBytes32String("FAIL")
+        )).to.be.revertedWith("Too many types");
+      });
+    });
+
     describe('authorizeChildType', async () => {
       it('should add an authorized child type', async () => {
-        let layerTx = await composableToken.mint(
-          accountWithToken, 
-          ARTPIECE_TYPE, 
-          TOKEN_URI + "DIFFERENT", // the token uri will be different
+
+        // Create a second type
+        await composableToken.createTokenType(LAYER_TYPE);
+
+        let childTokenId = await composableTestHelpers.mintAndGetId(
+          composableToken,
+          accountWithToken,
+          LAYER_TYPE,
+          TOKEN_URI + "DIFFERENT", // the token uri will be different,
           1,
-          minter.address, 
-          utils.toUtf8Bytes('')
+          minter.address
         );
-  
-        let childTokenId = await composableTestHelpers.getTokenIdFromMint(layerTx);
 
         await expect(composableToken.authorizeChildType(mintedTokenId, childTokenId))
           .to.emit(composableToken, "ChildTypeAuthorized")
           .withArgs(
-            mintedTokenId.and(await composableToken.TOKEN_TYPE_MASK()),
-            childTokenId.and(await composableToken.TOKEN_TYPE_MASK())
+            await composableTestHelpers.getTokenTypeFromId(composableToken, mintedTokenId),
+            await composableTestHelpers.getTokenTypeFromId(composableToken, childTokenId),
           );
       });
 
@@ -268,8 +305,8 @@ describe("TypedERC1155Composable", async function () {
         await expect(composableToken.authorizeChildType(mintedTokenId, mintedTokenId))
           .to.emit(composableToken, "ChildTypeAuthorized")
           .withArgs(
-            mintedTokenId.and(await composableToken.TOKEN_TYPE_MASK()),
-            mintedTokenId.and(await composableToken.TOKEN_TYPE_MASK())
+            await composableTestHelpers.getTokenTypeFromId(composableToken, mintedTokenId),
+            await composableTestHelpers.getTokenTypeFromId(composableToken, mintedTokenId),
           );
       });
 
@@ -289,17 +326,14 @@ describe("TypedERC1155Composable", async function () {
     
       beforeEach(async () => {
         // mint a token in the parent contract
-        let parentTx = await composableToken.mint(
+        parentTokenId = await composableTestHelpers.mintAndGetId(
+          composableToken,
           creator.address, 
           ARTPIECE_TYPE, 
           TOKEN_URI, 
           1, 
-          creator.address, 
-          utils.toUtf8Bytes('')
+          creator.address
         );
-        
-        // assign parent id
-        parentTokenId = await composableTestHelpers.getTokenIdFromMint(parentTx);
   
         // deploy another TypedERC1155Composable contract
         childComposableToken = await upgrades.deployProxy(
@@ -316,18 +350,15 @@ describe("TypedERC1155Composable", async function () {
         it('should allow receiving of authorized ERC1155 tokens (in this case: by the same creator)', async () => {
           // authorize the composableToken to have the childComposableToken
           await composableToken.authorizeChildContract(childComposableToken.address);
-          
-          // mint a token in the child contract
-          let childTx = await childComposableToken.mint(
+
+          const childTokenId = await composableTestHelpers.mintAndGetId(
+            childComposableToken,
             creator.address,
             LAYER_TYPE,
             TOKEN_URI,
             1,
-            creator.address, 
-            utils.toUtf8Bytes('')
+            creator.address
           );
-
-          const childTokenId = await composableTestHelpers.getTokenIdFromMint(childTx);
   
           // send from childContract to composableContract
           await childComposableToken.connect(creator).safeTransferFrom(
@@ -387,31 +418,28 @@ describe("TypedERC1155Composable", async function () {
       
       beforeEach(async () => {
         // mint an artpiece (parent) token in the contract
-        let artpieceTx = await composableToken.mint(
+
+        artpieceTokenId = await composableTestHelpers.mintAndGetId(
+          composableToken,
           creator.address, 
           ARTPIECE_TYPE, 
           TOKEN_URI,
           1, 
-          creator.address, 
-          utils.toUtf8Bytes('')
+          creator.address
         );
-
-        artpieceTokenId = await composableTestHelpers.getTokenIdFromMint(artpieceTx);
 
         // create the layer type in the contract
         await composableToken.createTokenType(LAYER_TYPE);
 
         // mint an layer (child) token in the contract
-        let layerTx = await composableToken.mint(
+        layerTokenId = await composableTestHelpers.mintAndGetId(
+          composableToken,
           creator.address, 
           LAYER_TYPE, 
           TOKEN_URI,
           1, 
-          creator.address, 
-          utils.toUtf8Bytes('')
+          creator.address
         );
-
-        layerTokenId = await composableTestHelpers.getTokenIdFromMint(layerTx);
 
         // sanity check
         expect(
@@ -449,16 +477,15 @@ describe("TypedERC1155Composable", async function () {
           await composableToken.createTokenType(unauthorizedType);
 
           // mint a token of the unauthorized type
-          let unauthorizedTx = await composableToken.mint(
+          let unauthorizedTokenId = await composableTestHelpers.mintAndGetId(
+            composableToken,
             creator.address, 
             unauthorizedType, 
             TOKEN_URI,
             1, 
-            creator.address,
-            utils.toUtf8Bytes('')
+            creator.address
           );
-
-          let unauthorizedTokenId = await composableTestHelpers.getTokenIdFromMint(unauthorizedTx);
+  
 
           // send from self to self
           await expect(composableToken.connect(creator).safeTransferFrom(
@@ -488,17 +515,15 @@ describe("TypedERC1155Composable", async function () {
     describe('Success', async () => {
       it('should mint properly as admin and return token id', async () => {
         const tokenAmount = 20;
-        
-        let mintTx = await composableToken.mint(
+
+        let mintedTokenId = await composableTestHelpers.mintAndGetId(
+          composableToken,
           minter.address, 
           ARTPIECE_TYPE, 
           TOKEN_URI, 
           tokenAmount, 
-          creator.address, 
-          utils.toUtf8Bytes('')
+          creator.address
         );
-        
-        let mintedTokenId = await composableTestHelpers.getTokenIdFromMint(mintTx);
 
         // check amount minted
         expect(await composableToken.tokenSupply(mintedTokenId))
@@ -508,36 +533,34 @@ describe("TypedERC1155Composable", async function () {
         expect(await composableToken.uri(mintedTokenId))
           .to.equal(BASE_URI + TOKEN_URI);
 
-        // check type name
         let [tokenTypeId, tokenTypeName] = await composableToken.tokenType(mintedTokenId);
         
+        // check type index (1 because first)
+        expect(tokenTypeId).to.equal(1);
+        // check type name
         expect(tokenTypeName).to.equal(ARTPIECE_TYPE);
 
         // TODO check creators
       });
 
       it('should generate different ids with the same creator but different uris', async () => {
-        let firstMintTx = await composableToken.mint(
+        let firstMintedTokenId = await composableTestHelpers.mintAndGetId(
+          composableToken,
           minter.address, 
           ARTPIECE_TYPE, 
           TOKEN_URI, 
           1, 
-          creator.address, 
-          utils.toUtf8Bytes('')
+          creator.address
         );
-        
-        let firstMintedTokenId = await composableTestHelpers.getTokenIdFromMint(firstMintTx);
 
-        let secondMintTx = await composableToken.mint(
+        let secondMintedTokenId = await composableTestHelpers.mintAndGetId(
+          composableToken,
           minter.address, 
           ARTPIECE_TYPE, 
           TOKEN_URI + "DIFFERENT", 
           1, 
-          creator.address, 
-          utils.toUtf8Bytes('')
+          creator.address
         );
-        
-        let secondMintedTokenId = await composableTestHelpers.getTokenIdFromMint(secondMintTx);
 
         expect(firstMintedTokenId).to.not.equal(secondMintedTokenId);
       });
@@ -615,6 +638,48 @@ describe("TypedERC1155Composable", async function () {
   });
 
   describe('Transactions', () => {
+    let artpieceTokenId: BigNumber;
+    let layerTokenId: BigNumber;
+      
+    beforeEach(async () => {
+      // mint an artpiece (parent) token in the contract
+      artpieceTokenId = await composableTestHelpers.mintAndGetId(
+        composableToken,
+        creator.address, 
+        ARTPIECE_TYPE, 
+        TOKEN_URI,
+        1, 
+        creator.address
+      );
 
+      // create the layer type in the contract
+      let typeTx = await composableToken.createTokenType(LAYER_TYPE);
+
+      layerTokenId = await composableTestHelpers.mintAndGetId(
+        composableToken,
+        creator.address, 
+        LAYER_TYPE, 
+        TOKEN_URI,
+        1,
+        creator.address, 
+        artpieceTokenId
+      );
+
+      // sanity check
+      expect(
+        artpieceTokenId.eq(layerTokenId), 
+        "Artpiece and layer token should NOT have the same id."
+      ).to.be.false;
+    });
+
+    describe('safeTransferChildFrom', async () => {
+      it('should transfer the child of a token to another token', async () => {
+        
+      });
+
+      it('should not allow transfer to the zero address', async () => {
+        
+      });
+    });
   });
 });

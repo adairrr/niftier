@@ -7,13 +7,13 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-wit
 
 use(solidity);
 
-describe("AccessRestriction", function () {
+describe("AccessRestriction", () => {
 
     let accessRestriction: AccessRestriction;
     let deployer: SignerWithAddress;
     let accounts: SignerWithAddress[];
 
-    beforeEach(async function () {
+    beforeEach(async () => {
         // get array of signers
         [deployer, ...accounts] = await ethers.getSigners();
 
@@ -28,7 +28,7 @@ describe("AccessRestriction", function () {
     });
     
     // Test case
-    it('should grant default admin role to deployer', async function () {
+    it('should grant default admin role to deployer', async () => {
         // DEFAULT_ADMIN_ROLE == ZERO_BYTES32
         expect(await accessRestriction.getRoleMemberCount(ethers.constants.HashZero)).to.equal(1);
         expect(await accessRestriction.isAdmin(deployer.address)).to.equal(true);
