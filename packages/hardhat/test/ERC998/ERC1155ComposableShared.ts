@@ -98,10 +98,10 @@ export async function mintAndGetId(
   let tokenTx = await composableContract.mint(
     to, 
     tokenType, 
-    tokenUri,
+    utils.formatBytes32String(tokenUri),
     BigNumber.from(amount), 
     creator,
-    toTokenId ? ethers.utils.solidityPack(['bytes'], [toTokenId]) : utils.toUtf8Bytes('')
+    toTokenId ? utils.solidityPack(['bytes'], [toTokenId]) : utils.toUtf8Bytes('')
   );
 
   return await getTokenIdFromMint(tokenTx);

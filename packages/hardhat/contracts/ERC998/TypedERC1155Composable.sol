@@ -52,7 +52,7 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
     mapping(uint256 => uint256) public tokenSupply;
 
     /// @dev mapping for token URIs TODO this should be bytes32? with base58mod
-    mapping(uint256 => string) public tokenUris;
+    mapping(uint256 => bytes32) public tokenUris;
 
     struct TokenType {
         bytes32 tokenTypeName;
@@ -145,7 +145,7 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
     function mint(
         address _to,
         bytes32 _tokenTypeName,
-        string calldata _tokenUri,
+        bytes32 _tokenUri,
         uint256 _amount,
         address _creator,
         bytes memory _data
@@ -157,7 +157,11 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
         );
 
         // Check URI and creator
-        _validateIncomingMint(_tokenUri, _creator, _amount);
+        _validateIncomingMint(
+            _asSingletonBytes32Array(_tokenUri),
+            _asSingletonAddressArray(_creator),
+            _asSingletonUintArray(_amount)
+        );
 
         // Check the token type and possible parent token before to save gas
         uint256 tokenTypeId = tokenTypeNames[_tokenTypeName];
@@ -195,6 +199,97 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
         tokenSupply[tokenId] = tokenSupply[tokenId].add(_amount);
     }
 
+    function mintBatch(
+        address _to,
+        bytes32 _tokenTypeName,
+        bytes32[] memory _tokenUris,
+        uint256[] memory _amounts,
+        address[] memory _creators,
+        bytes memory _data
+    ) external {
+        // TODO minter role
+        require(
+            accessRestriction.isMinter(_msgSender()),
+            "Must have minter role to mint."
+        );
+
+        require(
+            _tokenUris.length == _amounts.length && _tokenUris.length == _creators.length, 
+            "Minting parameters length mismatch"
+        );
+
+        // Check URI and creator
+        _validateIncomingMint(_tokenUris, _creators, _amounts);
+
+        // Check the token type and possible parent token before to save gas
+        uint256 tokenTypeId = tokenTypeNames[_tokenTypeName];
+        require(
+            tokenTypeId > 0,
+            "Token type does not exist"
+        );
+
+        // check recipient token IFF exists within this typed composable
+        if (_to == address(this) && _data.length == 32) {
+            _validateSelfComposability(tokenTypeId);
+        }
+
+        uint256 currentTokenId;
+        uint256[] memory tokenIds = new uint256[](_tokenUris.length);
+
+        for (uint256 i; i < _tokenUris.length; i++) {
+            currentTokenId = _generateTokenId(tokenTypeId, _tokenUris[i]);
+            
+            // Check that the sender has the rights to create the token
+            if (_exists(currentTokenId)) {
+                require(
+                    _creators[i] == tokenCreators.get(currentTokenId),
+                    "Only the creator of the token may mint more"
+                );
+            }
+            tokenIds[i] = currentTokenId;
+        }
+
+        // call super minting method
+        _mintBatch(_to, tokenIds, _amounts, _data);
+
+        for (uint256 i; i < _tokenUris.length; i++) {
+            currentTokenId = tokenIds[i];
+            if (!_exists(currentTokenId)) {
+                // associate URI
+                tokenUris[currentTokenId] = _tokenUris[i];
+                //  associate creator
+                tokenCreators.set(currentTokenId, _creators[i]);
+            }
+            
+            // add to token id supply
+            tokenSupply[currentTokenId] = tokenSupply[currentTokenId].add(_amounts[i]);
+        }
+    }
+
+/*
+function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) internal view {
+        uint256 recipientTokenId = _loadRecipientTokenId();
+        require(_exists(recipientTokenId));
+
+        uint256 recipientTypeId = (recipientTokenId & TOKEN_TYPE_MASK) >> TOKEN_TYPE_SHIFT;
+
+        uint256 recipientChildTypesBitmap = tokenTypes[recipientTypeId].childTypesBitmap;
+
+        uint256 currentTokenTypeId;
+        uint256 tokenTypeIdsBitmap;
+
+        // create a bitmap of all the types passed in
+        for (uint256 i; i < _tokenTypeIds.length; i++) {
+            currentTokenTypeId = (_tokenTypeIds[i] & TOKEN_TYPE_MASK) >> TOKEN_TYPE_SHIFT;
+            tokenTypeIdsBitmap = tokenTypeIdsBitmap | (1 << currentTokenTypeId);
+        }
+
+        require(
+            tokenTypeIdsBitmap & recipientChildTypesBitmap == recipientChildTypesBitmap,
+            "Recipient token has not been authorized to one or more of these children."
+        );
+    }
+*/
     function _validateSelfComposability(uint256 _tokenTypeId) internal view {
         uint256 recipientTokenId = _loadRecipientTokenId();
 
@@ -206,7 +301,7 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
 
     function _generateTokenId(
         uint256 _tokenType, 
-        string memory _tokenUri
+        bytes32 _tokenUri
     ) internal pure returns (uint256 tokenId) {
         // |--TokenType(16)--||--Unique hash of token URI (240)--|
         tokenId = _tokenType << TOKEN_TYPE_SHIFT | 
@@ -299,10 +394,10 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
     function uri(uint256 _tokenId) external view override returns (string memory) {
         require(_exists(_tokenId), "URI query for nonexistent token");
 
-        string memory tokenUri = tokenUris[_tokenId];
+        bytes32 tokenUri = tokenUris[_tokenId];
 
-        if (bytes(tokenUri).length > 0) {
-            return string(abi.encodePacked(baseUri, tokenUri));
+        if (tokenUris[_tokenId].length > 0) {
+            return string(abi.encodePacked(baseUri, bytes32ToString(tokenUri)));
         }
         // If there is no tokenUri, concatenate the tokenID to the baseUri.
         return string(abi.encodePacked(baseUri, StringsUpgradeable.toString(_tokenId)));
@@ -347,7 +442,7 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
 
         childTokens = new uint256[](parentToChildTokens[_tokenId][_childContract].length());
 
-        for (uint256 i = 0; i < parentToChildTokens[_tokenId][_childContract].length(); i++) {
+        for (uint256 i; i < parentToChildTokens[_tokenId][_childContract].length(); i++) {
             childTokens[i] = parentToChildTokens[_tokenId][_childContract].at(i);
         }
     }
@@ -368,7 +463,7 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
 
         parentTokens = new uint256[](childToParentHolders[_childContract][_childTokenId].length());
 
-        for (uint256 i = 0; i < childToParentHolders[_childContract][_childTokenId].length(); i++) {
+        for (uint256 i; i < childToParentHolders[_childContract][_childTokenId].length(); i++) {
             parentTokens[i] = childToParentHolders[_childContract][_childTokenId].at(i);
         }
     }
@@ -408,7 +503,7 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
             "Caller is neither owner nor approved"
         );
 
-        // _beforeChildTransfer(operator, _fromTokenId, _to, _childContract, _asSingletonArray(_childTokenId), _asSingletonArray(_amount), _data);
+        // _beforeChildTransfer(operator, _fromTokenId, _to, _childContract, _asSingletonUintArray(_childTokenId), _asSingletonUintArray(_amount), _data);
 
         // TODO check for locked or first sale
         _removeChild(_fromTokenId, _childContract, _childTokenId, _amount);
@@ -450,7 +545,7 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
         // _beforeChildTransfer(operator, _fromTokenId, _to, _childContract, _childTokenIds, _amounts, _data);
 
         // loop through the 
-        for (uint256 i = 0; i < _childTokenIds.length; ++i) {
+        for (uint256 i; i < _childTokenIds.length; ++i) {
             uint256 childTokenId = _childTokenIds[i];
             uint256 amount = _amounts[i];
 
@@ -526,8 +621,8 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
         uint256 _recipientTokenId = _loadRecipientTokenId();
         _validateRecipientToken(_recipientTokenId, _operator, _from);
 
-        // Note: be mindful of GAS limits
-        for (uint256 i = 0; i < _childTokenIds.length; i++) {
+        // Gas heavy...
+        for (uint256 i; i < _childTokenIds.length; i++) {
             _receiveChild(_recipientTokenId, _msgSender(), _childTokenIds[i], _amounts[i]);
         }
 
@@ -546,17 +641,20 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
 
     /**
      * @notice Checks that the URI is not empty and the artist is not the zero address
-     * @param _tokenUri URI supplied on minting
-     * @param _creator Address supplied on minting
+     * @param _tokenUris URIs supplied on minting
+     * @param _creators Addresses supplied on minting
+     * @param _amounts Amounts supplied on minting
      */
     function _validateIncomingMint(
-        string calldata _tokenUri, 
-        address _creator, 
-        uint256 _amount
+        bytes32[] memory _tokenUris, 
+        address[] memory _creators, 
+        uint256[] memory _amounts
     ) pure private {
-        require(bytes(_tokenUri).length > 0, "TypedERC1155Composable._validateIncomingMint: Token URI is empty.");
-        require(_creator != address(0), "TypedERC1155Composable._validateIncomingMint: Artist is zero address.");
-        require(_amount > 0, "TypedERC1155Composable._validateIncomingMint: Must have a mint amount greater than zero.");
+        for (uint256 i; i < _tokenUris.length; i++) {
+            require(_tokenUris[i][0] != 0, "Token URI is empty.");
+            require(_creators[i] != address(0), "Creator is zero address.");
+            require(_amounts[i] > 0, "Must have a mint amount greater than zero.");
+        }
     }
 
     /**
@@ -719,9 +817,10 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
      * @param _tokenId The ID of the token being updated
      * @param _tokenUri The new URI
      */
-    function updateTokenUri(uint256 _tokenId, string calldata _tokenUri) external onlyAdmin {
+    function updateTokenUri(uint256 _tokenId, bytes32 _tokenUri) external onlyAdmin {
+        console.log(_tokenUri);
         _setTokenUri(_tokenId, _tokenUri);
-        emit UriUpdated(_tokenId, _tokenUri);
+        emit UriUpdated(_tokenId, bytes32ToString(_tokenUri));
     }
 
     /**
@@ -730,7 +829,8 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
      * @param _tokenId The ID of the token being updated
      * @param _tokenUri The new URI
      */
-    function _setTokenUri(uint256 _tokenId, string memory _tokenUri) internal {
+    function _setTokenUri(uint256 _tokenId, bytes32 _tokenUri) internal {
+        console.log(_tokenUri);
         require(_exists(_tokenId), "URI set of nonexistent token");
         tokenUris[_tokenId] = _tokenUri;
     }
@@ -772,5 +872,38 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
         returns (bool)
     {
         return _interfaceId == _INTERFACE_ID_ERC1155COMPOSABLE || super.supportsInterface(_interfaceId);
+    }
+
+    function _asSingletonUintArray(uint256 element) private pure returns (uint256[] memory) {
+        uint256[] memory array = new uint256[](1);
+        array[0] = element;
+
+        return array;
+    }
+
+    function _asSingletonAddressArray(address element) private pure returns (address[] memory) {
+        address[] memory array = new address[](1);
+        array[0] = element;
+
+        return array;
+    }
+
+    function _asSingletonBytes32Array(bytes32 element) private pure returns (bytes32[] memory) {
+        bytes32[] memory array = new bytes32[](1);
+        array[0] = element;
+
+        return array;
+    }
+
+    function bytes32ToString(bytes32 _bytes32) public pure returns (string memory) {
+        uint8 i = 0;
+        while(i < 32 && _bytes32[i] != 0) {
+            i++;
+        }
+        bytes memory bytesArray = new bytes(i);
+        for (i = 0; i < 32 && _bytes32[i] != 0; i++) {
+            bytesArray[i] = _bytes32[i];
+        }
+        return string(bytesArray);
     }
 }

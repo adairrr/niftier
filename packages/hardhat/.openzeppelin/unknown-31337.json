@@ -27,7 +27,7 @@
           {
             "contract": "AccessRestrictable",
             "label": "accessRestriction",
-            "type": "t_contract(AccessRestriction)7220",
+            "type": "t_contract(AccessRestriction)7591",
             "src": "contracts/access/AccessRestrictable.sol:26"
           },
           {
@@ -47,7 +47,7 @@
           "t_contract(ERC1155Composable)5044": {
             "label": "contract ERC1155Composable"
           },
-          "t_contract(AccessRestriction)7220": {
+          "t_contract(AccessRestriction)7591": {
             "label": "contract AccessRestriction"
           },
           "t_array(t_uint256)50_storage": {
@@ -130,7 +130,7 @@
           {
             "contract": "AccessRestrictable",
             "label": "accessRestriction",
-            "type": "t_contract(AccessRestriction)7220",
+            "type": "t_contract(AccessRestriction)7591",
             "src": "contracts/access/AccessRestrictable.sol:26"
           },
           {
@@ -321,7 +321,7 @@
           "t_mapping(t_uint256,t_struct(UintSet)3610_storage)": {
             "label": "mapping(uint256 => struct EnumerableSetUpgradeable.UintSet)"
           },
-          "t_contract(AccessRestriction)7220": {
+          "t_contract(AccessRestriction)7591": {
             "label": "contract AccessRestriction"
           },
           "t_array(t_uint256)50_storage": {
@@ -502,9 +502,9 @@
         }
       }
     },
-    "a2928543172f33e5d00e988b4ab8bf1b53c9f48a38111e78763c50295f07a560": {
+    "d9a8fc6d5d9bcc7159d97ebd6578c8ab86b39b4e5272498867518179e50fed3a": {
       "address": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
-      "txHash": "0xa5531e84a630a507ecf3b1e708bbf43ed8c9d1c0b5ad21c55f3a9de57360fcc5",
+      "txHash": "0xe5450cfc11914ba10c798c1dc0d4f682252730af3a13689a3c3176efb0f675f6",
       "layout": {
         "storage": [
           {
@@ -570,7 +570,7 @@
           {
             "contract": "AccessRestrictable",
             "label": "accessRestriction",
-            "type": "t_contract(AccessRestriction)7220",
+            "type": "t_contract(AccessRestriction)7591",
             "src": "contracts/access/AccessRestrictable.sol:26"
           },
           {
@@ -606,7 +606,7 @@
           {
             "contract": "TypedERC1155Composable",
             "label": "tokenUris",
-            "type": "t_mapping(t_uint256,t_string_storage)",
+            "type": "t_mapping(t_uint256,t_bytes32)",
             "src": "contracts/ERC998/TypedERC1155Composable.sol:55"
           },
           {
@@ -708,8 +708,8 @@
           "t_mapping(t_uint256,t_uint256)": {
             "label": "mapping(uint256 => uint256)"
           },
-          "t_mapping(t_uint256,t_string_storage)": {
-            "label": "mapping(uint256 => string)"
+          "t_mapping(t_uint256,t_bytes32)": {
+            "label": "mapping(uint256 => bytes32)"
           },
           "t_array(t_struct(TokenType)5355_storage)256_storage": {
             "label": "struct TypedERC1155Composable.TokenType[256]"
@@ -795,7 +795,7 @@
           "t_mapping(t_uint256,t_struct(UintSet)3610_storage)": {
             "label": "mapping(uint256 => struct EnumerableSetUpgradeable.UintSet)"
           },
-          "t_contract(AccessRestriction)7220": {
+          "t_contract(AccessRestriction)7591": {
             "label": "contract AccessRestriction"
           },
           "t_array(t_uint256)50_storage": {

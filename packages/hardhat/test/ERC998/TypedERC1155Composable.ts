@@ -95,7 +95,7 @@ describe("TypedERC1155Composable", async () => {
       let mintTx = await composableToken.mint(
         accountWithToken, 
         ARTPIECE_TYPE, 
-        TOKEN_URI, 
+        utils.formatBytes32String(TOKEN_URI), 
         1,
         creator.address, 
         utils.toUtf8Bytes('')
@@ -160,23 +160,53 @@ describe("TypedERC1155Composable", async () => {
         const expectedFullTokenUri = BASE_URI + newTokenUri;
 
         // set the token's new uri 
-        await expect(composableToken.updateTokenUri(mintedTokenId, newTokenUri))
-          .to.emit(composableToken, "UriUpdated")
+        await expect(composableToken.updateTokenUri(
+          mintedTokenId, 
+          utils.formatBytes32String(newTokenUri)
+        )).to.emit(composableToken, "UriUpdated")
           .withArgs(mintedTokenId, newTokenUri);
 
-        console.log(await composableToken.tokenUris(mintedTokenId));
-
         // ensure that the new token uri was changed
-        expect(await composableToken.tokenUris(mintedTokenId)).to.equal(newTokenUri);
+        expect(await composableToken.tokenUris(mintedTokenId))
+          .to.equal(utils.formatBytes32String(newTokenUri));
 
         // ensure that the new uri is concatanated 
         expect(await composableToken.uri(mintedTokenId))
           .to.equal(expectedFullTokenUri);
       });
 
+      // TODO this does not work
+      // it('should allow for an ipfs uri', async () => {
+      //   // Note: see https://api-blockchain-core.readthedocs.io/en/latest/dfs/ipfs.html
+      //   // runtime.dfs.ipfsHashToBytes32('QmWmyoMoctfbAaiEs2G46gpeUmhqFRDW6KWo64y5r581Vz')
+      //   // returns 0x7D5A99F603F231D53A4F39D1521F98D2E8BB279CF29BEBFD0687DC98458E7F89
+
+      //   const ipfsTokenUri = "0x7D5A99F603F231D53A4F39D1521F98D2E8BB279CF29BEBFD0687DC98458E7F89";
+      //   const expectedFullTokenUri = BASE_URI + ipfsTokenUri;
+
+      //   // set the token's new uri 
+      //   await expect(composableToken.updateTokenUri(
+      //     mintedTokenId, 
+      //     ipfsTokenUri
+      //   )).to.emit(composableToken, "UriUpdated")
+      //     .withArgs(mintedTokenId, ipfsTokenUri);
+
+      //   console.log(await composableToken.tokenUris(mintedTokenId));
+
+      //   // ensure that the new token uri was changed
+      //   expect(await composableToken.tokenUris(mintedTokenId))
+      //     .to.equal(ipfsTokenUri);
+
+      //   // ensure that the new uri is concatanated 
+      //   expect(await composableToken.uri(mintedTokenId))
+      //     .to.equal(expectedFullTokenUri);
+      // });
+
       it('should not be callable non-admins', async () => {
-        await expect(composableTokenAsUser.updateTokenUri(mintedTokenId, "MUSK"))
-          .to.be.reverted;
+        await expect(composableTokenAsUser.updateTokenUri(
+          mintedTokenId,
+          utils.formatBytes32String("MUSK")
+          )).to.be.reverted;
       });
     });
 
@@ -366,7 +396,7 @@ describe("TypedERC1155Composable", async () => {
             composableToken.address,
             childTokenId,
             1,
-            ethers.utils.solidityPack(['uint256'], [parentTokenId])
+            utils.solidityPack(['uint256'], [parentTokenId])
           );
 
           await composableTestHelpers.expectChildToBeTransferred(
@@ -382,7 +412,7 @@ describe("TypedERC1155Composable", async () => {
           let childTx = await childComposableToken.mint(
             composableToken.address, 
             LAYER_TYPE,
-            TOKEN_URI,
+            utils.formatBytes32String(TOKEN_URI),
             1,
             creator.address,
             utils.solidityPack(['uint256'], [parentTokenId])
@@ -402,10 +432,10 @@ describe("TypedERC1155Composable", async () => {
           await expect(childComposableToken.mint(
             composableToken.address, 
             LAYER_TYPE,
-            TOKEN_URI,
+            utils.formatBytes32String(TOKEN_URI),
             1,
             creator.address,
-            ethers.utils.solidityPack(['bytes'], [parentTokenId]))
+            utils.solidityPack(['bytes'], [parentTokenId]))
           ).to.be.revertedWith("");
         });
       });
@@ -461,7 +491,7 @@ describe("TypedERC1155Composable", async () => {
             composableToken.address,
             layerTokenId,
             1,
-            ethers.utils.solidityPack(['uint256'], [artpieceTokenId])
+            utils.solidityPack(['uint256'], [artpieceTokenId])
           );
 
           await composableTestHelpers.expectChildToBeTransferred(
@@ -493,7 +523,7 @@ describe("TypedERC1155Composable", async () => {
             composableToken.address,
             unauthorizedTokenId,
             1,
-            ethers.utils.solidityPack(['uint256'], [artpieceTokenId])
+            utils.solidityPack(['uint256'], [artpieceTokenId])
           )).to.be.revertedWith("The parent token is not authorized to hold the child token.");
         });
 
@@ -571,7 +601,7 @@ describe("TypedERC1155Composable", async () => {
         await expect(composableTokenAsUser.mint(
           minter.address, 
           ARTPIECE_TYPE, 
-          TOKEN_URI,
+          utils.formatBytes32String(TOKEN_URI),
           1, 
           creator.address, 
           utils.toUtf8Bytes('')
@@ -584,7 +614,7 @@ describe("TypedERC1155Composable", async () => {
         await expect(composableToken.mint(
           minter.address, 
           ARTPIECE_TYPE, 
-          TOKEN_URI,
+          utils.formatBytes32String(TOKEN_URI),
           1, 
           creator.address, 
           utils.toUtf8Bytes('')
@@ -594,7 +624,7 @@ describe("TypedERC1155Composable", async () => {
         await expect(composableToken.mint(
           minter.address, 
           ARTPIECE_TYPE, 
-          TOKEN_URI,
+          utils.formatBytes32String(TOKEN_URI),
           1, 
           minter.address, // fail because the creator is different
           utils.toUtf8Bytes('')
@@ -605,7 +635,7 @@ describe("TypedERC1155Composable", async () => {
         await expect(composableToken.mint(
           ethers.constants.AddressZero, 
           ARTPIECE_TYPE, 
-          TOKEN_URI, 
+          utils.formatBytes32String(TOKEN_URI), 
           1, 
           creator.address, 
           utils.toUtf8Bytes('')
@@ -617,22 +647,22 @@ describe("TypedERC1155Composable", async () => {
           composableToken.mint(
             minter.address, 
               ARTPIECE_TYPE, 
-              TOKEN_URI, 
+              utils.formatBytes32String(TOKEN_URI), 
               1, 
               ethers.constants.AddressZero, 
               utils.toUtf8Bytes(''))
-        ).to.be.revertedWith('TypedERC1155Composable._validateIncomingMint: Artist is zero address.');
+        ).to.be.revertedWith('Creator is zero address.');
       });
 
       it('should not allow the uri to be empty', async () => {
         await expect(
           composableToken.mint(minter.address, 
             ARTPIECE_TYPE, 
-            '', 
+            utils.formatBytes32String(''),
             1, 
             creator.address, 
             utils.toUtf8Bytes(''))
-        ).to.be.revertedWith('TypedERC1155Composable._validateIncomingMint: Token URI is empty.');
+        ).to.be.revertedWith('Token URI is empty.');
       });
     });
   });
@@ -653,7 +683,7 @@ describe("TypedERC1155Composable", async () => {
       );
 
       // create the layer type in the contract
-      let typeTx = await composableToken.createTokenType(LAYER_TYPE);
+      await composableToken.createTokenType(LAYER_TYPE);
 
       layerTokenId = await composableTestHelpers.mintAndGetId(
         composableToken,
@@ -661,7 +691,7 @@ describe("TypedERC1155Composable", async () => {
         LAYER_TYPE, 
         TOKEN_URI,
         1,
-        creator.address, 
+        creator.address,
         artpieceTokenId
       );
 
