@@ -1,5 +1,5 @@
 {
-    "require": ["ts-node/register", "hardhat/register"],
+    "require": ["ts-node/register/files", "hardhat/register"],
     "timeout": 20000,
     "recursive": "packages/hardhat/test",
     "extension": ["ts"]

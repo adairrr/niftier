@@ -98,10 +98,10 @@ export async function mintAndGetId(
   let tokenTx = await composableContract.mint(
     to, 
     tokenType, 
-    utils.formatBytes32String(tokenUri),
+    tokenUri,
     BigNumber.from(amount), 
     creator,
-    toTokenId ? utils.solidityPack(['bytes'], [toTokenId]) : utils.toUtf8Bytes('')
+    toTokenId ? packTokenId(toTokenId) : utils.toUtf8Bytes('')
   );
 
   return await getTokenIdFromMint(tokenTx);
@@ -115,4 +115,8 @@ export async function getTokenTypeFromId(
   return tokenId
     .and(await composableContract.TOKEN_TYPE_MASK())
     .shr(250);
+}
+
+export function packTokenId(toTokenId: BigNumber) {
+  return utils.solidityPack(['bytes'], [toTokenId]);
 }

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-
+pragma experimental ABIEncoderV2;
 pragma solidity >=0.7.0 <0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol";
@@ -52,7 +52,7 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
     mapping(uint256 => uint256) public tokenSupply;
 
     /// @dev mapping for token URIs TODO this should be bytes32? with base58mod
-    mapping(uint256 => bytes32) public tokenUris;
+    mapping(uint256 => string) public tokenUris;
 
     struct TokenType {
         bytes32 tokenTypeName;
@@ -66,10 +66,10 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
     TokenType[256] public tokenTypes;
 
     /// @dev mapping from TokenTypeName -> TokenType index in tokenTypes
-    mapping(bytes32 => uint256) public tokenTypeNames;
+    mapping(bytes32 => uint256) public tokenTypeNameToId;
 
-    EnumerableMapUpgradeable.UintToAddressMap private tokenCreators;
-    EnumerableMapUpgradeable.UintToAddressMap private tokenOwners;
+    mapping(uint256 => address) public tokenCreators;
+    mapping(uint256 => address) public tokenHolders;
 
     /// @dev Token ID -> Child contract address -> ERC1155 child Token IDs owned by Token ID -> balance
     mapping(uint256 => mapping(address => mapping(uint256 => uint256))) parentToChildBalances;
@@ -145,7 +145,7 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
     function mint(
         address _to,
         bytes32 _tokenTypeName,
-        bytes32 _tokenUri,
+        string memory _tokenUri,
         uint256 _amount,
         address _creator,
         bytes memory _data
@@ -158,29 +158,35 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
 
         // Check URI and creator
         _validateIncomingMint(
-            _asSingletonBytes32Array(_tokenUri),
+            _asSingletonStringArray(_tokenUri),
             _asSingletonAddressArray(_creator),
             _asSingletonUintArray(_amount)
         );
 
         // Check the token type and possible parent token before to save gas
-        uint256 tokenTypeId = tokenTypeNames[_tokenTypeName];
+        uint256 tokenTypeId = tokenTypeNameToId[_tokenTypeName];
         require(
             tokenTypeId > 0,
             "Token type does not exist"
         );
 
+        tokenId = _generateTokenId(tokenTypeId, _tokenUri);
+
         // check recipient token IFF exists within this typed composable
         if (_to == address(this) && _data.length == 32) {
-            _validateSelfComposability(tokenTypeId);
+            _validateSelfComposability(tokenId);
+            // set approval for creator because the token is going to another token
+            // TODO approvals
+            // tokenApprovals[tokenId] = _creator;
+        } else {
+            // the token is going to a person, so that person should have approval
+            // tokenApprovals[tokenId] = _to;
         }
-
-        tokenId = _generateTokenId(tokenTypeId, _tokenUri);
 
         // Check that the sender has the rights to create the token
         if (_exists(tokenId)) {
             require(
-                _creator == tokenCreators.get(tokenId),
+                _creator == tokenCreators[tokenId],
                 "Only the creator of the token may mint more"
             );
         }
@@ -192,7 +198,7 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
             // associate URI
             tokenUris[tokenId] = _tokenUri;
             //  associate creator
-            tokenCreators.set(tokenId, _creator);
+            tokenCreators[tokenId] = _creator;
         }
 
         // add to token id supply
@@ -202,7 +208,7 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
     function mintBatch(
         address _to,
         bytes32 _tokenTypeName,
-        bytes32[] memory _tokenUris,
+        string[] memory _tokenUris,
         uint256[] memory _amounts,
         address[] memory _creators,
         bytes memory _data
@@ -222,7 +228,7 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
         _validateIncomingMint(_tokenUris, _creators, _amounts);
 
         // Check the token type and possible parent token before to save gas
-        uint256 tokenTypeId = tokenTypeNames[_tokenTypeName];
+        uint256 tokenTypeId = tokenTypeNameToId[_tokenTypeName];
         require(
             tokenTypeId > 0,
             "Token type does not exist"
@@ -230,7 +236,8 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
 
         // check recipient token IFF exists within this typed composable
         if (_to == address(this) && _data.length == 32) {
-            _validateSelfComposability(tokenTypeId);
+            // we shift left because the type is the index, and so we only have to once
+            _validateSelfComposability(tokenTypeId << 250);
         }
 
         uint256 currentTokenId;
@@ -242,7 +249,7 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
             // Check that the sender has the rights to create the token
             if (_exists(currentTokenId)) {
                 require(
-                    _creators[i] == tokenCreators.get(currentTokenId),
+                    _creators[i] == tokenCreators[currentTokenId],
                     "Only the creator of the token may mint more"
                 );
             }
@@ -258,7 +265,7 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
                 // associate URI
                 tokenUris[currentTokenId] = _tokenUris[i];
                 //  associate creator
-                tokenCreators.set(currentTokenId, _creators[i]);
+                tokenCreators[currentTokenId] = _creators[i];
             }
             
             // add to token id supply
@@ -293,6 +300,8 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
     function _validateSelfComposability(uint256 _tokenTypeId) internal view {
         uint256 recipientTokenId = _loadRecipientTokenId();
 
+        // console.log("recipient: %s", recipientTokenId);
+
         require(
             this.isAuthorizedChildType(recipientTokenId, _tokenTypeId),
             "Recipient token has not been authorized to receive this child"
@@ -301,7 +310,7 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
 
     function _generateTokenId(
         uint256 _tokenType, 
-        bytes32 _tokenUri
+        string memory _tokenUri
     ) internal pure returns (uint256 tokenId) {
         // |--TokenType(16)--||--Unique hash of token URI (240)--|
         tokenId = _tokenType << TOKEN_TYPE_SHIFT | 
@@ -316,7 +325,7 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
         bytes32 _tokenTypeName
     ) external onlyAdmin returns (uint256 tokenTypeId) {
         require(
-            tokenTypeNames[_tokenTypeName] == 0, // the type does not exist
+            tokenTypeNameToId[_tokenTypeName] == 0, // the type does not exist
             "Already a type"
         );
 
@@ -334,7 +343,7 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
         require(tokenTypeId < 256, "Too many types");
 
         tokenTypes[tokenTypeId] = newType;
-        tokenTypeNames[_tokenTypeName] = tokenTypeId;
+        tokenTypeNameToId[_tokenTypeName] = tokenTypeId;
 
         emit TokenTypeCreated(_tokenTypeName, tokenTypeId);
     }
@@ -377,6 +386,9 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
         // shift right because shifted left on creation, now need index
         uint256 parentTypeId = (_parentType & TOKEN_TYPE_MASK) >> TOKEN_TYPE_SHIFT;
         uint256 childTypeId = (_childType & TOKEN_TYPE_MASK) >> TOKEN_TYPE_SHIFT;
+
+        // console.log("parentTypeId: %s", parentTypeId);
+        // console.log("childTypeId: %s", childTypeId);
         
         require(
             parentTypeId > 0 && childTypeId > 0,
@@ -394,10 +406,10 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
     function uri(uint256 _tokenId) external view override returns (string memory) {
         require(_exists(_tokenId), "URI query for nonexistent token");
 
-        bytes32 tokenUri = tokenUris[_tokenId];
+        string memory tokenUri = tokenUris[_tokenId];
 
-        if (tokenUris[_tokenId].length > 0) {
-            return string(abi.encodePacked(baseUri, bytes32ToString(tokenUri)));
+        if (bytes(tokenUris[_tokenId]).length > 0) {
+            return string(abi.encodePacked(baseUri, tokenUri));
         }
         // If there is no tokenUri, concatenate the tokenID to the baseUri.
         return string(abi.encodePacked(baseUri, StringsUpgradeable.toString(_tokenId)));
@@ -468,10 +480,6 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
         }
     }
 
-    function creatorOf(uint256 _tokenId) public view returns (address) {
-        return tokenCreators.get(_tokenId);
-    }
-
     function isAuthorizedChildContract(address _childContract) public view returns (bool) {
         return authorizedChildContracts.contains(_childContract);
     }
@@ -496,12 +504,15 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
     ) public override {
         require(_to != address(0), "Transfer to the zero address");
 
-        address operator = _msgSender();
-        require(
-            tokenOwners.get(_fromTokenId) == operator ||
-            isApprovedForAll(tokenOwners.get(_fromTokenId), operator),
-            "Caller is neither owner nor approved"
-        );
+        address operator = _msgSender(); 
+        // TODO this does not work yet
+        // require(
+        //     tokenHolders[_fromTokenId] == operator ||
+        //     isApprovedForAll(tokenHolders[_fromTokenId], operator),
+        //     "Caller is neither owner nor approved"
+        // );
+
+        // TODO this should fire an event for internal transfers that's different... presumably using _data
 
         // _beforeChildTransfer(operator, _fromTokenId, _to, _childContract, _asSingletonUintArray(_childTokenId), _asSingletonUintArray(_amount), _data);
 
@@ -511,7 +522,8 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
         // TODO - ensure that the _to != this... 
         // call safeBatchTransferFrom on the child contract to transfer the tokens from this to _to
         // TODO this should check to ensure that this call is possible... ie all authorizedchildcontracts need to be compatible with this
-        ERC1155Upgradeable(_childContract).safeTransferFrom(address(this), _to, _childTokenId, _amount, _data);
+        // ERC1155Upgradeable(_childContract).safeTransferFrom(address(this), _to, _childTokenId, _amount, _data);
+        ERC1155Upgradeable(_childContract).safeTransferFrom(operator, _to, _childTokenId, _amount, _data);
         emit TransferChildToken(_fromTokenId, _to, _childContract, _childTokenId, _amount);
     }
 
@@ -537,8 +549,8 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
 
         address operator = _msgSender();
         require(
-            tokenOwners.get(_fromTokenId) == operator ||
-            isApprovedForAll(tokenOwners.get(_fromTokenId), operator),
+            tokenHolders[_fromTokenId] == operator ||
+            isApprovedForAll(tokenHolders[_fromTokenId], operator),
             "ERC998: caller is neither owner nor approved"
         );
 
@@ -646,12 +658,12 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
      * @param _amounts Amounts supplied on minting
      */
     function _validateIncomingMint(
-        bytes32[] memory _tokenUris, 
+        string[] memory _tokenUris, 
         address[] memory _creators, 
         uint256[] memory _amounts
     ) pure private {
         for (uint256 i; i < _tokenUris.length; i++) {
-            require(_tokenUris[i][0] != 0, "Token URI is empty.");
+            require(bytes(_tokenUris[i]).length != 0, "Token URI is empty.");
             require(_creators[i] != address(0), "Creator is zero address.");
             require(_amounts[i] > 0, "Must have a mint amount greater than zero.");
         }
@@ -682,8 +694,11 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
 
         // Sender must be creator OR newly minted
         if (_from != address(0)) {
+            console.log("MsgSender: %s", _msgSender());
+            console.log("_from: %s", _from);
+            console.log(" tokenCreators[_recipientTokenId]: %s",  tokenCreators[_recipientTokenId]);
             require(
-                creatorOf(_recipientTokenId) == _from,
+                tokenCreators[_recipientTokenId] == _from,
                 "Only the owner of the parent token may add aditional child tokens."
             );
 
@@ -817,10 +832,9 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
      * @param _tokenId The ID of the token being updated
      * @param _tokenUri The new URI
      */
-    function updateTokenUri(uint256 _tokenId, bytes32 _tokenUri) external onlyAdmin {
-        console.log(_tokenUri);
+    function updateTokenUri(uint256 _tokenId, string memory _tokenUri) external onlyAdmin {
         _setTokenUri(_tokenId, _tokenUri);
-        emit UriUpdated(_tokenId, bytes32ToString(_tokenUri));
+        emit UriUpdated(_tokenId, _tokenUri);
     }
 
     /**
@@ -829,8 +843,7 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
      * @param _tokenId The ID of the token being updated
      * @param _tokenUri The new URI
      */
-    function _setTokenUri(uint256 _tokenId, bytes32 _tokenUri) internal {
-        console.log(_tokenUri);
+    function _setTokenUri(uint256 _tokenId, string memory _tokenUri) internal {
         require(_exists(_tokenId), "URI set of nonexistent token");
         tokenUris[_tokenId] = _tokenUri;
     }
@@ -860,6 +873,30 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
         internal virtual
     { }
 
+    // TODO approvals
+    // function _beforeTokenTransfer(
+    //     address _operator,
+    //     address _from,
+    //     address _to,
+    //     uint256[] memory _ids,
+    //     uint256[] memory _amounts,
+    //     bytes memory _data
+    // )
+    //     internal
+    //     virtual
+    //     override
+    // { 
+    //     // from == 0 address implies a mint
+    //     if (_from != address(0)) {
+    //         // if sending to this contract, the person should maintain approval
+    //         if (!_to.isContract()) {
+    //             for (uint256 i; i < _ids.length; i++) {
+    //                 tokenApprovals[_ids[i]] = _to;
+    //             }
+    //         }
+    //     }
+    // }
+
     /**
      * @dev See {IERC165-supportsInterface}.
      */
@@ -888,8 +925,8 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
         return array;
     }
 
-    function _asSingletonBytes32Array(bytes32 element) private pure returns (bytes32[] memory) {
-        bytes32[] memory array = new bytes32[](1);
+    function _asSingletonStringArray(string memory element) private pure returns (string[] memory) {
+        string[] memory array = new string[](1);
         array[0] = element;
 
         return array;
