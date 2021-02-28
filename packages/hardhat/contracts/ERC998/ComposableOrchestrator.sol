@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 
+pragma experimental ABIEncoderV2;
 pragma solidity >=0.7.0 <0.8.0;
 
 
@@ -12,7 +13,7 @@ import "../access/AccessRestriction.sol";
 import "../access/AccessRestrictable.sol";
 import "./TypedERC1155Composable.sol";
 
-contract ArtpieceOrchestrator is Initializable, ContextUpgradeable, AccessRestrictable {
+contract ComposableOrchestrator is Initializable, ContextUpgradeable, AccessRestrictable {
 
     using SafeMathUpgradeable for uint256;
     using AddressUpgradeable for address;
@@ -35,19 +36,19 @@ contract ArtpieceOrchestrator is Initializable, ContextUpgradeable, AccessRestri
         AccessRestriction _accessRestriction,
         address _composableToken
     ) public virtual initializer {
-        __ArtpieceOrchestrator_init(_accessRestriction, _composableToken);
+        __ComposableOrchestrator_init(_accessRestriction, _composableToken);
     }
 
-    function __ArtpieceOrchestrator_init(
+    function __ComposableOrchestrator_init(
         AccessRestriction _accessRestriction,
         address _composableToken
     ) internal initializer {
         __Context_init_unchained();
         __AccessRestrictable_init_unchained(_accessRestriction);
-        __ArtpieceOrchestrator_init_unchained(_composableToken);
+        __ComposableOrchestrator_init_unchained(_composableToken);
     }
 
-    function __ArtpieceOrchestrator_init_unchained(
+    function __ComposableOrchestrator_init_unchained(
         address _composableToken
     ) internal initializer {
         require(
@@ -57,11 +58,39 @@ contract ArtpieceOrchestrator is Initializable, ContextUpgradeable, AccessRestri
         composableToken = TypedERC1155Composable(_composableToken);
     }
 
-    // function mintChildrenToParent(
-    //     uint256 _parentTokenId,
-    //     bytes32 _childTokenTypeName,
+    /**
+     * @notice Called by the minting of a parent with children. This is when each is new and a quantity of 1 is desired.
+     * Ex: Artpiece minting, mint layers TO artpiece.
+     * @dev TokenTypes must exist.
+     */
+    function mintChildrenToParent(
+        bytes32 _parentTokenTypeName,
+        string memory _parentTokenUri,
+        bytes32 _childTokenTypeName,
+        string[] memory _childTokenUris,
+        uint256[] memory _childTokenAmounts,
+        address _creator
+    ) external returns (uint256[] memory childTokenIds) {
+        // create the parent Token
+        uint256 parentTokenId = composableToken.mint(
+            _creator, 
+            _parentTokenTypeName, 
+            _parentTokenUri, 
+            1, 
+            _creator, 
+            '' // no data
+        );
 
-    // )
+        // mint the child tokens to the parent token
+        childTokenIds = composableToken.mintBatch(
+            address(composableToken), 
+            _childTokenTypeName, 
+            _childTokenUris, 
+            _childTokenAmounts, 
+            _creator, 
+            abi.encodePacked(parentTokenId)
+        );
+    }
     
     // function associateChildrenToParent(
     //     uint256 _parentTokenId,

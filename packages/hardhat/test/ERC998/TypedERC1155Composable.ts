@@ -59,7 +59,7 @@ describe("TypedERC1155Composable", async () => {
     ) as TypedERC1155Composable;
 
     // add a single artpiece type
-    await composableToken.createTokenType(ARTPIECE_TYPE);
+    await composableToken.createTokenTypes([ARTPIECE_TYPE]);
 
     // console.log(await testtx.wait(1));
 
@@ -282,41 +282,48 @@ describe("TypedERC1155Composable", async () => {
       });
     });
 
-    describe('createTokenType', async () => {
+    describe('createTokenTypes', async () => {
       it('should create a token type', async () => {
         let newTokenType = utils.formatBytes32String("THIS_IS_A_NEW_TYPE");
         // this index is because we have only created one other type
         let tokenTypeIndex = 2;
-        await expect(composableToken.createTokenType(
-          newTokenType
-        )).to.emit(composableToken, "TokenTypeCreated")
-          .withArgs(newTokenType, tokenTypeIndex);
+        await expect(composableToken.createTokenTypes(
+          [newTokenType]
+        )).to.emit(composableToken, "TokenTypesCreated")
+          .withArgs([newTokenType], [tokenTypeIndex]);
       });
 
       it('should have new tokens created with same type to have same type prefix', async () => {
         let newTokenType = utils.formatBytes32String("THIS_IS_A_NEW_TYPE");
         // this index is because we have only created one other type
         let tokenTypeIndex = 2;
-        await expect(composableToken.createTokenType(
-          newTokenType
-        )).to.emit(composableToken, "TokenTypeCreated")
-          .withArgs(newTokenType, tokenTypeIndex);
+        await expect(composableToken.createTokenTypes(
+          [newTokenType]
+        )).to.emit(composableToken, "TokenTypesCreated")
+          .withArgs([newTokenType], [tokenTypeIndex]);
       });
       
       it('should disallow a token type of the same name', async () => {
-        await expect(composableToken.createTokenType(ARTPIECE_TYPE))
+        await expect(composableToken.createTokenTypes([ARTPIECE_TYPE]))
           .to.be.revertedWith("Already a type");
       });
 
       it('should not allow more than 255 types', async () => {
+        // this is the better way to do this, but it exceeds max length of string[]
+        // let typeArray: string[] = new Array(254);
+        // for (let index = 0; index < 254; index++) {
+        //   typeArray[index] = utils.formatBytes32String(index.toString());
+        // }
+        // await expect(composableToken.createTokenTypes(typeArray))
+        //   .to.not.be.reverted;
+
         // create 254 more
         for (let index = 0; index < 254; index++) {
-          await composableToken.createTokenType(
-            utils.formatBytes32String(index.toString())
-          );
+          composableToken.createTokenTypes([utils.formatBytes32String(index.toString())]);
         }
-        await expect(composableToken.createTokenType(
-          utils.formatBytes32String("FAIL")
+
+        await expect(composableToken.createTokenTypes(
+          [utils.formatBytes32String("FAIL")]
         )).to.be.revertedWith("Too many types");
       });
     });
@@ -325,7 +332,7 @@ describe("TypedERC1155Composable", async () => {
       it('should add an authorized child type', async () => {
 
         // Create a second type
-        await composableToken.createTokenType(LAYER_TYPE);
+        await composableToken.createTokenTypes([LAYER_TYPE]);
 
         let childTokenId = await testUtils.mintAndGetId(
           composableToken,
@@ -386,7 +393,7 @@ describe("TypedERC1155Composable", async () => {
         ) as TypedERC1155Composable;
   
         // create the LAYER TYPE for the child composable... because why not
-        await childComposableToken.createTokenType(LAYER_TYPE);
+        await childComposableToken.createTokenTypes([LAYER_TYPE]);
       });
   
       describe('Authorized child contracts', async () => {
@@ -472,7 +479,7 @@ describe("TypedERC1155Composable", async () => {
         );
 
         // create the layer type in the contract
-        await composableToken.createTokenType(LAYER_TYPE);
+        await composableToken.createTokenTypes([LAYER_TYPE]);
 
         // mint an layer (child) token in the contract
         layerTokenId = await testUtils.mintAndGetId(
@@ -553,7 +560,7 @@ describe("TypedERC1155Composable", async () => {
         it('should revert when child type is unauthorized', async () => {
           let unauthorizedType = utils.formatBytes32String("UNAUTHORIZED_TYPE");
 
-          await composableToken.createTokenType(unauthorizedType);
+          await composableToken.createTokenTypes([unauthorizedType]);
 
           // mint a token of the unauthorized type
           let unauthorizedTokenId = await testUtils.mintAndGetId(
@@ -742,7 +749,7 @@ describe("TypedERC1155Composable", async () => {
       );
 
       // create the layer type in the contract
-      await composableToken.createTokenType(LAYER_TYPE);
+      await composableToken.createTokenTypes([LAYER_TYPE]);
 
       // mint layer to creator
       layerTokenId = await testUtils.mintAndGetId(

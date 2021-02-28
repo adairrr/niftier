@@ -88,7 +88,7 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
     event BaseUriUpdated(string _baseUri);
     // TODO this will be per type!!
     event TokenNameUpdated(string _name);
-    event TokenTypeCreated(bytes32 _tokenTypeName, uint256 tokenTypeId);
+    event TokenTypesCreated(bytes32[] _tokenTypeNames, uint256[] tokenTypeIds);
     event ChildTypeAuthorized(uint256 _parentType, uint256 _childType);
     event UriUpdated(uint256 indexed _tokenId, string _tokenUri);
 
@@ -159,7 +159,7 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
         // Check URI and creator
         _validateIncomingMint(
             _asSingletonStringArray(_tokenUri),
-            _asSingletonAddressArray(_creator),
+            _creator,
             _asSingletonUintArray(_amount)
         );
 
@@ -210,9 +210,9 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
         bytes32 _tokenTypeName,
         string[] memory _tokenUris,
         uint256[] memory _amounts,
-        address[] memory _creators,
+        address _creator,
         bytes memory _data
-    ) external {
+    ) external returns (uint256[] memory tokenIds) {
         // TODO minter role
         require(
             accessRestriction.isMinter(_msgSender()),
@@ -220,12 +220,12 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
         );
 
         require(
-            _tokenUris.length == _amounts.length && _tokenUris.length == _creators.length, 
+            _tokenUris.length == _amounts.length, 
             "Minting parameters length mismatch"
         );
 
         // Check URI and creator
-        _validateIncomingMint(_tokenUris, _creators, _amounts);
+        _validateIncomingMint(_tokenUris, _creator, _amounts);
 
         // Check the token type and possible parent token before to save gas
         uint256 tokenTypeId = tokenTypeNameToId[_tokenTypeName];
@@ -240,8 +240,8 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
             _validateSelfComposability(tokenTypeId << 250);
         }
 
-        uint256 currentTokenId;
-        uint256[] memory tokenIds = new uint256[](_tokenUris.length);
+        uint256 currentTokenId; // iterator
+        tokenIds = new uint256[](_tokenUris.length);
 
         for (uint256 i; i < _tokenUris.length; i++) {
             currentTokenId = _generateTokenId(tokenTypeId, _tokenUris[i]);
@@ -249,7 +249,7 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
             // Check that the sender has the rights to create the token
             if (_exists(currentTokenId)) {
                 require(
-                    _creators[i] == tokenCreators[currentTokenId],
+                    _creator == tokenCreators[currentTokenId],
                     "Only the creator of the token may mint more"
                 );
             }
@@ -265,9 +265,9 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
                 // associate URI
                 tokenUris[currentTokenId] = _tokenUris[i];
                 //  associate creator
-                tokenCreators[currentTokenId] = _creators[i];
+                tokenCreators[currentTokenId] = _creator;
             }
-            
+
             // add to token id supply
             tokenSupply[currentTokenId] = tokenSupply[currentTokenId].add(_amounts[i]);
         }
@@ -317,35 +317,60 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
             uint256(keccak256(abi.encodePacked(_tokenUri))) >> 256 - TOKEN_TYPE_SHIFT;
     }
 
+    function _generateTokenIds(
+        uint256 _tokenType,
+        string[] memory _tokenUris
+    ) internal pure returns (uint256[] memory tokenIds) {
+        tokenIds = new uint256[](_tokenUris.length);
+
+        uint256 tokenTypeShifted = _tokenType << TOKEN_TYPE_SHIFT;
+        for (uint256 i; i < _tokenUris.length; i++) {
+            // |--TokenType(16)--||--Unique hash of token URI (240)--|
+            tokenIds[i] = tokenTypeShifted | 
+                uint256(keccak256(abi.encodePacked(_tokenUris[i]))) >> 256 - TOKEN_TYPE_SHIFT;
+        }
+    }
+
     /**
      * @dev onlyAdmin
      * TODO batch
      */
-    function createTokenType(
-        bytes32 _tokenTypeName
-    ) external onlyAdmin returns (uint256 tokenTypeId) {
-        require(
-            tokenTypeNameToId[_tokenTypeName] == 0, // the type does not exist
-            "Already a type"
-        );
+    function createTokenTypes(
+        bytes32[] memory _tokenTypeNames
+    ) external onlyAdmin returns (uint256[] memory tokenTypeIds) {
+        // iterator
+        bytes32 currentTokenTypeName;
+        tokenTypeIds = new uint256[](_tokenTypeNames.length);
 
-        // create the new Type
-        TokenType memory newType = TokenType({
-            tokenTypeName: _tokenTypeName, 
-            childTypesBitmap: 0
-        });
+        for (uint256 i; i < _tokenTypeNames.length; i++) {
 
-        // we are using 1 based indexing because all indexes are initialized to zero... easy existence check
-        tokenTypeCounter.increment();
-        tokenTypeId = tokenTypeCounter.current();
+            currentTokenTypeName = _tokenTypeNames[i];
+            require(
+                tokenTypeNameToId[currentTokenTypeName] == 0, // the type does not exist
+                "Already a type"
+            );
 
-        // avoid weird opcode errors... we shouldn't ever have this many anyway
-        require(tokenTypeId < 256, "Too many types");
+            // create the new Type
+            TokenType memory newType = TokenType({
+                tokenTypeName: currentTokenTypeName, 
+                childTypesBitmap: 0
+            });
 
-        tokenTypes[tokenTypeId] = newType;
-        tokenTypeNameToId[_tokenTypeName] = tokenTypeId;
+            // we are using 1 based indexing because all indexes are initialized to zero... easy existence check
+            tokenTypeCounter.increment();
+            uint256 tokenTypeId = tokenTypeCounter.current();
 
-        emit TokenTypeCreated(_tokenTypeName, tokenTypeId);
+            // avoid weird opcode errors... we shouldn't ever have this many anyway
+            require(tokenTypeId < 256, "Too many types");
+
+            tokenTypes[tokenTypeId] = newType;
+            tokenTypeNameToId[currentTokenTypeName] = tokenTypeId;
+            
+            // add to return array
+            tokenTypeIds[i] = tokenTypeId;
+        }
+        emit TokenTypesCreated(_tokenTypeNames, tokenTypeIds);
+
     }
 
     /** 
@@ -654,17 +679,17 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
     /**
      * @notice Checks that the URI is not empty and the artist is not the zero address
      * @param _tokenUris URIs supplied on minting
-     * @param _creators Addresses supplied on minting
+     * @param _creator Address supplied on minting
      * @param _amounts Amounts supplied on minting
      */
     function _validateIncomingMint(
         string[] memory _tokenUris, 
-        address[] memory _creators, 
+        address _creator, 
         uint256[] memory _amounts
     ) pure private {
         for (uint256 i; i < _tokenUris.length; i++) {
             require(bytes(_tokenUris[i]).length != 0, "Token URI is empty.");
-            require(_creators[i] != address(0), "Creator is zero address.");
+            require(_creator != address(0), "Creator is zero address.");
             require(_amounts[i] > 0, "Must have a mint amount greater than zero.");
         }
     }
