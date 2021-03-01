@@ -61,16 +61,17 @@ contract ComposableOrchestrator is Initializable, ContextUpgradeable, AccessRest
     /**
      * @notice Called by the minting of a parent with children. This is when each is new and a quantity of 1 is desired.
      * Ex: Artpiece minting, mint layers TO artpiece.
-     * @dev TokenTypes must exist.
+     * @dev New children -> new parent
      */
-    function mintChildrenToParent(
+    function mintChildrenAndParent(
         bytes32 _parentTokenTypeName,
         string memory _parentTokenUri,
         bytes32 _childTokenTypeName,
         string[] memory _childTokenUris,
         uint256[] memory _childTokenAmounts,
         address _creator
-    ) external returns (uint256[] memory childTokenIds) {
+    ) external returns (uint256, uint256[] memory) {
+        // TODO there is probably a better way to do this
         // create the parent Token
         uint256 parentTokenId = composableToken.mint(
             _creator, 
@@ -81,20 +82,85 @@ contract ComposableOrchestrator is Initializable, ContextUpgradeable, AccessRest
             '' // no data
         );
 
+        return (parentTokenId, this.mintChildrenToParent(
+            parentTokenId,
+            _childTokenTypeName, 
+            _childTokenUris, 
+            _childTokenAmounts, 
+            _creator
+        ));
+    }
+
+    /**
+     * Mint children tokens and associate them with the provided parent token.
+     * Note that all children must be owned by creator and have no other associations.
+     * @dev New children -> existing parent
+     */
+    function mintChildrenToParent(
+        uint256 _parentTokenId,
+        bytes32 _childTokenTypeName,
+        string[] memory _childTokenUris,
+        uint256[] memory _childTokenAmounts,
+        address _creator
+    ) external returns (uint256[] memory) {
         // mint the child tokens to the parent token
-        childTokenIds = composableToken.mintBatch(
+        return composableToken.mintBatch(
             address(composableToken), 
             _childTokenTypeName, 
             _childTokenUris, 
             _childTokenAmounts, 
             _creator, 
-            abi.encodePacked(parentTokenId)
+            abi.encodePacked(_parentTokenId)
         );
     }
-    
-    // function associateChildrenToParent(
-    //     uint256 _parentTokenId,
-    //     uint256[] _childTokenIds,
-    //     address _caller
-    // )
+
+    /**
+     * Mint a parent token and associate all provided children to it.
+     * Note that all children must be owned by creator and have no other associations.
+     * @dev Existing children -> new parent
+     */
+    function mintParentAndAssociateChildren(
+        bytes32 _parentTokenTypeName,
+        string memory _parentTokenUri,
+        uint256[] memory _childTokenIds,
+        uint256[] memory _childTokenAmounts,
+        address _creator
+    ) external returns (uint256 parentTokenId) {
+        parentTokenId = composableToken.mint(
+            _creator, 
+            _parentTokenTypeName, 
+            _parentTokenUri, 
+            1, 
+            _creator, 
+            '' // no data
+        );
+
+        this.associateChildrenToParent(
+            parentTokenId, 
+            _childTokenIds, 
+            _childTokenAmounts, 
+            _creator
+        );
+    }
+
+        
+    /** 
+     * @notice takes existing parent id, and existing child ids, and transfer children to parent.
+     * Note that all children must be owned by creator and have no other associations.
+     * @dev Existing children -> Existing parent
+     */
+    function associateChildrenToParent(
+        uint256 _parentTokenId,
+        uint256[] memory _childTokenIds,
+        uint256[] memory _childTokenAmounts,
+        address _creator
+    ) external {
+        composableToken.safeBatchTransferFrom(
+            _creator,
+            address(composableToken),
+            _childTokenIds,
+            _childTokenAmounts,
+            abi.encodePacked(_parentTokenId)
+        );
+    }
 }
