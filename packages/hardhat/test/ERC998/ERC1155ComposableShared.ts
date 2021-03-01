@@ -2,58 +2,15 @@ import { BigNumber, constants, utils, ContractFactory, ContractTransaction, Cont
 import { use, expect } from 'chai';
 import { ethers, upgrades } from "hardhat";
 import { solidity } from "ethereum-waffle";
+import * as testConsts from './constants';
 
 use(solidity);
 
-const TOKEN_URI = "TOKEN_URI";
-
-export function generateTokenId(tokenType: string, tokenUri: string, tokenCreator: string) {
-  // TODO notice that this does not deal with clashes....
-  
-  
-  console.log("FIRST: " + BigNumber.from(utils.solidityKeccak256(
-    ['bytes32'],
-    [utils.formatBytes32String(
-      utils.defaultAbiCoder.encode(
-      ['string'], 
-      [tokenType]
-    ))]
-  )));
-
-  console.log("SECOND: " + BigNumber.from(
-    utils.solidityKeccak256(
-      ['bytes32'],
-      [utils.defaultAbiCoder.encode(
-        ['address', 'string'], 
-        [tokenCreator, tokenUri]
-      )]
-    )
-  ).shr(16));
-  
-  return BigNumber.from(utils.solidityKeccak256(
-    ['bytes32'],
-    [utils.defaultAbiCoder.encode(
-      ['string'], 
-      [tokenType]
-    )]
-  )).or(
-    BigNumber.from(
-      utils.solidityKeccak256(
-        ['bytes32'],
-        [utils.defaultAbiCoder.encode(
-          ['address', 'string'], 
-          [tokenCreator, tokenUri]
-        )]
-      )
-    ).shr(16)
-  );
-
-}
-
 // Helper to parse the return of the mint function 
 // TODO this is hacky and there should be a way better way to do this.
-export async function getTokenIdFromMint(mintTx: ContractTransaction) {
-  return BigNumber.from((await mintTx.wait(1)).logs[0].data.substring(0, 66));
+export async function getTokenIdFromMint(mintTx: ContractTransaction, logIndex = 1) {
+  // log index is 1 because there is an approval event fired before mint events
+  return BigNumber.from((await mintTx.wait(1)).logs[logIndex].data.substring(0, 66));
 }
 
 export async function expectChildToBeTransferred(
@@ -115,6 +72,21 @@ export async function getTokenTypeFromId(
   return tokenId
     .and(await composableContract.TOKEN_TYPE_MASK())
     .shr(250);
+}
+
+export async function createTokenTypesAndGetIds(
+  composableContract: Contract,
+  tokenTypeNames: string[]
+) {
+  // create the types
+  await composableContract.createTokenTypes(tokenTypeNames);
+
+  // get the type ids from the contract to build the return array
+  let newTypes: Array<BigNumber> = [];
+  for (let i = 0; i < tokenTypeNames.length; i++) {
+    newTypes.push(await composableContract.tokenTypeNameToId(tokenTypeNames[i]));
+  }
+  return newTypes;
 }
 
 export function packTokenId(toTokenId: BigNumber) {
