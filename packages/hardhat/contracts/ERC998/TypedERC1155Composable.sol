@@ -82,7 +82,7 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
     mapping(address => mapping(uint256 => EnumerableSetUpgradeable.UintSet)) childToParentHolders;
 
     /// @dev store the type of the token in the upper 16 bits
-    uint256 public constant TOKEN_TYPE_SHIFT = 250;
+    uint256 public constant TOKEN_TYPE_SHIFT = 240;
     uint256 public constant TOKEN_TYPE_MASK = uint256(~0) << TOKEN_TYPE_SHIFT;
 
     event BaseUriUpdated(string _baseUri);
@@ -251,7 +251,7 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
         // check recipient token IFF exists within this typed composable
         if (_to == address(this)) {
             // we shift left because the type is the index, and so we only have to once
-            _validateSelfComposability(tokenTypeId << 250, _data);
+            _validateSelfComposability(tokenTypeId << TOKEN_TYPE_SHIFT, _data);
         }
 
         uint256 currentTokenId; // iterator
@@ -316,7 +316,10 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
         );
         uint256 recipientTokenId = _loadRecipientTokenId();
 
-        // console.log("recipient: %s", recipientTokenId);
+        require(
+            _exists(recipientTokenId),
+            "Recipient token does not exist"
+        );
 
         require(
             this.isAuthorizedChildType(recipientTokenId, _tokenTypeId),

@@ -539,11 +539,6 @@ describe("TypedERC1155Composable", async () => {
             artpieceTokenId
           );
 
-          console.log(layerTokenId);
-          console.log(childTokenId);
-          console.log(await composableToken.tokenType(layerTokenId));
-          console.log(await composableToken.tokenType(childTokenId));
-
           await testUtils.expectChildToBeTransferred(
             composableToken, artpieceTokenId, composableToken, childTokenId, creator.address
           );

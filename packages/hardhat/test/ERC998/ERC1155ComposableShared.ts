@@ -71,7 +71,7 @@ export async function getTokenTypeFromId(
 ) {
   return tokenId
     .and(await composableContract.TOKEN_TYPE_MASK())
-    .shr(250);
+    .shr(240);
 }
 
 export async function createTokenTypesAndGetIds(
@@ -90,5 +90,16 @@ export async function createTokenTypesAndGetIds(
 }
 
 export function packTokenId(toTokenId: BigNumber) {
-  return utils.solidityPack(['bytes'], [toTokenId]);
+  return utils.solidityPack(['uint256'], [toTokenId]);
 }
+
+// export async function mintToCreator(
+//   composableContract: Contract,
+//   tokenTypeName: string,
+//   tokenUri: string,
+//   amount = 1
+// ) {
+//   return await mintAndGetId(composableContract)
+// }
+
+
