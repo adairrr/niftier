@@ -174,8 +174,7 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
         // Check URI and creator
         _validateIncomingMint(
             _asSingletonStringArray(_tokenUri),
-            _creator,
-            _asSingletonUintArray(_amount)
+            _creator
         );
 
         // Check the token type and possible parent token before to save gas
@@ -191,11 +190,7 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
         if (_to == address(this)) {
             _validateSelfComposability(tokenId, _data);
             // set approval for creator because the token is going to another token
-            // TODO approvals
             approveAtMint(_creator, tokenId);
-        } else {
-            // the token is going to a person, so that person should have approval
-            approveAtMint(_to, tokenId);
         }
 
         // Check that the sender has the rights to create the token
@@ -239,7 +234,7 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
         );
 
         // Check URI and creator
-        _validateIncomingMint(_tokenUris, _creator, _amounts);
+        _validateIncomingMint(_tokenUris, _creator);
 
         // Check the token type and possible parent token before to save gas
         uint256 tokenTypeId = tokenTypeNameToId[_tokenTypeName];
@@ -248,8 +243,10 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
             "Token type does not exist"
         );
 
+        bool selfComposing = _to == address(this);
+
         // check recipient token IFF exists within this typed composable
-        if (_to == address(this)) {
+        if (selfComposing) {
             // we shift left because the type is the index, and so we only have to once
             _validateSelfComposability(tokenTypeId << TOKEN_TYPE_SHIFT, _data);
         }
@@ -257,7 +254,7 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
         uint256 currentTokenId; // iterator
         tokenIds = new uint256[](_tokenUris.length);
 
-        for (uint256 i; i < _tokenUris.length; i++) {
+        for (uint256 i; i < _tokenUris.length; ++i) {
             currentTokenId = _generateTokenId(tokenTypeId, _tokenUris[i]);
             
             // Check that the sender has the rights to create the token
@@ -268,10 +265,15 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
             tokenIds[i] = currentTokenId;
         }
 
+        if (selfComposing) {
+            // set approval for creator because the token is going to another token
+            approveAtBatchMint(_creator, tokenIds);
+        }
+
         // call super minting method
         _mintBatch(_to, tokenIds, _amounts, _data);
 
-        for (uint256 i; i < _tokenUris.length; i++) {
+        for (uint256 i; i < _tokenUris.length; ++i) {
             currentTokenId = tokenIds[i];
             if (!_exists(currentTokenId)) {
                 // associate URI
@@ -298,7 +300,7 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
         uint256 tokenTypeIdsBitmap;
 
         // create a bitmap of all the types passed in
-        for (uint256 i; i < _tokenTypeIds.length; i++) {
+        for (uint256 i; i < _tokenTypeIds.length; ++i) {
             currentTokenTypeId = (_tokenTypeIds[i] & TOKEN_TYPE_MASK) >> TOKEN_TYPE_SHIFT;
             tokenTypeIdsBitmap = tokenTypeIdsBitmap | (1 << currentTokenTypeId);
         }
@@ -333,7 +335,7 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
     ) internal pure returns (uint256 tokenId) {
         // |--TokenType(16)--||--Unique hash of token URI (240)--|
         tokenId = _tokenType << TOKEN_TYPE_SHIFT | 
-            uint256(keccak256(abi.encodePacked(_tokenUri))) >> 256 - TOKEN_TYPE_SHIFT;
+            uint256(keccak256(abi.encodePacked(_tokenUri, "SALTY_SALT"))) >> 256 - TOKEN_TYPE_SHIFT;
     }
 
     function _generateTokenIds(
@@ -343,10 +345,10 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
         tokenIds = new uint256[](_tokenUris.length);
 
         uint256 tokenTypeShifted = _tokenType << TOKEN_TYPE_SHIFT;
-        for (uint256 i; i < _tokenUris.length; i++) {
+        for (uint256 i; i < _tokenUris.length; ++i) {
             // |--TokenType(16)--||--Unique hash of token URI (240)--|
             tokenIds[i] = tokenTypeShifted | 
-                uint256(keccak256(abi.encodePacked(_tokenUris[i]))) >> 256 - TOKEN_TYPE_SHIFT;
+                uint256(keccak256(abi.encodePacked(_tokenUris[i], "SALTY_SALT"))) >> 256 - TOKEN_TYPE_SHIFT;
         }
     }
 
@@ -361,7 +363,7 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
         bytes32 currentTokenTypeName;
         tokenTypeIds = new uint256[](_tokenTypeNames.length);
 
-        for (uint256 i; i < _tokenTypeNames.length; i++) {
+        for (uint256 i; i < _tokenTypeNames.length; ++i) {
 
             currentTokenTypeName = _tokenTypeNames[i];
             require(
@@ -498,7 +500,7 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
 
         childTokens = new uint256[](parentToChildTokens[_tokenId][_childContract].length());
 
-        for (uint256 i; i < parentToChildTokens[_tokenId][_childContract].length(); i++) {
+        for (uint256 i; i < parentToChildTokens[_tokenId][_childContract].length(); ++i) {
             childTokens[i] = parentToChildTokens[_tokenId][_childContract].at(i);
         }
     }
@@ -519,7 +521,7 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
 
         parentTokens = new uint256[](childToParentHolders[_childContract][_childTokenId].length());
 
-        for (uint256 i; i < childToParentHolders[_childContract][_childTokenId].length(); i++) {
+        for (uint256 i; i < childToParentHolders[_childContract][_childTokenId].length(); ++i) {
             parentTokens[i] = childToParentHolders[_childContract][_childTokenId].at(i);
         }
     }
@@ -668,7 +670,7 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
         _validateRecipientToken(_recipientTokenId, _operator, _from);
 
         // Gas heavy...
-        for (uint256 i; i < _childTokenIds.length; i++) {
+        for (uint256 i; i < _childTokenIds.length; ++i) {
             _receiveChild(_recipientTokenId, _msgSender(), _childTokenIds[i], _amounts[i]);
         }
 
@@ -688,18 +690,15 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
     /**
      * @notice Checks that the URI is not empty and the artist is not the zero address
      * @param _tokenUris URIs supplied on minting
-     * @param _creator Address supplied on minting
-     * @param _amounts Amounts supplied on minting
+     * @param _creator Address supplied on minting for creator
      */
     function _validateIncomingMint(
         string[] memory _tokenUris, 
-        address _creator, 
-        uint256[] memory _amounts
+        address _creator
     ) pure private {
-        for (uint256 i; i < _tokenUris.length; i++) {
+        require(_creator != address(0), "Creator is zero address.");
+        for (uint256 i; i < _tokenUris.length; ++i) {
             require(bytes(_tokenUris[i]).length != 0, "Token URI is empty.");
-            require(_creator != address(0), "Creator is zero address.");
-            require(_amounts[i] > 0, "Must have a mint amount greater than zero.");
         }
     }
 
@@ -735,7 +734,8 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
             );
 
             // Ensure approved addresses cannot transfer child tokens.
-            require(_operator == _from, "Operator is not owner");
+            // however, base approvals should be able to... ex: orchestrator
+            require(_operator == _from || isApprovedForAll(_from, _operator), "Operator is not owner");
         }
     }
 
@@ -919,12 +919,19 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
     { 
         // from == 0 address implies a mint
         // if _to == 0, implies burn and so transfer approval to burn address should be fine... TODO should probably nuke approvals
-        if (_from != address(0) && !_to.isContract()) {
-            for (uint256 i; i < _ids.length; i++) {
-                transferApproval(_from, _to, _ids[i]);
+        if (!_to.isContract()) {
+            uint256 idCount = _ids.length;
+            
+            if (_from == address(0)) {
+                // this is a mint because address is zero
+                idCount == 1 ? approveAtMint(_to, _ids[0]) : approveAtBatchMint(_to, _ids);
+            } else {
+                // this is a between user transfer OR BURN TODO
+                for (uint256 i; i < idCount; ++i) {
+                    transferApproval(_from, _to, _ids[i]);
+                }
             }
         }
-
     }
 
     /**

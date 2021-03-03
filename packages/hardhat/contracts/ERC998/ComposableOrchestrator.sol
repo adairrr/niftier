@@ -13,6 +13,8 @@ import "../access/AccessRestriction.sol";
 import "../access/AccessRestrictable.sol";
 import "./TypedERC1155Composable.sol";
 
+import "hardhat/console.sol";
+
 contract ComposableOrchestrator is Initializable, ContextUpgradeable, AccessRestrictable {
 
     using SafeMathUpgradeable for uint256;
@@ -135,11 +137,35 @@ contract ComposableOrchestrator is Initializable, ContextUpgradeable, AccessRest
             '' // no data
         );
 
+        // console.log(_msgSender());
+
+        /*
+        // We could be doing this to preserve msg.sender, and use associateChildrenToParent, but can't because of upgrades
+        bytes memory data = abi.encodeWithSelector(
+        bytes4(keccak256("associateChildrenToParent(uint256, uint256[], uint256[], address)")),
+        parentTokenId, _childTokenIds, _childTokenAmounts, _creator
+        );
+        (bool success,) = address(this).delegatecall(data);
+        require(success);
+
+
+
+        // this below changes msg.sender to this contract
+        // TODO
         this.associateChildrenToParent(
             parentTokenId, 
             _childTokenIds, 
             _childTokenAmounts, 
             _creator
+        );
+         */
+
+        composableToken.safeBatchTransferFrom(
+            _creator,
+            address(composableToken),
+            _childTokenIds,
+            _childTokenAmounts,
+            abi.encodePacked(parentTokenId)
         );
     }
 
@@ -155,6 +181,7 @@ contract ComposableOrchestrator is Initializable, ContextUpgradeable, AccessRest
         uint256[] memory _childTokenAmounts,
         address _creator
     ) external {
+        console.log(_msgSender());
         composableToken.safeBatchTransferFrom(
             _creator,
             address(composableToken),

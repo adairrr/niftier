@@ -33,6 +33,8 @@ abstract contract Approvable is Initializable, ContextUpgradeable {
      */
     event Approval(address indexed operator, address indexed approved, uint256 indexed tokenId);
 
+    event BatchApproval(address indexed operator, address indexed approved, uint256[] tokenIds);
+
     event TransferApproval(address operator, address indexed fromApproved, address indexed toApproved, uint256 indexed tokenId);
 
     modifier _onlyApproved(uint256 _tokenId) {
@@ -43,13 +45,6 @@ abstract contract Approvable is Initializable, ContextUpgradeable {
         _;
     }
 
-    /** 
-     * @notice same as approve, just doesn't check for prior approvals
-     */
-    function approveAtMint(address _to, uint256 _tokenId) internal virtual {
-        _approve(_to, _tokenId);
-    }
-
     /**
      * @dev See {IERC721-approve}.
      */
@@ -57,7 +52,6 @@ abstract contract Approvable is Initializable, ContextUpgradeable {
         _approve(_to, _tokenId);
     }
 
-    
     function transferApproval(
         address _fromApproved, 
         address _toApproved, 
@@ -76,10 +70,31 @@ abstract contract Approvable is Initializable, ContextUpgradeable {
             approved[i] = tokenApprovals[_tokenId].at(i);
         }
     }
+    
+    /** 
+     * @notice same as approve, just doesn't check for prior approvals
+     */
+    function approveAtMint(address _to, uint256 _tokenId) internal virtual {
+        _approve(_to, _tokenId);
+    }
+
+    /** 
+     * @notice same as approve, just doesn't check for prior approvals
+     */
+    function approveAtBatchMint(address _to, uint256[] memory _tokenIds) internal virtual {
+        _approveBatch(_to, _tokenIds);
+    }
 
     function _approve(address _to, uint256 _tokenId) private {
         tokenApprovals[_tokenId].add(_to);
         emit Approval(_msgSender(), _to, _tokenId);
+    }
+
+    function _approveBatch(address _to, uint256[] memory _tokenIds) private {
+        for (uint256 i; i < _tokenIds.length; ++i) {
+            tokenApprovals[_tokenIds[i]].add(_to);
+        }
+        emit BatchApproval(_msgSender(), _to, _tokenIds);
     }
     
     function _transferApproval(address _fromApproved, address _toApproved, uint256 _tokenId) private {

@@ -779,8 +779,6 @@ describe("TypedERC1155Composable", async () => {
     });
 
     describe('safeTransferChildFrom', async () => {
-      // TODO this is completely broken :(
-
       it('should transfer the child of a token to another token', async () => {
         // transfer the layer token id from artpieceTokenId to otherArtpieceTokenId
         let transferTx = await composableToken.connect(creator).safeTransferChildFrom(
