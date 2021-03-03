@@ -3,6 +3,7 @@ import { use, expect } from 'chai';
 import { ethers, upgrades } from "hardhat";
 import { solidity } from "ethereum-waffle";
 import * as testConsts from './constants';
+import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-with-address';
 
 use(solidity);
 
@@ -184,6 +185,36 @@ export async function createTokenTypesAndGetIds(
 
 export function packTokenId(toTokenId: BigNumber) {
   return utils.solidityPack(['uint256'], [toTokenId]);
+}
+
+export function generateTokenUrisAndAmounts(howMany: number): [Array<string>, Array<number>] {
+  let childTokenUris = new Array<string>();
+  let childTokenAmounts = new Array<number>();
+
+  // create arrays for 5 layers
+  for (let i = 0; i < howMany; i++) {
+    childTokenUris.push(testConsts.TOKEN_URI.concat(i.toString()));
+    childTokenAmounts.push(1);
+  }
+  return [childTokenUris, childTokenAmounts];
+}
+
+export async function batchMintTokens(
+  composableToken: Contract,
+  creator: SignerWithAddress,
+  tokenUris: Array<string>,
+  tokenAmounts: Array<number>
+): Promise<BigNumber[]> {
+  let batchMintTx = await composableToken.mintBatch(
+    creator.address,
+    testConsts.LAYER_TYPE,
+    tokenUris,
+    tokenAmounts,
+    creator.address,
+    utils.toUtf8Bytes('')
+  );
+
+  return await getTokenIdsFromBatchMint(batchMintTx, tokenAmounts.length);
 }
 
 // export async function mintToCreator(

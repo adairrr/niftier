@@ -432,7 +432,7 @@ contract ERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Receiver
         address _operator, 
         address _from
     ) internal view {
-        require(_exists(_recipientTokenId), "Recipient token does not exist.");
+        require(_exists(_recipientTokenId), "Recipient token does not exist");
 
         // Require prior authorization to accept tokens 
         require(

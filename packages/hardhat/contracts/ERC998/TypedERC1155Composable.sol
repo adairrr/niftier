@@ -716,7 +716,7 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
         address _operator, 
         address _from
     ) internal view {
-        require(_exists(_recipientTokenId), "Recipient token does not exist.");
+        require(_exists(_recipientTokenId), "Recipient token does not exist");
 
         // Require prior authorization to accept tokens
         require(

@@ -82,12 +82,8 @@ describe("ComposableOrchestrator", async () => {
     it('should mint a parent token and child tokens to it, when child type is authorized', async () => {
       // create arrays for 5 layers
       let childTokenCount = 5;
-      let childTokenUris = new Array<string>();
-      let childTokenAmounts = new Array<number>();
-      for (let i = 0; i < childTokenCount; i++) {
-        childTokenUris.push(testConsts.TOKEN_URI.concat(i.toString()));
-        childTokenAmounts.push(1);
-      }
+      let [childTokenUris, childTokenAmounts] = testUtils.generateTokenUrisAndAmounts(childTokenCount);
+
 
       let parentChildTx = await orchestrator.mintChildrenAndParent(
         testConsts.ARTPIECE_TYPE,
@@ -172,14 +168,7 @@ describe("ComposableOrchestrator", async () => {
         creator.address
       );
 
-      childTokenUris = new Array<string>();
-      childTokenAmounts = new Array<number>();
-
-      // create arrays for 5 layers
-      for (let i = 0; i < childTokenCount; i++) {
-        childTokenUris.push(testConsts.TOKEN_URI.concat(i.toString()));
-        childTokenAmounts.push(1);
-      }
+      [childTokenUris, childTokenAmounts] = testUtils.generateTokenUrisAndAmounts(childTokenCount);
     });
 
     it('should mint new children to an existing parent', async () => {
@@ -199,11 +188,6 @@ describe("ComposableOrchestrator", async () => {
 
       // check that the children were associated
       expect(childTokenIds).to.have.lengthOf(childTokenCount);
-
-      console.log(deployer.address);
-      console.log(composableToken.address);
-      console.log(orchestrator.address);
-      console.log(creator.address);
       
       await expect(newChildrenToParentTx).to.emit(composableToken, "TransferBatch")
         .withArgs(
@@ -299,42 +283,26 @@ describe("ComposableOrchestrator", async () => {
     let childTokenCount = 5;
 
     beforeEach(async () => {
+      let childTokenUris: Array<string>;
 
-      let childTokenUris = new Array<string>();
-      childTokenAmounts = new Array<number>();
+      [childTokenUris, childTokenAmounts] = testUtils.generateTokenUrisAndAmounts(childTokenCount);
 
-      // create arrays for 5 layers
-      for (let i = 0; i < childTokenCount; i++) {
-        childTokenUris.push(testConsts.TOKEN_URI.concat(i.toString()));
-        childTokenAmounts.push(1);
-      }
-
-      let batchMintTx = await composableToken.mintBatch(
-        creator.address,
-        testConsts.LAYER_TYPE,
+      childTokenIds = await testUtils.batchMintTokens(
+        composableToken,
+        creator,
         childTokenUris,
-        childTokenAmounts,
-        creator.address,
-        utils.toUtf8Bytes('')
+        childTokenAmounts
       );
 
-      childTokenIds = await testUtils.getTokenIdsFromBatchMint(batchMintTx, childTokenCount);
+      // TODO the orchestrator should be able to build the meta transaction calls and the
+      // people calling it shouldn't have to have the minter role...FIX BELOW
+      // give approval to orchestrator to transfer tokens on behalf of creator
+      await composableToken.connect(creator).setApprovalForAll(orchestrator.address, true);
     });
 
     it('should associate existing children to a new parent', async () => {
-      // TODO the orchestrator should be able to build the meta transaction calls and the
-      // people calling it shouldn't have to have the minter role...
-
-      // give the creator minter role until fixed
-      // await accessRestriction.addMinter(creator.address);
-
-      // give approval to orchestrator
-      await composableToken.connect(creator).setApprovalForAll(orchestrator.address, true);
-      // console.log(orchestrator.address);
-      // console.log(composableToken.address);
-
       // call the function
-      let associateChildrenTx = await orchestrator.connect(creator).mintParentAndAssociateChildren(
+      let associateChildrenTx = await orchestrator.mintParentAndAssociateChildren(
         testConsts.ARTPIECE_TYPE,
         testConsts.TOKEN_URI.concat("unique"),
         childTokenIds,
@@ -349,60 +317,175 @@ describe("ComposableOrchestrator", async () => {
         childTokenIds,
         [newParentTokenId]
       );
-
-      // // check that the children were associated
-      // expect(childTokenIds).to.have.lengthOf(childTokenCount);
-
-      // console.log(deployer.address);
-      // console.log(composableToken.address);
-      // console.log(orchestrator.address);
-      // console.log(creator.address);
       
-      // await expect(newChildrenToParentTx).to.emit(composableToken, "TransferBatch")
-      //   .withArgs(
-      //     orchestrator.address, // caused the transaction
-      //     constants.AddressZero, // mint address
-      //     composableToken.address, // address of contract because internal transfer
-      //     childTokenIds,
-      //     childTokenAmounts
-      //   );      
+      await expect(associateChildrenTx).to.emit(composableToken, "TransferBatch")
+        .withArgs(
+          orchestrator.address, // caused the transaction
+          creator.address, // previous owner
+          composableToken.address, // address of contract because internal transfer
+          childTokenIds,
+          childTokenAmounts
+        );      
     });
     
     it('should throw if one of the children does not exist', async () => {
-      
+      // add a child token (and amount) that doesn't exist
+      childTokenIds.push(childTokenIds[0].add(1));
+      childTokenAmounts.push(1);
+
+      await expect(orchestrator.mintParentAndAssociateChildren(
+        testConsts.ARTPIECE_TYPE,
+        testConsts.TOKEN_URI.concat("unique"),
+        childTokenIds,
+        childTokenAmounts,
+        creator.address
+      )).to.be.revertedWith("ERC1155: insufficient balance for transfer");
+      // this message is meh but like whatever
+    });
+
+    it('should allow children with a different creator, however, owned by the creator', async () => {
+      let creatorOwnedChild = await testUtils.mintAndGetId(
+        composableToken,
+        creator.address, // mint *to* creator
+        testConsts.LAYER_TYPE,
+        testConsts.TOKEN_URI,
+        1,
+        randomSigner.address // other creator
+      );
+
+      childTokenIds.push(creatorOwnedChild);
+      childTokenAmounts.push(1);
+
+      orchestrator.mintParentAndAssociateChildren(
+        testConsts.ARTPIECE_TYPE,
+        testConsts.TOKEN_URI.concat("unique"),
+        childTokenIds,
+        childTokenAmounts,
+        creator.address
+      );
     });
     
     it('shouldn\'t allow children to be associated if not owned by creator', async () => {
-      
+      let unownedChild = await testUtils.mintAndGetId(
+        composableToken,
+        randomSigner.address, // mint *to* randomSigner
+        testConsts.LAYER_TYPE,
+        testConsts.TOKEN_URI,
+        1,
+        creator.address // actual creator, though not owner
+      );
+
+      childTokenIds.push(unownedChild);
+      childTokenAmounts.push(1);
+
+      await expect(orchestrator.mintParentAndAssociateChildren(
+        testConsts.ARTPIECE_TYPE,
+        testConsts.TOKEN_URI.concat("unique"),
+        childTokenIds,
+        childTokenAmounts,
+        creator.address
+      )).to.be.revertedWith("ERC1155: insufficient balance for transfer");
     });
 
     it('should throw if an amount of child tokens is greater than exists', async () => {
-      
+      childTokenAmounts[0] = 2;
+
+      await expect(orchestrator.mintParentAndAssociateChildren(
+        testConsts.ARTPIECE_TYPE,
+        testConsts.TOKEN_URI.concat("unique"),
+        childTokenIds,
+        childTokenAmounts,
+        creator.address
+      )).to.be.revertedWith("ERC1155: insufficient balance for transfer");
     });
   });
 
   describe('associateChildrenToParent', async () => {
     let parentTokenId: BigNumber;
+    let childTokenAmounts: Array<number>;
     let childTokenIds: Array<BigNumber>;
+    let childTokenCount = 5;
+
 
     beforeEach(async () => {
+      // mint a parent token to creator
+      parentTokenId = await testUtils.mintAndGetId(
+        composableToken,
+        creator.address,
+        testConsts.ARTPIECE_TYPE,
+        testConsts.TOKEN_URI,
+        1,
+        creator.address
+      );
 
+      let childTokenUris: Array<string>;
+
+      [childTokenUris, childTokenAmounts] = testUtils.generateTokenUrisAndAmounts(childTokenCount);
+
+      childTokenIds = await testUtils.batchMintTokens(
+        composableToken,
+        creator,
+        childTokenUris,
+        childTokenAmounts
+      );
+
+      // TODO the orchestrator should be able to build the meta transaction calls and the
+      // people calling it shouldn't have to have the minter role...FIX BELOW
+      // give approval to orchestrator to transfer tokens on behalf of creator
+      await composableToken.connect(creator).setApprovalForAll(orchestrator.address, true);
     });
 
-    it('', async () => {
-      
+    it('should associate existing children to existing parent', async () => {
+      await orchestrator.associateChildrenToParent(
+        parentTokenId,
+        childTokenIds,
+        childTokenAmounts,
+        creator.address
+      );
+
+      await testUtils.expectChildTokensToInclude(
+        composableToken,
+        parentTokenId,
+        childTokenIds
+      );
     });
     
-    it('', async () => {
-      
+    it('should throw if a child does not exist', async () => {
+      // add a child token (and amount) that doesn't exist
+      childTokenIds.push(childTokenIds[0].add(1));
+      childTokenAmounts.push(1);
+
+      await expect(orchestrator.associateChildrenToParent(
+        parentTokenId,
+        childTokenIds,
+        childTokenAmounts,
+        creator.address
+      )).to.be.revertedWith("ERC1155: insufficient balance for transfer");
     });
     
-    it('', async () => {
-      
+    it('should throw if the parent does not exist', async () => {
+      await expect(orchestrator.associateChildrenToParent(
+        parentTokenId.add(1), // doesn't exist
+        childTokenIds,
+        childTokenAmounts,
+        creator.address
+      )).to.be.revertedWith("Recipient token does not exist");
     });
 
-    it('', async () => {
-      
+    it('should not allow re-association (if already associated)', async () => {
+      await orchestrator.associateChildrenToParent(
+        parentTokenId,
+        childTokenIds,
+        childTokenAmounts,
+        creator.address
+      );
+
+      await expect(orchestrator.associateChildrenToParent(
+        parentTokenId,
+        childTokenIds,
+        childTokenAmounts,
+        creator.address
+      )).to.be.revertedWith("ERC1155: insufficient balance for transfer");
     });
   });
 });
