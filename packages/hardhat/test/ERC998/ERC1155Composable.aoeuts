@@ -1,0 +1,402 @@
+import { BigNumber, constants, utils, ContractFactory } from "ethers";
+import { ethers, upgrades } from "hardhat";
+import { use, expect } from 'chai';
+import { AccessRestriction, ERC1155Composable } from "../../typechain";
+import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-with-address';
+
+import { solidity } from "ethereum-waffle";
+
+use(solidity);
+
+describe("ERC1155Composable", async function () {
+
+  // contract instances
+  let accessRestriction: AccessRestriction;
+  let composableToken: ERC1155Composable;
+  let composableTokenAsUser: ERC1155Composable;
+
+  // signers
+  let deployer: SignerWithAddress;
+  let minter: SignerWithAddress;
+  let creator: SignerWithAddress;
+  let randomSigner: SignerWithAddress;
+  let accounts: SignerWithAddress[];
+
+  // constants
+  const BASE_URI = "BASE_URI";
+  const TOKEN_NAME = "TEST_COMPOSABLE";
+  const TOKEN_URI = "TOKEN_URI";
+  const TOKEN_ONE_ID = BigNumber.from(0);
+  const TOKEN_TWO_ID = BigNumber.from(1);
+
+  const AccessRestriction: ContractFactory = await ethers.getContractFactory("AccessRestriction");
+  const ERC1155Composable: ContractFactory = await ethers.getContractFactory("ERC1155Composable");
+
+  [deployer, minter, creator, randomSigner, ...accounts] = await ethers.getSigners();
+
+
+  beforeEach(async () => {
+    // get array of signers
+    // console.log(accounts);
+
+    // deploy accessRestriction
+    accessRestriction = await upgrades.deployProxy(
+      AccessRestriction,
+      [deployer.address],
+      {unsafeAllowCustomTypes: true}
+    ) as AccessRestriction;
+
+    // add minter role to minter
+    await accessRestriction.addMinter(minter.address);
+
+    // deploy erc1155Composable
+    composableToken = await upgrades.deployProxy(
+      ERC1155Composable,
+      [await accessRestriction.address, TOKEN_NAME, BASE_URI],
+      {unsafeAllowCustomTypes: true}
+    ) as ERC1155Composable;
+
+    // have an instance of this token with a random account as caller
+    composableTokenAsUser = composableToken.connect(randomSigner);
+  });
+
+  describe('Initialization', async () => {
+    it('should set all the defaults properly', async function () {
+      expect(await composableToken.baseUri()).to.equal(BASE_URI);
+      expect(await composableToken.name()).to.equal(TOKEN_NAME);
+    });
+
+    it("should reject any ether transfers", async function () {
+      await expect(accounts[0].sendTransaction({ to: composableToken.address, value: 1 })).to.be.reverted;
+    });
+  });
+
+  describe('Upgrades', () => {
+    it('should be upgradeable', () => {
+      
+    });
+  });
+
+  describe('Admin methods', async () => {
+    let accountWithToken;
+
+    // Mint a token so that we can query it
+    beforeEach(async () => {
+      accountWithToken = await accounts[0].address;
+      await composableToken.mint(accountWithToken, TOKEN_URI, 1, creator.address, utils.id(''));
+    });
+
+    describe('setBaseUri', async () => {
+      it('should update the base uri', async () => {
+        const newBaseUri = "NEW_BASE_URI//";
+        const expectedNewUri = newBaseUri + TOKEN_URI;
+
+        // set the new base uri
+        await expect(composableToken.setBaseUri(newBaseUri))
+          .to.emit(composableToken, "BaseUriUpdated")
+          .withArgs(newBaseUri);
+
+        // ensure that the base uri was changed
+        expect(await composableToken.baseUri()).to.equal(newBaseUri);
+
+        // ensure that the uri was set for tokens as well
+        expect(await composableToken.uri(TOKEN_ONE_ID))
+          .to.equal(expectedNewUri);
+      });
+
+      it('should not be callable non-admins', async () => {
+        await expect(composableTokenAsUser.setBaseUri("YEET")).to.be.reverted;
+      });
+    });
+
+    describe('setName', async () => {
+      it('should update the token name', async () => {
+        const newName = "NEW_NAME_HERE";
+      
+        // set the new name
+        await expect(composableToken.setName(newName))
+          .to.emit(composableToken, "TokenNameUpdated")
+          .withArgs(newName);
+
+        // ensure that the name was changed
+        expect(await composableToken.name()).to.equal(newName);
+      });
+
+      it('should not be callable non-admins', async () => {
+        await expect(composableTokenAsUser.setName("PORRIDGE")).to.be.reverted;
+      });
+    });
+
+    describe('updateTokenUri', async () => {
+      it('should update a token\'s uri', async () => {
+        const newTokenUri = "newTokenUri";
+        const expectedFullTokenUri = BASE_URI + newTokenUri;
+
+        // set the token's new uri 
+        await expect(composableToken.updateTokenUri(TOKEN_ONE_ID, newTokenUri))
+          .to.emit(composableToken, "UriUpdated")
+          .withArgs(TOKEN_ONE_ID, newTokenUri);
+
+        console.log(await composableToken.tokenUris(TOKEN_ONE_ID));
+
+        // ensure that the new token uri was changed
+        expect(await composableToken.tokenUris(TOKEN_ONE_ID)).to.equal(newTokenUri);
+
+        // ensure that the new uri is concatanated 
+        expect(await composableToken.uri(TOKEN_ONE_ID))
+          .to.equal(expectedFullTokenUri);
+      });
+
+      it('should not be callable non-admins', async () => {
+        await expect(composableTokenAsUser.updateTokenUri(TOKEN_ONE_ID, "MUSK"))
+          .to.be.reverted;
+      });
+    });
+
+    describe('updateAccessRestriction', async () => {
+      it('should update the access restriction', async () => {
+        const exAccessRestriction = await composableTokenAsUser.accessRestriction();
+    
+        // deploy a new accessRestriction
+        const newAccessRestriction = await upgrades.deployProxy(
+          AccessRestriction,
+          [deployer.address],
+          {unsafeAllowCustomTypes: true}
+        ) as AccessRestriction;
+
+        // update
+        await composableToken.updateAccessRestriction(newAccessRestriction.address);
+
+        // compare
+        expect(await composableToken.accessRestriction()).to.equal(newAccessRestriction.address);
+        expect(await composableToken.accessRestriction()).to.not.equal(exAccessRestriction);
+      });
+
+      it('should disallow addresses that are not of the accessControls instance', async () => {
+        // this will fail on the method call 'isAccessRestriction'
+        await expect(composableToken.updateAccessRestriction(composableToken.address))
+          .to.be.reverted;
+      });
+
+      it('should not be callable by non-admins', async () => {
+        await expect(composableTokenAsUser.updateAccessRestriction(minter.address)).to.be.reverted;
+      });
+    });
+
+    describe('authorizeChildContract', async () => {
+      it('should add an authorized child contract', async () => {
+        const accessRestrictionAddress = await composableTokenAsUser.accessRestriction();
+    
+        // deploy a new ERC1155Composable
+        const newComposable = await upgrades.deployProxy(
+          ERC1155Composable,
+          [accessRestrictionAddress, TOKEN_NAME, BASE_URI],
+          {unsafeAllowCustomTypes: true}
+        ) as ERC1155Composable;
+
+        // check that the contract was not previously authorized
+        expect(await composableToken.isAuthorizedChildContract(newComposable.address)).false;
+
+        // add to authorized child contracts
+        await composableToken.authorizeChildContract(newComposable.address);
+
+        // compare
+        expect(await composableToken.isAuthorizedChildContract(newComposable.address)).true;
+
+      });
+
+      it('should disallow addresses that are not ERC1155 contracts', async () => {
+        // TODO check with non-upgradeable ERC1155 contracts
+        await expect(composableToken.authorizeChildContract(accessRestriction.address))
+          .to.be.reverted;
+      });
+
+      it('should not be callable by non-admins', async () => {
+        // using deployer address because it will fail on admin check first
+        await expect(composableTokenAsUser.authorizeChildContract(deployer.address))
+          .to.be.revertedWith("AccessRestrictable.onlyAdmin: Sender must have admin role.")
+      });
+    });
+  });
+  
+  describe('Composability', async () => {
+    let childComposableToken: ERC1155Composable;
+    
+    beforeEach(async () => {
+      // mint a token in the parent contract
+      await composableToken.mint(creator.address, TOKEN_URI, 1, creator.address, utils.id(''));
+
+      // deploy another ERC1155Composable contract
+      childComposableToken = await upgrades.deployProxy(
+        ERC1155Composable,
+        [accessRestriction.address, TOKEN_NAME, BASE_URI],
+        {unsafeAllowCustomTypes: true}
+      ) as ERC1155Composable;
+    });
+
+    describe('Authorized child contracts', async () => {
+      it('should allow receiving of authorized ERC1155 tokens (in this case: by the same creator)', async () => {
+        const childTokenId = BigNumber.from(0);
+        // authorize the composableToken to have the childComposableToken
+        await composableToken.authorizeChildContract(childComposableToken.address);
+        
+        // mint a token in the child contract
+        await childComposableToken.mint(creator.address, TOKEN_URI, 1, creator.address, utils.id(''));
+
+        // send from childContract to composableContract
+        await childComposableToken.connect(creator).safeTransferFrom(
+          creator.address,
+          composableToken.address,
+          childTokenId,
+          1,
+          ethers.utils.solidityPack(['uint256'], [TOKEN_ONE_ID])
+        );
+
+        // check the main token's balance was updated 
+        expect(await composableToken.childBalance(TOKEN_ONE_ID, childComposableToken.address, childTokenId))
+          .to.equal(1);
+
+        // check that the childTokensOf method also returns the correct value
+        expect(await composableToken.childTokensOf(TOKEN_ONE_ID, childComposableToken.address))
+          .to.deep.include.keys([childTokenId]);
+
+        // check that the creator no longer has the child token
+        expect(await childComposableToken.balanceOf(creator.address, TOKEN_ONE_ID))
+          .to.equal(0);
+
+        // check that the parent token is listed for the parent tokens of the child token
+        expect(await composableToken.parentTokensOf(childComposableToken.address, childTokenId))
+          .to.deep.include.keys([TOKEN_ONE_ID]);
+      });
+
+      it('should allow minting of authorized ERC1155 tokens directly to a token', async () => {
+        const childTokenId = BigNumber.from(0);
+
+        // authorize the composableToken to have the childComposableToken
+        await composableToken.authorizeChildContract(childComposableToken.address);
+        
+        // mint a token in the child contract TO the parent contract
+        await expect(childComposableToken.mint(
+          composableToken.address, 
+          TOKEN_URI,
+          1,
+          creator.address,
+          ethers.utils.solidityPack(['uint256'], [TOKEN_ONE_ID]))
+        ).to.not.be.reverted;
+
+        // check the main token's balance was updated 
+        expect(await composableToken.childBalance(TOKEN_ONE_ID, childComposableToken.address, childTokenId))
+          .to.equal(1);
+
+        // check that the parent contract now "owns" the token
+        expect(await childComposableToken.balanceOf(composableToken.address, TOKEN_ONE_ID))
+          .to.equal(1);
+
+        // check that the childTokensOf method also returns the correct value
+        expect(await composableToken.childTokensOf(TOKEN_ONE_ID, childComposableToken.address))
+          .to.deep.include.keys([childTokenId]);
+
+        // check that the parent token is listed for the parent tokens of the child token
+        expect(await composableToken.parentTokensOf(childComposableToken.address, childTokenId))
+          .to.deep.include.keys([TOKEN_ONE_ID]);
+      });
+
+      it('should allow transfer of child tokens to a new owner', async () => {
+        const childTokenId = BigNumber.from(0);
+        // authorize the composableToken to have the childComposableToken
+        await composableToken.authorizeChildContract(childComposableToken.address);
+        
+        // mint a token in the child contract
+        await childComposableToken.mint(creator.address, TOKEN_URI, 1, creator.address, utils.id(''));
+
+        // send from childContract to composableContract
+        await childComposableToken.connect(creator).safeTransferFrom(
+          creator.address,
+          composableToken.address,
+          childTokenId,
+          1,
+          ethers.utils.solidityPack(['uint256'], [TOKEN_ONE_ID])
+        );
+
+        await expect(composableToken.safeTransferChildFrom(
+          TOKEN_ONE_ID,
+          randomSigner.address,
+          childComposableToken.address,
+          childTokenId,
+          1,
+          utils.id('')
+        )).to.emit(composableToken, "TransferChildToken")
+          .withArgs(TOKEN_ONE_ID, randomSigner.address, childComposableToken.address, childTokenId, 1);
+          
+      });
+
+      it('should allow transfer of child tokens to a new token', async () => {
+        
+      });
+    });
+
+    describe('Unuthorized child contracts', async () => {
+      it('should revert when child contract is unauthorized', async () => {      
+        // mint a token in the child contract TO the parent contract
+        await expect(childComposableToken.mint(
+          composableToken.address, 
+          TOKEN_URI,
+          1,
+          creator.address,
+          ethers.utils.solidityPack(['bytes'], [TOKEN_ONE_ID]))
+        ).to.be.revertedWith("");
+      });
+    });
+  });
+
+  describe('Minting', async () => {
+    describe('Success', async () => {
+      it('should mint properly as admin and return token 0', async () => {
+        const tokenAmount = 20;
+        
+        await expect(composableToken.mint(minter.address, TOKEN_URI, tokenAmount, creator.address, utils.id('')))
+          .to.not.be.reverted;
+
+        // check amount minted
+        expect(await composableToken.tokenSupply(TOKEN_ONE_ID))
+          .to.equal(BigNumber.from(tokenAmount));
+
+        // check uri
+        expect(await composableToken.uri(TOKEN_ONE_ID))
+          .to.equal(BASE_URI + TOKEN_URI);
+
+        // TODO check creators
+        
+
+      });
+    });
+    describe('Reversion', () => {
+      it('should only allow minter to mint', async () => {
+        await expect(composableTokenAsUser.mint(minter.address, TOKEN_URI, 1, creator.address, utils.id('')))
+          .to.be.reverted;
+      });
+
+      it('should not allow minting to the zero address', async () => {
+        await expect(
+          composableToken.mint(ethers.constants.AddressZero, TOKEN_URI, 1, creator.address, utils.id(''))
+        ).to.be.reverted;
+      });
+
+      it('should not allow the creator to be the zero address', async () => {
+        await expect(
+          composableToken.mint(minter.address, TOKEN_URI, 1, ethers.constants.AddressZero, utils.id(''))
+        ).to.be.revertedWith('ERC1155Composable._validateIncomingMint: Artist is zero address.');
+      });
+
+      it('should not allow the uri to be empty', async () => {
+        await expect(
+          composableToken.mint(minter.address, '', 1, creator.address, utils.id(''))
+        ).to.be.revertedWith('ERC1155Composable._validateIncomingMint: Token URI is empty.');
+      });
+    });
+  });
+
+  describe('Transactions', () => {
+
+  });
+});

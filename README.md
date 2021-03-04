@@ -1,3 +1,10 @@
+# NFT Canvas
+
+[![CircleCI](https://circleci.com/gh/adairrr/nft_canvas.svg?style=svg&circle-token=9d39105416c911725ecbf2098a2999f4e796d52c)](<LINK>)
+
+[![Coverage Status](https://coveralls.io/repos/github/adairrr/nft_canvas/badge.svg?branch=feature/ERC1155Composable&t=ipyeEW)](https://coveralls.io/github/adairrr/nft_canvas?branch=feature/ERC1155Composable)
+
+
 # 🏗 scaffold-eth
 
 > is everything you need to get started building decentralized applications powered by Ethereum

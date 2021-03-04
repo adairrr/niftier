@@ -11,6 +11,7 @@ packages/hardhat/artifacts
 packages/hardhat/deployments
 packages/react-app/src/contracts
 packages/hardhat/cache
+packages/hardhat/typechain
 
 docker/**/data
 
@@ -24,6 +25,8 @@ tenderly.yaml
 
 # testing
 coverage
+packages/hardhat/coverage.json
+packages/hardhat/test-results
 
 # production
 build
@@ -38,3 +41,4 @@ yarn-debug.log*
 yarn-error.log*
 
 .idea
+.vscode

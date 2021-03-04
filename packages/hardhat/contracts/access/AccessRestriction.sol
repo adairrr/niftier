@@ -15,13 +15,12 @@ import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol"
        accessRestriction = candidateContract;
  */
 contract AccessRestriction is AccessControlUpgradeable {
-    // -------------------------------------------------------
-    // Role definitions
+
     bytes32 public constant ARTIST_ROLE = keccak256("ARTIST_ROLE");
     bytes32 public constant ARTPIECE_FACTORY_ROLE = keccak256("ARTPIECE_FACTORY_ROLE");
     bytes32 public constant LAYER_FACTORY_ROLE = keccak256("LAYER_FACTORY_ROLE");
     // bytes32 public constant LAYER_FACTORY_ROLE = keccak256("LAYER_FACTORY_ROLE");
-    // bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
 
     /// @dev sanity check to ensure that the correct contract is pointed to
@@ -34,11 +33,13 @@ contract AccessRestriction is AccessControlUpgradeable {
 
         if (hasRole(DEFAULT_ADMIN_ROLE, _deployer) == false) {
             _setupRole(DEFAULT_ADMIN_ROLE, _deployer);
+            _setupRole(MINTER_ROLE, _deployer);
         }
     }
 
-    // -------------------------------------------------------
-    // Role definitions
+    // ----------------------------------------------------------------------------
+    // modifiers
+    // ----------------------------------------------------------------------------
 
     modifier onlyAdmin() {
         require(isAdmin(msg.sender), "Caller is not admin");
@@ -55,6 +56,10 @@ contract AccessRestriction is AccessControlUpgradeable {
         _;
     }
 
+    // ----------------------------------------------------------------------------
+    // functions
+    // ----------------------------------------------------------------------------
+
     /**
      * @notice Check if the address is an admin
      * @param _address contract/EOA to check
@@ -62,6 +67,18 @@ contract AccessRestriction is AccessControlUpgradeable {
      */
     function isAdmin(address _address) public view returns (bool) {
         return hasRole(DEFAULT_ADMIN_ROLE, _address);
+    }
+
+    function isMinter(address _address) public view returns (bool) {
+        return hasRole(MINTER_ROLE, _address);
+    }
+
+    /**
+     * @notice Assigns _address to the minter role.
+     * @dev onlyAdmin
+     */
+    function addMinter(address _address) external {
+        grantRole(MINTER_ROLE, _address);
     }
 
     function isArtpieceFactory(address _address) public view returns (bool) {
