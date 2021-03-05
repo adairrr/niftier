@@ -5,6 +5,7 @@ import { config, ethers, upgrades, tenderly, run } from "hardhat";
 import { HardhatRuntimeEnvironment } from"hardhat/types";
 import { utils, Contract } from "ethers";
 import R from "ramda";
+import { AccessRestriction, TypedERC1155Composable, ComposableOrchestrator } from "../typechain";
 
 async function main() {
 
@@ -24,19 +25,45 @@ async function main() {
   const accessRestriction = await deploy(
     "AccessRestriction",
     [deployer.address]
-  );
+  ) as AccessRestriction;
 
   // deploy the composable token contract
   const composableContract = await deploy(
     "TypedERC1155Composable",
     [accessRestriction.address, composableTokenName, ipfsBaseUri]
+  ) as TypedERC1155Composable;
+
+  const composableTypes = [
+    utils.formatBytes32String("ARTPIECE_TYPE"),
+    utils.formatBytes32String("LAYER_TYPE"),
+    utils.formatBytes32String("CONTROLLER_TYPE")
+  ];
+
+  // add the artpiece and layer types
+  await composableContract.createTokenTypes(composableTypes);
+
+  // get the token Type Ids
+  let tokenTypeIds = composableTypes.map(async tokenType => {
+    return (await composableContract.tokenTypeNameToId(tokenType)).shl(240);
+  });
+
+  // allow artpieces to hold layers 
+  await composableContract.authorizeChildType(
+    await tokenTypeIds[0],
+    await tokenTypeIds[1],
+  );
+
+  // allow layers to hold controllers
+  await composableContract.authorizeChildType(
+    await tokenTypeIds[1],
+    await tokenTypeIds[2],
   );
 
   // deploy the orchestrator
   const orchestrator = await deploy(
     "ComposableOrchestrator",
     [accessRestriction.address, composableContract.address]
-  );
+  ) as ComposableOrchestrator;
 
   // TODO add orchestrator role
   await accessRestriction.addMinter(orchestrator.address);

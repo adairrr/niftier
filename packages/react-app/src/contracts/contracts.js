@@ -1,1 +1,1 @@
-module.exports = ["ERC998/ComposableOrchestrator","ERC998/TypedERC1155Composable","YourContract","access/AccessRestriction"];
+module.exports = ["ComposableOrchestrator","TypedERC1155Composable","YourContract","AccessRestriction"];

@@ -5,29 +5,32 @@ const hre = require("hardhat");
 const publishDir = "../react-app/src/contracts";
 const graphDir = "../subgraph"
 
-function publishContract(contractName) {
-  let contractNameNoDir;
-  if (contractName.lastIndexOf('/') !== -1) {
-    contractNameNoDir = contractName.substr(contractName.lastIndexOf('/') + 1);
+function publishContract(contractNameWithDir) {
+  let contractName;
+  let contractSubdir = '';
+  if (contractNameWithDir.lastIndexOf('/') !== -1) {
+    contractName = contractNameWithDir.substr(contractNameWithDir.lastIndexOf('/') + 1);
+    contractSubdir = contractNameWithDir.substr(0, contractNameWithDir.lastIndexOf('/') + 1);
+    console.log(contractSubdir);
   } else {
-    contractNameNoDir = contractName;
+    contractName = contractNameWithDir;
   }
 
   try {
-    fs.readFileSync(`${hre.config.paths.artifacts}/${contractNameNoDir}.address`);
+    fs.readFileSync(`${hre.config.paths.artifacts}/${contractName}.address`);
   } catch (error) {
-    console.log(chalk.gray(` Skipping ${contractName} because it isn't deployed.`));
+    console.log(chalk.gray(` Skipping ${contractNameWithDir} because it isn't deployed.`));
     return false;
   }
 
-  // console.log(` 💽 Publishing ${chalk.cyan(contractName)} to ${chalk.gray(publishDir)}`);
+  // console.log(` 💽 Publishing ${chalk.cyan(contractNameWithDir)} to ${chalk.gray(publishDir)}`);
   try {
     let contract = fs
-      .readFileSync(`${hre.config.paths.artifacts}/contracts/${contractName}.sol/${contractNameNoDir}.json`)
+      .readFileSync(`${hre.config.paths.artifacts}/contracts/${contractNameWithDir}.sol/${contractName}.json`)
       .toString();
     
     const address = fs
-      .readFileSync(`${hre.config.paths.artifacts}/${contractNameNoDir}.address`)
+      .readFileSync(`${hre.config.paths.artifacts}/${contractName}.address`)
       .toString();
     
     contract = JSON.parse(contract);
@@ -47,17 +50,22 @@ function publishContract(contractName) {
     }
 
     graphConfig = JSON.parse(graphConfig)
-    graphConfig[contractNameNoDir + "Address"] = address
+    graphConfig[contractName + "Address"] = address
+
+    // create the subdir
+    // if (!fs.existsSync(`${publishDir}/${contractSubdir}`)) {
+    //   fs.mkdirSync(`${publishDir}/${contractSubdir}`);
+    // }
     fs.writeFileSync(
-      `${publishDir}/${contractNameNoDir}.address.js`,
+      `${publishDir}/${contractName}.address.js`,
       `module.exports = "${address}";`
     );
     fs.writeFileSync(
-      `${publishDir}/${contractNameNoDir}.abi.js`,
+      `${publishDir}/${contractName}.abi.js`,
       `module.exports = ${JSON.stringify(contract.abi, null, 2)};`
     );
     fs.writeFileSync(
-      `${publishDir}/${contractNameNoDir}.bytecode.js`,
+      `${publishDir}/${contractName}.bytecode.js`,
       `module.exports = "${contract.bytecode}";`
     );
 
@@ -69,12 +77,13 @@ function publishContract(contractName) {
       graphConfigPath,
       JSON.stringify(graphConfig, null, 2)
     );
+    // TODO this may need to be 'dirred'
     fs.writeFileSync(
-      `${graphDir}/abis/${contractNameNoDir}.json`,
+      `${graphDir}/abis/${contractName}.json`,
       JSON.stringify(contract.abi, null, 2)
     );
 
-    console.log(chalk.green(` 📠 Published ${contractName} to the frontend.`));
+    console.log(chalk.green(` 📠 Published ${contractName} to the frontend (${chalk.gray(publishDir)}).`));
 
     return true;
   } catch (e) {
@@ -103,9 +112,6 @@ function getAllSolFiles(dirPath, solFileList, origLen = 0) {
       } else {
         solFileList.push(dirPath.substr(origLen) + '/' + file.replace(".sol", ""));
       }
-      // console.log(dirPath);
-      // console.log(dirPath.substr(origLen === 0 ? dirPath.length : origLen).concat(file.replace(".sol", "")));
-      // solFileList.push(dirPath.substr(origLen === 0 ? dirPath.length : origLen).concat(file.replace(".sol", "")));
     } 
   });
   return solFileList;
@@ -124,7 +130,9 @@ async function main() {
   
   fs.writeFileSync(
     `${publishDir}/contracts.js`,
-    `module.exports = ${JSON.stringify(publishedContractList)};`
+    `module.exports = ${JSON.stringify(
+      publishedContractList.map(contract => contract.substr(contract.lastIndexOf('/') + 1))
+    )};`
   );
 }
 main()

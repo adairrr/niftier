@@ -55,8 +55,6 @@ describe("TypedERC1155Composable", async () => {
     // add a single artpiece type
     await composableToken.createTokenTypes([testConsts.ARTPIECE_TYPE]);
 
-    // console.log(await testtx.wait(1));
-
     // have an instance of this token with a random account as caller
     composableTokenAsUser = composableToken.connect(randomSigner);
   });
