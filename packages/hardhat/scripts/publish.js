@@ -1,25 +1,37 @@
 const fs = require("fs");
 const chalk = require("chalk");
-const bre = require("hardhat");
+const hre = require("hardhat");
 
 const publishDir = "../react-app/src/contracts";
 const graphDir = "../subgraph"
 
 function publishContract(contractName) {
-  console.log(
-    " 💽 Publishing",
-    chalk.cyan(contractName),
-    "to",
-    chalk.gray(publishDir)
-  );
+  let contractNameNoDir;
+  if (contractName.lastIndexOf('/') !== -1) {
+    contractNameNoDir = contractName.substr(contractName.lastIndexOf('/') + 1);
+  } else {
+    contractNameNoDir = contractName;
+  }
+
+  try {
+    fs.readFileSync(`${hre.config.paths.artifacts}/${contractNameNoDir}.address`);
+  } catch (error) {
+    console.log(chalk.gray(` Skipping ${contractName} because it isn't deployed.`));
+    return false;
+  }
+
+  // console.log(` 💽 Publishing ${chalk.cyan(contractName)} to ${chalk.gray(publishDir)}`);
   try {
     let contract = fs
-      .readFileSync(`${bre.config.paths.artifacts}/contracts/${contractName}.sol/${contractName}.json`)
+      .readFileSync(`${hre.config.paths.artifacts}/contracts/${contractName}.sol/${contractNameNoDir}.json`)
       .toString();
+    
     const address = fs
-      .readFileSync(`${bre.config.paths.artifacts}/${contractName}.address`)
+      .readFileSync(`${hre.config.paths.artifacts}/${contractNameNoDir}.address`)
       .toString();
+    
     contract = JSON.parse(contract);
+    
     let graphConfigPath = `${graphDir}/config/config.json`
     let graphConfig
     try {
@@ -30,22 +42,22 @@ function publishContract(contractName) {
       } else {
         graphConfig = '{}'
       }
-      } catch (e) {
-        console.log(e)
-      }
+    } catch (e) {
+      console.log(e)
+    }
 
     graphConfig = JSON.parse(graphConfig)
-    graphConfig[contractName + "Address"] = address
+    graphConfig[contractNameNoDir + "Address"] = address
     fs.writeFileSync(
-      `${publishDir}/${contractName}.address.js`,
+      `${publishDir}/${contractNameNoDir}.address.js`,
       `module.exports = "${address}";`
     );
     fs.writeFileSync(
-      `${publishDir}/${contractName}.abi.js`,
+      `${publishDir}/${contractNameNoDir}.abi.js`,
       `module.exports = ${JSON.stringify(contract.abi, null, 2)};`
     );
     fs.writeFileSync(
-      `${publishDir}/${contractName}.bytecode.js`,
+      `${publishDir}/${contractNameNoDir}.bytecode.js`,
       `module.exports = "${contract.bytecode}";`
     );
 
@@ -58,40 +70,61 @@ function publishContract(contractName) {
       JSON.stringify(graphConfig, null, 2)
     );
     fs.writeFileSync(
-      `${graphDir}/abis/${contractName}.json`,
+      `${graphDir}/abis/${contractNameNoDir}.json`,
       JSON.stringify(contract.abi, null, 2)
     );
 
-    console.log(" 📠 Published "+chalk.green(contractName)+" to the frontend.")
+    console.log(chalk.green(` 📠 Published ${contractName} to the frontend.`));
 
     return true;
   } catch (e) {
-    if(e.toString().indexOf("no such file or directory")>=0){
-      console.log(chalk.yellow(" ⚠️  Can't publish "+contractName+" yet (make sure it getting deployed)."))
-    }else{
+    if (e.toString().indexOf("no such file or directory") >= 0) {
+      console.log(chalk.yellow(` ⚠️  Can't publish ${contractName} yet (make sure it getting deployed).`))
+    } else {
       console.log(e);
       return false;
     }
   }
 }
 
+function getAllSolFiles(dirPath, solFileList, origLen = 0) {
+  solFileList = solFileList || [];
+
+  fs.readdirSync(dirPath).forEach((file) => {
+    if (fs.statSync(dirPath + "/" + file).isDirectory()) {
+      solFileList = getAllSolFiles(
+        dirPath + "/" + file, 
+        solFileList, 
+        origLen === 0 ? dirPath.length + 1 : origLen
+      );
+    } else if (file.indexOf(".sol") >= 0) {
+      if (origLen === 0) {
+        solFileList.push(file.replace(".sol", ""));
+      } else {
+        solFileList.push(dirPath.substr(origLen) + '/' + file.replace(".sol", ""));
+      }
+      // console.log(dirPath);
+      // console.log(dirPath.substr(origLen === 0 ? dirPath.length : origLen).concat(file.replace(".sol", "")));
+      // solFileList.push(dirPath.substr(origLen === 0 ? dirPath.length : origLen).concat(file.replace(".sol", "")));
+    } 
+  });
+  return solFileList;
+}
+
 async function main() {
   if (!fs.existsSync(publishDir)) {
     fs.mkdirSync(publishDir);
   }
-  const finalContractList = [];
-  fs.readdirSync(bre.config.paths.sources).forEach((file) => {
-    if (file.indexOf(".sol") >= 0) {
-      const contractName = file.replace(".sol", "");
-      // Add contract to list if publishing is successful
-      if (publishContract(contractName)) {
-        finalContractList.push(contractName);
-      }
-    }
-  });
+  const contractList = getAllSolFiles(hre.config.paths.sources);
+
+  const publishedContractList = contractList.filter(contract => 
+    // Add contract to list if publishing is successful
+    publishContract(contract)
+  );
+  
   fs.writeFileSync(
     `${publishDir}/contracts.js`,
-    `module.exports = ${JSON.stringify(finalContractList)};`
+    `module.exports = ${JSON.stringify(publishedContractList)};`
   );
 }
 main()

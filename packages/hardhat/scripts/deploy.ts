@@ -1,16 +1,46 @@
 /* eslint no-use-before-define: "warn" */
-const fs = require("fs");
-const chalk = require("chalk");
-const { config, ethers, upgrades, tenderly, run } = require("hardhat");
-const { utils } = require("ethers");
-const R = require("ramda");
+import fs from 'fs';
+import chalk from 'chalk';
+import { config, ethers, upgrades, tenderly, run } from "hardhat";
+import { HardhatRuntimeEnvironment } from"hardhat/types";
+import { utils, Contract } from "ethers";
+import R from "ramda";
 
-const main = async () => {
+async function main() {
 
   console.log("\n\n 📡 Deploying...\n");
 
-// , {unsafeAllowCustomTypes:true}
-  const yourContract = await deploy("YourContract", ["aoeu"]) // <-- add in constructor args like line 19 vvvv
+  const composableTokenName = "ComposableToken";
+  const ipfsBaseUri = "ipfs://";
+
+  const [deployer, ...accounts] = await ethers.getSigners();
+
+  const yourContract = await deploy(
+    "YourContract", 
+    ["aoeu"]
+  ); // <-- add in constructor args like line 19
+
+  // deploy accessRestriction
+  const accessRestriction = await deploy(
+    "AccessRestriction",
+    [deployer.address]
+  );
+
+  // deploy the composable token contract
+  const composableContract = await deploy(
+    "TypedERC1155Composable",
+    [accessRestriction.address, composableTokenName, ipfsBaseUri]
+  );
+
+  // deploy the orchestrator
+  const orchestrator = await deploy(
+    "ComposableOrchestrator",
+    [accessRestriction.address, composableContract.address]
+  );
+
+  // TODO add orchestrator role
+  await accessRestriction.addMinter(orchestrator.address);
+  
 
   //const secondContract = await deploy("SecondContract")
 
@@ -38,7 +68,7 @@ const main = async () => {
 
   /*
   //If you want to link a library into your contract:
-  // reference: https://github.com/austintgriffith/scaffold-eth/blob/using-libraries-example/packages/hardhat/scripts/deploy.js#L19
+  // reference: https://github.com/austintgriffith/scaffold-eth/blob/using-libraries-example/packages/hardhat/scripts/deploy.ts#L19
   const yourContract = await deploy("YourContract", [], {}, {
    LibraryName: **LibraryAddress**
   });
@@ -69,20 +99,27 @@ const main = async () => {
   );
 };
 
-const deploy = async (contractName, _args = [], overrides = {}, libraries = {}) => {
+async function deploy(contractName: string, _args = [], overrides = {}, libraries = {}) {
   console.log(` 🛰  Deploying: ${contractName}`);
 
   const contractArgs = _args || [];
-  const contractArtifacts = await ethers.getContractFactory(contractName, {libraries: libraries});
-  console.log(contractArgs);
-  const deployed = await upgrades.deployProxy(contractArtifacts, contractArgs, {unsafeAllowCustomTypes: true});
+  const contractArtifacts = await ethers.getContractFactory(
+    contractName, 
+    {libraries: libraries}
+  );
+  console.log(`with Args: \n ${contractArgs}`);
+  const deployed = await upgrades.deployProxy(
+    contractArtifacts, 
+    contractArgs, 
+    {unsafeAllowCustomTypes: true}
+  );
   await deployed.deployed();
 
   // const encoded = abiEncodeArgs(deployed, contractArgs);
   fs.writeFileSync(`artifacts/${contractName}.address`, deployed.address);
 
   let extraGasInfo = ""
-  if(deployed&&deployed.deployTransaction){
+  if (deployed && deployed.deployTransaction) {
     const gasUsed = deployed.deployTransaction.gasLimit.mul(deployed.deployTransaction.gasPrice)
     extraGasInfo = `${utils.formatEther(gasUsed)} ETH, tx hash ${deployed.deployTransaction.hash}`
   }
@@ -104,14 +141,11 @@ const deploy = async (contractName, _args = [], overrides = {}, libraries = {}) 
     address: deployed.address
   });
 
-  if (!encoded || encoded.length <= 2) return deployed;
-  fs.writeFileSync(`artifacts/${contractName}.args`, encoded.slice(2));
-  return deployed
   // if (!encoded || encoded.length <= 2) return deployed;
   // may have to use deployed.interface.encodeFunctionData?
   // fs.writeFileSync(`artifacts/${contractName}.args`, encoded.slice(2));
 
-  // return deployed;
+  return deployed;
 };
 
 
@@ -120,7 +154,7 @@ const deploy = async (contractName, _args = [], overrides = {}, libraries = {}) 
 // abi encodes contract arguments
 // useful when you want to manually verify the contracts
 // for example, on Etherscan
-const abiEncodeArgs = (deployed, contractArgs) => {
+function abiEncodeArgs(deployed: Contract, contractArgs: any[]) {
   // not writing abi encoded args if this does not pass
   if (
     !contractArgs ||
@@ -145,7 +179,7 @@ const readArgsFile = (contractName) => {
   try {
     const argsFile = `./contracts/${contractName}.args`;
     if (!fs.existsSync(argsFile)) return args;
-    args = JSON.parse(fs.readFileSync(argsFile));
+    args = JSON.parse(fs.readFileSync(argsFile).toString());
   } catch (e) {
     console.log(e);
   }

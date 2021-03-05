@@ -89,7 +89,7 @@ yarn deploy
 
 📝 Edit your frontend `App.jsx` in `packages/react-app/src`
 
-💼 Edit your deployment script `deploy.js` in `packages/hardhat/scripts`
+💼 Edit your deployment script `deploy.ts` in `packages/hardhat/scripts`
 
 📱 Open http://localhost:3000 to see the app
 
@@ -479,7 +479,7 @@ scaffold-eth includes the hardhat-tenderly plugin. When deploying to any of the 
 ```
 ["kovan","goerli","mainnet","rinkeby","ropsten","matic","mumbai","xDai","POA"]
 ```
-You can verify contracts as part of the `deploy.js` script. We have created a `tenderlyVerify()` helper function, which takes your contract name and its deployed address:
+You can verify contracts as part of the `deploy.ts` script. We have created a `tenderlyVerify()` helper function, which takes your contract name and its deployed address:
 ```
 await tenderlyVerify(
   {contractName: "YourContract",
@@ -566,7 +566,7 @@ etherscan: {
   apiKey: "YOUR-API-KEY-HERE"
 }
 ```
-Verifying is simple, assuming you are verifying a contract that you have just deployed from your hardhat setup - you just need to run the verify script, passing constructor arguments as an array if necessary (there is an example commented out in the `deploy.js`):
+Verifying is simple, assuming you are verifying a contract that you have just deployed from your hardhat setup - you just need to run the verify script, passing constructor arguments as an array if necessary (there is an example commented out in the `deploy.ts`):
 ```
 await run("verify:verify", {
   address: yourContract.address,
