@@ -2,7 +2,7 @@
 pragma experimental ABIEncoderV2;
 pragma solidity >=0.7.0 <0.8.0;
 
-import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol";
+import "../ERC1155/ERC1155Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155ReceiverUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/EnumerableSetUpgradeable.sol";
@@ -10,7 +10,6 @@ import "@openzeppelin/contracts-upgradeable/utils/EnumerableMapUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/introspection/ERC165CheckerUpgradeable.sol";
 import "../access/AccessRestriction.sol";
-import "../access/AccessRestrictable.sol";
 import "../access/Approvable.sol";
 import "./IERC1155Composable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
@@ -21,7 +20,7 @@ import "hardhat/console.sol";
 /**
  * This contract handles represents an ERC1155 token that can hold ERC1155 tokens.
  */
-contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155ReceiverUpgradeable, IERC1155Composable, AccessRestrictable, Approvable {
+contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155ReceiverUpgradeable, IERC1155Composable, Approvable {
 
     using CountersUpgradeable for CountersUpgradeable.Counter;
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.UintSet;
@@ -735,7 +734,11 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
 
             // Ensure approved addresses cannot transfer child tokens.
             // however, base approvals should be able to... ex: orchestrator
-            require(_operator == _from || isApprovedForAll(_from, _operator), "Operator is not owner");
+            // TODO could alter operator in ERC1155Upgradeable?
+            require(
+                _operator == _from || accessRestriction.isOrchestrator(_operator),
+                 "ERC1155Composable._validateRecipientToken: Operator is neither owner nor orchestrator"
+            );
         }
     }
 

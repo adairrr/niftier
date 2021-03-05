@@ -17,9 +17,7 @@ import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol"
 contract AccessRestriction is AccessControlUpgradeable {
 
     bytes32 public constant ARTIST_ROLE = keccak256("ARTIST_ROLE");
-    bytes32 public constant ARTPIECE_FACTORY_ROLE = keccak256("ARTPIECE_FACTORY_ROLE");
-    bytes32 public constant LAYER_FACTORY_ROLE = keccak256("LAYER_FACTORY_ROLE");
-    // bytes32 public constant LAYER_FACTORY_ROLE = keccak256("LAYER_FACTORY_ROLE");
+    bytes32 public constant ORCHESTRATOR_ROLE = keccak256("ORCHESTRATOR_ROLE");
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
 
@@ -46,13 +44,8 @@ contract AccessRestriction is AccessControlUpgradeable {
         _;
     }
 
-    modifier onlyArtpieceFactory() {
-        require(isArtpieceFactory(msg.sender), "Caller is not artpiece factory");
-        _;
-    }
-
-    modifier onlyLayerFactory() {
-        require(isLayerFactory(msg.sender), "Caller is not layer factory");
+    modifier onlyOrchestrator() {
+        require(isOrchestrator(msg.sender), "Caller is not orchestrator");
         _;
     }
 
@@ -73,6 +66,10 @@ contract AccessRestriction is AccessControlUpgradeable {
         return hasRole(MINTER_ROLE, _address);
     }
 
+    function isOrchestrator(address _address) public view returns (bool) {
+        return hasRole(ORCHESTRATOR_ROLE, _address);
+    }
+
     /**
      * @notice Assigns _address to the minter role.
      * @dev onlyAdmin
@@ -81,12 +78,8 @@ contract AccessRestriction is AccessControlUpgradeable {
         grantRole(MINTER_ROLE, _address);
     }
 
-    function isArtpieceFactory(address _address) public view returns (bool) {
-        return hasRole(ARTPIECE_FACTORY_ROLE, _address);
-    }
-    
-    function isLayerFactory(address _address) public view returns (bool) {
-        return hasRole(LAYER_FACTORY_ROLE, _address);
+    function addOrchestrator(address _address) external {
+        grantRole(ORCHESTRATOR_ROLE, _address);
     }
 
     // Reserved storage space to allow for layout changes in the future.

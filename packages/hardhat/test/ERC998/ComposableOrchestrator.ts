@@ -74,7 +74,7 @@ describe("ComposableOrchestrator", async () => {
       {unsafeAllowCustomTypes: true}
     ) as ComposableOrchestrator;
 
-    // TODO add orchestrator role
+    await accessRestriction.addOrchestrator(orchestrator.address);
     await accessRestriction.addMinter(orchestrator.address);
   });
 
@@ -297,7 +297,7 @@ describe("ComposableOrchestrator", async () => {
       // TODO the orchestrator should be able to build the meta transaction calls and the
       // people calling it shouldn't have to have the minter role...FIX BELOW
       // give approval to orchestrator to transfer tokens on behalf of creator
-      await composableToken.connect(creator).setApprovalForAll(orchestrator.address, true);
+      // await composableToken.connect(creator).setApprovalForAll(orchestrator.address, true);
     });
 
     it('should associate existing children to a new parent', async () => {
@@ -432,7 +432,7 @@ describe("ComposableOrchestrator", async () => {
       // TODO the orchestrator should be able to build the meta transaction calls and the
       // people calling it shouldn't have to have the minter role...FIX BELOW
       // give approval to orchestrator to transfer tokens on behalf of creator
-      await composableToken.connect(creator).setApprovalForAll(orchestrator.address, true);
+      // await composableToken.connect(creator).setApprovalForAll(orchestrator.address, true);
     });
 
     it('should associate existing children to existing parent', async () => {

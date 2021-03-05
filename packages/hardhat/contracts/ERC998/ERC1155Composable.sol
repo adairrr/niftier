@@ -63,7 +63,6 @@ contract ERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Receiver
     mapping(uint256 => mapping(address => mapping(uint256 => uint256))) parentToChildBalances;
 
     // TODO this could be more efficient with the generation of a sort of reference ID between this and balances
-    //
     mapping(uint256 => mapping(address => EnumerableSetUpgradeable.UintSet)) parentToChildTokens;
 
 
