@@ -160,6 +160,10 @@ const config: HardhatUserConfig = {
     // Obtain one at https://etherscan.io/
     apiKey: "PSW8C433Q667DVEX5BCRMGNAH9FSGFZ7Q8"
   },
+  tenderly: {
+    project: "",
+    username: "",
+  },
   typechain: {
     outDir: 'typechain',
     target: 'ethers-v5',

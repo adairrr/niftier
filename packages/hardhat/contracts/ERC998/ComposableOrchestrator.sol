@@ -136,9 +136,6 @@ contract ComposableOrchestrator is Initializable, ContextUpgradeable, AccessRest
             _creator, 
             '' // no data
         );
-
-        // console.log(_msgSender());
-
         /*
         // We could be doing this to preserve msg.sender, and use associateChildrenToParent, but can't because of upgrades
         bytes memory data = abi.encodeWithSelector(
@@ -147,23 +144,13 @@ contract ComposableOrchestrator is Initializable, ContextUpgradeable, AccessRest
         );
         (bool success,) = address(this).delegatecall(data);
         require(success);
+        */
 
-        // this below changes msg.sender to this contract
-        // TODO
         this.associateChildrenToParent(
             parentTokenId, 
             _childTokenIds, 
             _childTokenAmounts, 
             _creator
-        );
-         */
-
-        composableToken.safeBatchTransferFrom(
-            _creator,
-            address(composableToken),
-            _childTokenIds,
-            _childTokenAmounts,
-            abi.encodePacked(parentTokenId)
         );
     }
 
