@@ -134,7 +134,7 @@ function App(props) {
   console.log("🏷 Resolved austingriffith.eth as:",addressFromENS)
   */
   let networkDisplay = ""
-  if(localChainId && selectedChainId && localChainId != selectedChainId ){
+  if (localChainId && selectedChainId && localChainId != selectedChainId ) {
     networkDisplay = (
       <div style={{zIndex:2, position:'absolute', right:0,top:60,padding:16}}>
         <Alert
@@ -149,7 +149,7 @@ function App(props) {
         />
       </div>
     )
-  }else{
+  } else {
     networkDisplay = (
       <div style={{zIndex:-1, position:'absolute', right:154,top:28,padding:16,color:targetNetwork.color}}>
         {targetNetwork.name}

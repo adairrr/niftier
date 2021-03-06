@@ -12,7 +12,7 @@ async function main() {
   console.log("\n\n 📡 Deploying...\n");
 
   const composableTokenName = "ComposableToken";
-  const ipfsBaseUri = "ipfs://";
+  const ipfsBaseUri = "https://ipfs.io/ipfs/";
 
   const [deployer, ...accounts] = await ethers.getSigners();
 
