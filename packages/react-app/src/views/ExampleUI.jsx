@@ -6,7 +6,19 @@ import { SyncOutlined } from '@ant-design/icons';
 import { Address, Balance } from "../components";
 import { parseEther, formatEther } from "@ethersproject/units";
 
-export default function ExampleUI({purpose, setPurposeEvents, address, mainnetProvider, userProvider, localProvider, yourLocalBalance, price, tx, readContracts, writeContracts }) {
+export default function ExampleUI({
+  purpose, 
+  setPurposeEvents, 
+  address, 
+  mainnetProvider, 
+  userProvider, 
+  localProvider, 
+  yourLocalBalance, 
+  price, 
+  tx, 
+  readContracts, 
+  writeContracts 
+}) {
 
   const [newPurpose, setNewPurpose] = useState("loading...");
 
@@ -151,10 +163,10 @@ export default function ExampleUI({purpose, setPurposeEvents, address, mainnetPr
             return (
               <List.Item key={item.blockNumber+"_"+item.sender+"_"+item.purpose}>
                 <Address
-                    address={item[0]}
-                    ensProvider={mainnetProvider}
-                    fontSize={16}
-                  /> =>
+                  address={item[0]}
+                  ensProvider={mainnetProvider}
+                  fontSize={16}
+                />
                 {item[1]}
               </List.Item>
             )

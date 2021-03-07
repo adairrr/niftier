@@ -468,6 +468,15 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
     }
 
     /**
+     * @dev See {IERC721-balanceOf}.
+     * Note that this will return the same amount, no matter how many of each token _owner owns.
+     */
+    function balanceOfAccount(address _owner) public view virtual returns (uint256) {
+        require(_owner != address(0), "balance query for the zero address");
+        return this.approvalCount(_owner);
+    }
+
+    /**
      * @notice Gives balance of child given it's contract and id.
      * @dev Does not check for existence or authorization of child contract. Will return 0 either way.
      * @param _tokenId Token ID to query

@@ -15,7 +15,7 @@ abstract contract Approvable is Initializable, ContextUpgradeable {
 
     using SafeMathUpgradeable for uint256;
     using AddressUpgradeable for address;
-    using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;
+    using EnumerableSetUpgradeable for EnumerableSetUpgradeable.UintSet;
 
     function __Approvable_init() internal initializer {
         __Context_init_unchained();
@@ -26,7 +26,7 @@ abstract contract Approvable is Initializable, ContextUpgradeable {
     }
 
     // Mapping from token ID to approved addresses
-    mapping (uint256 => EnumerableSetUpgradeable.AddressSet) private tokenApprovals;
+    mapping (address => EnumerableSetUpgradeable.UintSet) private tokenApprovals;
 
     /**
      * @dev Emitted when `operator` enables `approved` to manage the `tokenId` token.
@@ -39,7 +39,7 @@ abstract contract Approvable is Initializable, ContextUpgradeable {
 
     modifier _onlyApproved(uint256 _tokenId) {
         require(
-            tokenApprovals[_tokenId].contains(_msgSender()),
+            tokenApprovals[_msgSender()].contains(_tokenId),
             "Caller is not approved"
         );
         _;
@@ -60,15 +60,23 @@ abstract contract Approvable is Initializable, ContextUpgradeable {
         _transferApproval(_fromApproved, _toApproved, _tokenId);
     }
 
-    /**
-     * @dev Get approved addresses for a given token.
-     */
-    function getApproved(uint256 _tokenId) public virtual view returns (address[] memory approved) {
-        approved = new address[](tokenApprovals[_tokenId].length());
+    // /**
+    //  * @dev Get approved addresses for a given token.
+    //  */
+    // function getApproved(uint256 _tokenId) public virtual view returns (address[] memory approved) {
+    //     approved = new address[](tokenApprovals[_tokenId].length());
 
-        for (uint256 i; i < tokenApprovals[_tokenId].length(); i++) {
-            approved[i] = tokenApprovals[_tokenId].at(i);
-        }
+    //     for (uint256 i; i < tokenApprovals[_tokenId].length(); i++) {
+    //         approved[i] = tokenApprovals[_tokenId].at(i);
+    //     }
+    // }
+
+    function getApprovedTokenByIndex(address _forWhom, uint256 _index) external view returns(uint256) {
+        return tokenApprovals[_forWhom].at(_index);
+    }
+
+    function approvalCount(address _forWhom) external view returns(uint256) {
+        return tokenApprovals[_forWhom].length();
     }
     
     /** 
@@ -86,20 +94,21 @@ abstract contract Approvable is Initializable, ContextUpgradeable {
     }
 
     function _approve(address _to, uint256 _tokenId) private {
-        tokenApprovals[_tokenId].add(_to);
+        tokenApprovals[_to].add(_tokenId);
         emit Approval(_msgSender(), _to, _tokenId);
     }
 
     function _approveBatch(address _to, uint256[] memory _tokenIds) private {
+        EnumerableSetUpgradeable.UintSet storage approvalSet = tokenApprovals[_to];
         for (uint256 i; i < _tokenIds.length; ++i) {
-            tokenApprovals[_tokenIds[i]].add(_to);
+            approvalSet.add(_tokenIds[i]);
         }
         emit BatchApproval(_msgSender(), _to, _tokenIds);
     }
     
     function _transferApproval(address _fromApproved, address _toApproved, uint256 _tokenId) private {
-        tokenApprovals[_tokenId].remove(_fromApproved);
-        tokenApprovals[_tokenId].add(_toApproved);
+        tokenApprovals[_fromApproved].remove(_tokenId);
+        tokenApprovals[_toApproved].add(_tokenId);
         emit TransferApproval(_msgSender(), _fromApproved, _toApproved, _tokenId);
     }
 }

@@ -3,17 +3,21 @@ import { BrowserRouter, Switch, Route, Link } from "react-router-dom";
 import "antd/dist/antd.css";
 import {  JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import "./App.css";
-import { Row, Col, Button, Menu, Alert } from "antd";
+import { Row, Col, Button, Menu, Alert, Input, List, Card } from "antd";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
 import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useEventListener, useBalance, useExternalContractLoader } from "./hooks";
-import { Header, Account, Faucet, Ramp, Contract, GasGauge } from "./components";
+import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address, AddressInput } from "./components";
 import { Transactor } from "./helpers";
 import { formatEther, parseEther } from "@ethersproject/units";
-//import Hints from "./Hints";
-import { Hints, ExampleUI, Subgraph } from "./views"
+import { Hints, ExampleUI, Subgraph, Gallery, Transfers } from "./views"
 import { INFURA_ID, DAI_ADDRESS, DAI_ABI, NETWORK, NETWORKS } from "./constants";
+import ReactJson from 'react-json-view'
+const { BufferList } = require('bl')
+// https://www.npmjs.com/package/ipfs-http-client
+const ipfsAPI = require('ipfs-http-client');
+const ipfs = ipfsAPI({host: 'ipfs.infura.io', port: '5001', protocol: 'https' })
 /*
     Welcome to 🏗 scaffold-eth !
 
@@ -38,6 +42,39 @@ const targetNetwork = NETWORKS['localhost']; // <------- select your target fron
 
 // 😬 Sorry for all the console logging
 const DEBUG = true
+
+//EXAMPLE STARTING JSON:
+const STARTING_JSON = {
+  "description": "It's actually a bison?",
+  "external_url": "https://austingriffith.com/portfolio/paintings/",// <-- this can link to a page for the specific file too
+  "image": "https://austingriffith.com/images/paintings/buffalo.jpg",
+  "name": "Buffalo",
+  "attributes": [
+     {
+       "trait_type": "BackgroundColor",
+       "value": "green"
+     },
+     {
+       "trait_type": "Eyes",
+       "value": "googly"
+     }
+  ]
+}
+
+//helper function to "Get" from IPFS
+// you usually go content.toString() after this...
+const getFromIPFS = async hashToGet => {
+  for await (const file of ipfs.get(hashToGet)) {
+    console.log(file.path)
+    if (!file.content) continue;
+    const content = new BufferList()
+    for await (const chunk of file.content) {
+      content.append(chunk)
+    }
+    console.log(content)
+    return content
+  }
+}
 
 // 🛰 providers
 if(DEBUG) console.log("📡 Connecting to Mainnet Ethereum");
@@ -112,21 +149,12 @@ function App(props) {
 
 
   // keep track of a variable from the contract in the local React state:
-  const purpose = useContractReader(
-    readContracts,
-    "YourContract", 
-    "purpose"
-  )
+  //📟 Listen for broadcast events
+  const purpose = useContractReader(readContracts,"YourContract", "purpose")
   console.log("🤗 purpose:",purpose)
 
   //📟 Listen for broadcast events
-  const setPurposeEvents = useEventListener(
-    readContracts, 
-    "YourContract", 
-    "SetPurpose", 
-    localProvider, 
-    1
-  );
+  const setPurposeEvents = useEventListener(readContracts, "YourContract", "SetPurpose", localProvider, 1);
   console.log("📟 SetPurpose events:",setPurposeEvents)
 
   /*
@@ -193,6 +221,15 @@ function App(props) {
     )
   }
 
+  const [ yourJSON, setYourJSON ] = useState( STARTING_JSON );
+  const [ sending, setSending ] = useState()
+  const [ ipfsHash, setIpfsHash ] = useState()
+  const [ ipfsDownHash, setIpfsDownHash ] = useState()
+
+  const [ downloading, setDownloading ] = useState()
+  const [ ipfsContent, setIpfsContent ] = useState()
+
+
   return (
     <div className="App">
 
@@ -208,14 +245,17 @@ function App(props) {
           <Menu.Item key="/composable">
             <Link onClick={()=>{setRoute("/composable")}} to="/composable">ERC1155Composable</Link>
           </Menu.Item>
+          <Menu.Item key="/gallery">
+            <Link onClick={()=>{setRoute("/gallery")}} to="/gallery">Gallery</Link>
+          </Menu.Item>
+          <Menu.Item key="/transfers">
+            <Link onClick={()=>{setRoute("/transfers")}} to="/transfers">Transfers</Link>
+          </Menu.Item>
           <Menu.Item key="/hints">
             <Link onClick={()=>{setRoute("/hints")}} to="/hints">Hints</Link>
           </Menu.Item>
           <Menu.Item key="/exampleui">
             <Link onClick={()=>{setRoute("/exampleui")}} to="/exampleui">ExampleUI</Link>
-          </Menu.Item>
-          <Menu.Item key="/mainnetdai">
-            <Link onClick={()=>{setRoute("/mainnetdai")}} to="/mainnetdai">Mainnet DAI</Link>
           </Menu.Item>
           <Menu.Item key="/subgraph">
             <Link onClick={()=>{setRoute("/subgraph")}} to="/subgraph">Subgraph</Link>
@@ -267,6 +307,26 @@ function App(props) {
             />
             */ }
           </Route>
+          <Route path="/gallery">
+            <Gallery
+              address={address}
+              userProvider={userProvider}
+              mainnetProvider={mainnetProvider}
+              localProvider={localProvider}
+              getFromIPFS={getFromIPFS}
+              blockExplorer={blockExplorer}
+              tx={tx}
+              writeContracts={writeContracts}
+              readContracts={readContracts}
+            />
+          </Route>
+          <Route path="/transfers">
+            <Transfers 
+              mainnetProvider={mainnetProvider}
+              localProvider={localProvider}
+              readContracts={readContracts}
+            />
+          </Route>
           <Route path="/composable">
             <Contract
               name="TypedERC1155Composable"
@@ -297,16 +357,6 @@ function App(props) {
               readContracts={readContracts}
               purpose={purpose}
               setPurposeEvents={setPurposeEvents}
-            />
-          </Route>
-          <Route path="/mainnetdai">
-            <Contract
-              name="DAI"
-              customContract={mainnetDAIContract}
-              signer={userProvider.getSigner()}
-              provider={mainnetProvider}
-              address={address}
-              blockExplorer={"https://etherscan.io/"}
             />
           </Route>
           <Route path="/subgraph">
