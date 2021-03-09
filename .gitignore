@@ -10,8 +10,10 @@ packages/hardhat/.openzeppelin
 packages/hardhat/artifacts
 packages/hardhat/deployments
 packages/react-app/src/contracts
+packages/react-app/.development.env
 packages/hardhat/cache
 packages/hardhat/typechain
+
 
 docker/**/data
 

@@ -6,7 +6,6 @@ pragma solidity >=0.7.0 <0.8.0;
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/IERC1155Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/IERC1155ReceiverUpgradeable.sol";
 
-// TODO should this be:  is IERC721Upgradeable, IERC1155ReceiverUpgradeable ? 
 interface IERC1155Composable is IERC1155Upgradeable, IERC1155ReceiverUpgradeable {
 
     event ReceivedChildToken(
