@@ -81,6 +81,7 @@ abstract contract Approvable is Initializable, ContextUpgradeable {
     
     /** 
      * @notice same as approve, just doesn't check for prior approvals
+     * TODO this really should be renamed
      */
     function approveAtMint(address _to, uint256 _tokenId) internal virtual {
         _approve(_to, _tokenId);

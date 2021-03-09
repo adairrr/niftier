@@ -23,3 +23,66 @@ dataSources:
         - event: SetPurpose(address,string)
           handler: handleSetPurpose
       file: ./src/mapping.ts
+  - kind: ethereum/contract
+    name: TypedERC1155Composable
+    network: localhost
+    source:
+      address: '{{TypedERC1155ComposableAddress}}'
+      abi: TypedERC1155Composable
+      startBlock: 1
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Token
+        # - URIUpdate
+        # - Transfer
+        # - Approval
+      abis:
+        - name: TypedERC1155Composable
+          file: ./abis/TypedERC1155Composable.json
+      eventHandlers:
+        - event: Mint(indexed address,indexed address,uint256,uint256,indexed address)
+          handler: handleMint
+        - event: MintBatch(indexed address,indexed address,uint256[],uint256[],indexed address)
+          handler: handleMintBatch
+        - event: AssociateChildToken(indexed uint256,indexed address,indexed uint256)
+          handler: handleAssociateChildToken
+        - event: DisassociateChildToken(indexed uint256,indexed address,indexed uint256)
+          handler: handleDisassociateChildToken
+        # - event: TransferChildToken(indexed address,indexed uint256,indexed address,address,uint256,uint256)
+        #   handler: handleTransferChildToken
+        # - event: TransferChildTokenBatch(indexed address,indexed uint256,indexed address,address,uint256[],uint256[])
+        #   handler: handleTransferChildTokenBatch
+        # - event: UriUpdated(indexed uint256,string)
+        #   handler: handleUriUpdated
+        - event: TransferSingle(indexed address,indexed address,indexed address,uint256,uint256)
+          handler: handleTransferSingle
+        - event: TransferBatch(indexed address,indexed address,indexed address,uint256[],uint256[])
+          handler: handleTransferBatch
+        # - event: ReceivedChildToken(indexed address,indexed address,indexed uint256,address,uint256,uint256)
+        #   handler: handleReceivedChildToken
+        # - event: ReceivedChildTokenBatch(indexed address,indexed address,indexed uint256,address,uint256[],uint256[])
+        #   handler: handleReceivedChildTokenBatch
+        # - event: Approval(indexed address,indexed address,indexed uint256)
+        #   handler: handleApproval
+        # - event: BatchApproval(indexed address,indexed address,uint256[])
+        #   handler: handleBatchApproval
+        # TokenTypesCreated(bytes32[],uint256[])
+  # - TransferChildTokenBatch(indexed address,indexed uint256,indexed address,address,uint256[],uint256[])
+      # callHandlers: 
+      #   - function: mint(address,bytes32,string,uint256,address,bytes)
+      #     handler: handleMint
+      #   - function: mintBatch(address,bytes32,string[],uint256[],address,bytes)
+      #     handler: handleMintBatch
+      #   - function: safeTransferFrom(address,address,uint256,uint256,bytes)
+      #     handler: handleSafeTransferFrom
+      #   - function: safeTransferChildFrom(uint256,address,address,uint256,uint256,bytes)
+      #     handler: handleSafeTransferChildFrom
+      #   - function: safeBatchTransferFrom(address,address,uint256[],uint256[],bytes)
+      #     handler: handleBatchSafeTransferFrom
+      #   - function: safeBatchTransferChildFrom(uint256,address,address,uint256[],uint256[],bytes)
+      #     handler: handleBatchSafeTransferChildFrom
+      file: ./src/mapping.ts
+

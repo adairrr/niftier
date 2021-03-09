@@ -43,6 +43,8 @@ You can replace this with anything else in `docker-compose.yaml`.
 >
 > ```
 > CONTAINER_ID=$(docker container ls | grep graph-node | cut -d' ' -f1)
+> docker exec $CONTAINER_ID /bin/bash -c 'apt-get update'
+> docker exec $CONTAINER_ID /bin/bash -c 'apt install iproute2 -y'
 > docker exec $CONTAINER_ID /bin/bash -c 'ip route | awk \'/^default via /{print $3}\''
 > ```
 >

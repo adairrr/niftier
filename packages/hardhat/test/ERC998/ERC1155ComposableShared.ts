@@ -14,6 +14,27 @@ export async function getTokenIdFromMint(mintTx: ContractTransaction, logIndex =
   return BigNumber.from((await mintTx.wait(1)).logs[logIndex].data.substring(0, 66));
 }
 
+// TODO migrate from above to this
+export async function getTokenIdFromMint2(mintTx: ContractTransaction) {
+  let events = (await mintTx.wait(1)).events;
+  let mintEvent: Event;
+
+  console.log(events);
+
+  // find ApprovalEvent
+  events.forEach(logEvent => {
+    if (logEvent.event == "Mint") {
+      mintEvent = logEvent;
+    }
+  });
+
+  // ensure the event was found
+  if (!mintEvent) throw "No Mint event was found!";
+
+  return mintEvent.args["tokenId"];
+}
+
+// TODO use the mintbatch event
 export async function getTokenIdsFromBatchMint(
   batchMintTx: ContractTransaction, 
   mintCount: number

@@ -16,6 +16,7 @@ packages/hardhat/typechain
 docker/**/data
 
 packages/subgraph/config/config.json
+packages/subgraph/config/config.ts
 tenderly.yaml
 
 # dependencies

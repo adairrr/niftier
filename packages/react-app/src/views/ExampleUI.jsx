@@ -97,7 +97,7 @@ export default function ExampleUI({
 
         Your Contract Address:
         <Address
-            address={readContracts?readContracts.YourContract.address:readContracts}
+            address={readContracts ? readContracts.YourContract.address : readContracts}
             ensProvider={mainnetProvider}
             fontSize={16}
         />

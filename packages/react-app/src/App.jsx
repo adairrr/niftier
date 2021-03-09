@@ -157,6 +157,24 @@ function App(props) {
   const setPurposeEvents = useEventListener(readContracts, "YourContract", "SetPurpose", localProvider, 1);
   console.log("📟 SetPurpose events:",setPurposeEvents)
 
+  const singleTransferEvents = useEventListener(
+    readContracts, 
+    "TypedERC1155Composable", 
+    "TransferSingle", 
+    localProvider, 
+    1
+  );
+  console.log("📟 TransferSingle events:", singleTransferEvents);
+
+  const batchTransferEvents = useEventListener(
+    readContracts, 
+    "TypedERC1155Composable", 
+    "TransferBatch", 
+    localProvider, 
+    1
+  );
+  console.log("📟 TransferBatch events:", batchTransferEvents);
+
   /*
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
   console.log("🏷 Resolved austingriffith.eth as:",addressFromENS)
@@ -325,6 +343,8 @@ function App(props) {
               mainnetProvider={mainnetProvider}
               localProvider={localProvider}
               readContracts={readContracts}
+              singleTransferEvents={singleTransferEvents}
+              batchTransferEvents={batchTransferEvents}
             />
           </Route>
           <Route path="/composable">
@@ -361,10 +381,10 @@ function App(props) {
           </Route>
           <Route path="/subgraph">
             <Subgraph
-            subgraphUri={props.subgraphUri}
-            tx={tx}
-            writeContracts={writeContracts}
-            mainnetProvider={mainnetProvider}
+              subgraphUri={props.subgraphUri}
+              tx={tx}
+              writeContracts={writeContracts}
+              mainnetProvider={mainnetProvider}
             />
           </Route>
         </Switch>

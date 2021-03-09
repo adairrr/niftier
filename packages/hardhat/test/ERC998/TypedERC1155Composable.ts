@@ -430,7 +430,7 @@ describe("TypedERC1155Composable", async () => {
             testUtils.packTokenId(parentTokenId)
           );
 
-          const childTokenId = await testUtils.getTokenIdFromMint(childTx);
+          const childTokenId = await testUtils.getTokenIdFromMint2(childTx);
 
           await testUtils.expectChildToBeTransferred(
             composableToken, parentTokenId, childComposableToken, childTokenId, creator.address
@@ -799,6 +799,7 @@ describe("TypedERC1155Composable", async () => {
 
         await expect(transferTx).to.emit(composableToken, "TransferChildToken")
           .withArgs(
+            creator.address, // operator is the creator
             artpieceTokenId, 
             composableToken.address, 
             composableToken.address, 

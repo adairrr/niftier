@@ -21,6 +21,7 @@ export default function useEventListener(contracts, contractName, eventName, pro
   const [updates, setUpdates] = useState([]);
 
   useEffect(() => {
+    // let mounted = true;
     if (typeof provider !== "undefined" && typeof startBlock !== "undefined") {
       // if you want to read _all_ events from your contracts, set this to the block number it is deployed
       provider.resetEventsBlock(startBlock);
@@ -28,7 +29,7 @@ export default function useEventListener(contracts, contractName, eventName, pro
     if (contracts && contractName && contracts[contractName]) {
       try {
         contracts[contractName].on(eventName, (...args) => {
-          let blockNumber = args[args.length-1].blockNumber
+          let blockNumber = args[args.length - 1].blockNumber
           setUpdates(messages => [Object.assign({blockNumber},args.pop().args), ...messages]);
         });
         return () => {
@@ -38,6 +39,7 @@ export default function useEventListener(contracts, contractName, eventName, pro
         console.log(e);
       }
     }
+    // return () => mounted = false;
   }, [provider, startBlock, contracts, contractName, eventName]);
 
   return updates;

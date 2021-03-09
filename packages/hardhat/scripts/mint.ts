@@ -2,8 +2,11 @@
 import fs from "fs";
 import chalk from "chalk";
 import { config, ethers } from "hardhat";
-import { utils } from "ethers";
+import { utils, BigNumber } from "ethers";
 import { TypedERC1155Composable } from "../typechain";
+import * as testUtils from '../test/ERC998/ERC1155ComposableShared';
+import * as testConsts from '../test/ERC998/constants';
+
 import ipfsAPI from 'ipfs-http-client';
 const ipfs = ipfsAPI({host: 'ipfs.infura.io', port: 5001, protocol: 'https' });
 
@@ -43,49 +46,61 @@ const main = async () => {
     ]
   }
   console.log("Uploading buffalo...")
-  const uploaded = await ipfs.add(JSON.stringify(buffalo))
+  const parentTokenUri = await ipfs.add(JSON.stringify(buffalo))
 
-  console.log(`Minting buffalo with IPFS hash (${uploaded.path})`)
+  console.log(`Minting buffalo with IPFS hash (${parentTokenUri.path})`)
 
-  await composableContract.mint(
+  let parentTokenId = await testUtils.mintAndGetId(
+    composableContract,
     toAddress,
-    utils.formatBytes32String("ARTPIECE_TYPE"),
-    uploaded.path,
+    testConsts.ARTPIECE_TYPE,
+    parentTokenUri.path,
     1,
-    toAddress,
-    utils.toUtf8Bytes(''),
-    {gasLimit:400000}
-  )
+    toAddress
+  );
 
+  console.log(`ParentTokenId: ${parentTokenId.toHexString()}`);
 
   await sleep(delayMS)
 
+  // let parentTokenId = BigNumber.from("0x01540ee3e86f6f97975d24ddc833d1c3fdb594344b6f77ddedf101d205d709");
 
-  // const zebra = {
-  //   "description": "What is it so worried about?",
-  //   "external_url": "https://austingriffith.com/portfolio/paintings/",// <-- this can link to a page for the specific file too
-  //   "image": "https://austingriffith.com/images/paintings/zebra.jpg",
-  //   "name": "Zebra",
-  //   "attributes": [
-  //      {
-  //        "trait_type": "BackgroundColor",
-  //        "value": "blue"
-  //      },
-  //      {
-  //        "trait_type": "Eyes",
-  //        "value": "googly"
-  //      },
-  //      {
-  //        "trait_type": "Stamina",
-  //        "value": 38
-  //      }
-  //   ]
-  // }
-  // console.log("Uploading zebra...")
-  // const uploadedzebra = await ipfs.add(JSON.stringify(zebra))
+  // now we mint the Zebra as a child token of the Buffalo
+  const zebra = {
+    "description": "What is it so worried about?",
+    "external_url": "https://austingriffith.com/portfolio/paintings/",// <-- this can link to a page for the specific file too
+    "image": "https://austingriffith.com/images/paintings/zebra.jpg",
+    "name": "Zebra",
+    "attributes": [
+       {
+         "trait_type": "BackgroundColor",
+         "value": "blue"
+       },
+       {
+         "trait_type": "Eyes",
+         "value": "googly"
+       },
+       {
+         "trait_type": "Stamina",
+         "value": 38
+       }
+    ]
+  }
+  console.log("Uploading zebra...")
+  const childTokenUri = await ipfs.add(JSON.stringify(zebra))
 
-  // console.log(`Minting zebra with IPFS hash (${uploadedzebra.path})`)
-  // await composableContract.mintItem(toAddress, uploadedzebra.path, {gasLimit:400000})
+  console.log(`Minting zebra with IPFS hash (${childTokenUri.path})`)
+  let childTokenId = await testUtils.mintAndGetId(
+    composableContract,
+    composableContract.address,
+    testConsts.LAYER_TYPE,
+    childTokenUri.path,
+    1,
+    toAddress,
+    parentTokenId
+  );
+
+  console.log(`childTokenId: ${childTokenId.toHexString()}`);
 
   // await sleep(delayMS)
 

@@ -290,7 +290,7 @@ contract ERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Receiver
         // call safeBatchTransferFrom on the child contract to transfer the tokens from this to _to
         // TODO this should check to ensure that this call is possible... ie all authorizedchildcontracts need to be compatible with this
         ERC1155Upgradeable(_childContract).safeTransferFrom(address(this), _to, _childTokenId, _amount, _data);
-        emit TransferChildToken(_fromTokenId, _to, _childContract, _childTokenId, _amount);
+        emit TransferChildToken(operator, _fromTokenId, _to, _childContract, _childTokenId, _amount);
     }
 
     /**
@@ -331,7 +331,7 @@ contract ERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Receiver
         }
         // call safeBatchTransferFrom on the child contract to transfer the tokens from this to _to
         ERC1155Upgradeable(_childContract).safeBatchTransferFrom(address(this), _to, _childTokenIds, _amounts, _data);
-        emit TransferChildTokenBatch(_fromTokenId, _to, _childContract, _childTokenIds, _amounts);
+        emit TransferChildTokenBatch(operator, _fromTokenId, _to, _childContract, _childTokenIds, _amounts);
     }
 
     /**
@@ -361,7 +361,7 @@ contract ERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Receiver
 
         _receiveChild(_recipientTokenId, _msgSender(), _childTokenId, _amount);
 
-        emit ReceivedChildToken(_from, _recipientTokenId, _msgSender(), _childTokenId, _amount);
+        emit ReceivedChildToken(_operator, _from, _recipientTokenId, _msgSender(), _childTokenId, _amount);
 
         // TODO possibly limit number of tokens for children?
 
@@ -404,7 +404,7 @@ contract ERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Receiver
             _receiveChild(_recipientTokenId, _msgSender(), _childTokenIds[i], _amounts[i]);
         }
 
-        emit ReceivedChildTokenBatch(_from, _recipientTokenId, _msgSender(), _childTokenIds, _amounts);
+        emit ReceivedChildTokenBatch(_operator, _from, _recipientTokenId, _msgSender(), _childTokenIds, _amounts);
 
         return this.onERC1155BatchReceived.selector;
     }

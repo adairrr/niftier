@@ -77,7 +77,18 @@ function publishContract(contractNameWithDir) {
       graphConfigPath,
       JSON.stringify(graphConfig, null, 2)
     );
-    // TODO this may need to be 'dirred'
+
+    // create the config as a ts file as well
+    let tsGraphConfig = '';
+    for (let [key, value] of Object.entries(graphConfig)) {
+      tsGraphConfig += `export const ${key} = "${value.toLowerCase()}";\n`
+    }
+    fs.writeFileSync(
+      graphConfigPath.replace('.json', '.ts'),
+      tsGraphConfig
+    );
+
+    // write the abis to subgraph
     fs.writeFileSync(
       `${graphDir}/abis/${contractName}.json`,
       JSON.stringify(contract.abi, null, 2)

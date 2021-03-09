@@ -91,8 +91,13 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
     event ChildTypeAuthorized(uint256 _parentType, uint256 _childType);
     event UriUpdated(uint256 indexed _tokenId, string _tokenUri);
 
+    // address private pendingInternalTransferSender;
     uint256 private pendingInternalRecipientId;
     modifier cachedInternalTransfer(bytes memory _data) {
+        // require(pendingInternalTransferSender == address(0), "Reentrant call");
+        // assembly {
+        //     sstore(pendingInternalTransferSender.slot, _sender)
+        // }
         // check that data may support uint256
         if (_data.length == 32) {
             require(pendingInternalRecipientId == 0, "Reentrant call");
@@ -103,6 +108,7 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
         }
         _;
         pendingInternalRecipientId = 0;
+        // pendingInternalTransferSender = address(0)
     }
 
     /**
@@ -210,6 +216,8 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
 
         // add to token id supply
         tokenSupply[tokenId] = tokenSupply[tokenId].add(_amount);
+
+        emit Mint(_msgSender(), _to, tokenId, _amount, _creator);
     }
 
     function mintBatch(
@@ -284,6 +292,8 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
             // add to token id supply
             tokenSupply[currentTokenId] = tokenSupply[currentTokenId].add(_amounts[i]);
         }
+
+        emit MintBatch(_msgSender(), _to, tokenIds, _amounts, _creator);
     }
 
 /*
@@ -559,23 +569,31 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
         require(_to != address(0), "Transfer to the zero address");
         require(_amount > 0, "Must transfer more than one token");
         // TODO verify child approvals????
-
-        console.log("safeTransferChildFrom before: %s", pendingInternalRecipientId);
-
         // TODO this should fire an event for internal transfers that's different... presumably using _data
 
-        // _beforeChildTransfer(operator, _fromTokenId, _to, _childContract, _asSingletonUintArray(_childTokenId), _asSingletonUintArray(_amount), _data);
+        address operator = _msgSender();
 
+        // only the creator of the parent token should be able to transfer child tokens
         // TODO check for locked or first sale
+        require(tokenCreators[_fromTokenId] == operator, "Only the creator can transfer children from a parent token");
+        
+        _beforeChildTransfer(operator, _fromTokenId, _to, _childContract, _asSingletonUintArray(_childTokenId), _asSingletonUintArray(_amount), _data);
+
         _removeChild(_fromTokenId, _childContract, _childTokenId, _amount);
 
         // TODO - ensure that the _to != this... 
         // call safeBatchTransferFrom on the child contract to transfer the tokens from this to _to
         // TODO this should check to ensure that this call is possible... ie all authorizedchildcontracts need to be compatible with this
         ERC1155Upgradeable(_childContract).safeTransferFrom(address(this), _to, _childTokenId, _amount, _data);
-        console.log("safeTransferChildFrom after: %s", pendingInternalRecipientId);
 
-        emit TransferChildToken(_fromTokenId, _to, _childContract, _childTokenId, _amount);
+        emit TransferChildToken(operator, _fromTokenId, _to, _childContract, _childTokenId, _amount);
+        
+        // if the pendingId is 0, it means that it is a token -> user transfer
+        // if (pendingInternalRecipientId == 0) {
+        //     emit TransferChildToken(operator, _fromTokenId, _to, _childContract, _childTokenId, _amount);
+        // } else {
+        //     emit TransferChildTokenToToken(operator, _fromTokenId, pendingInternalRecipientId, _childContract, _childTokenId, _amount);
+        // }
     }
 
     /**
@@ -598,7 +616,13 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
         require(_childTokenIds.length == _amounts.length, "_childTokenIds and _amounts length mismatch");
         require(_to != address(0), "Transfer to the zero address");
 
-        // _beforeChildTransfer(operator, _fromTokenId, _to, _childContract, _childTokenIds, _amounts, _data);
+        address operator = _msgSender();
+
+        // only the creator of the parent token should be able to transfer child tokens
+        // TODO check for locked or first sale
+        require(tokenCreators[_fromTokenId] == operator, "Only the creator can transfer children from a parent token");
+
+        _beforeChildTransfer(operator, _fromTokenId, _to, _childContract, _childTokenIds, _amounts, _data);
 
         // loop through the 
         for (uint256 i; i < _childTokenIds.length; ++i) {
@@ -609,7 +633,15 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
         }
         // call safeBatchTransferFrom on the child contract to transfer the tokens from this to _to
         ERC1155Upgradeable(_childContract).safeBatchTransferFrom(address(this), _to, _childTokenIds, _amounts, _data);
-        emit TransferChildTokenBatch(_fromTokenId, _to, _childContract, _childTokenIds, _amounts);
+
+        emit TransferChildTokenBatch(operator, _fromTokenId, _to, _childContract, _childTokenIds, _amounts);
+
+        // if the pendingId is 0, it means that it is a token -> user transfer
+        // if (pendingInternalRecipientId == 0) {
+        //     emit TransferChildTokenBatch(operator, _fromTokenId, _to, _childContract, _childTokenIds, _amounts);
+        // } else {
+        //     emit TransferChildTokenBatchToToken(operator, _fromTokenId, pendingInternalRecipientId, _childContract, _childTokenIds, _amounts);
+        // }
     }
 
     /**
@@ -639,7 +671,7 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
 
         _receiveChild(_recipientTokenId, _msgSender(), _childTokenId, _amount);
 
-        emit ReceivedChildToken(_from, _recipientTokenId, _msgSender(), _childTokenId, _amount);
+        emit ReceivedChildToken(_operator, _from, _recipientTokenId, _msgSender(), _childTokenId, _amount);
 
         // TODO possibly limit number of tokens for children?
 
@@ -682,7 +714,7 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
             _receiveChild(_recipientTokenId, _msgSender(), _childTokenIds[i], _amounts[i]);
         }
 
-        emit ReceivedChildTokenBatch(_from, _recipientTokenId, _msgSender(), _childTokenIds, _amounts);
+        emit ReceivedChildTokenBatch(_operator, _from, _recipientTokenId, _msgSender(), _childTokenIds, _amounts);
 
         return this.onERC1155BatchReceived.selector;
     }
@@ -786,6 +818,7 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
         if (finalBalance == _amount) {
            childToParentHolders[_childContract][_childTokenId].add(_tokenId);
            parentToChildTokens[_tokenId][_childContract].add(_childTokenId);
+           emit AssociateChildToken(_tokenId, _childContract, _childTokenId);
         }
     }
 
@@ -814,6 +847,7 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
         if (finalBalance == 0) {
             childToParentHolders[_childContract][_childTokenId].remove(_tokenId);
             parentToChildTokens[_tokenId][_childContract].remove(_childTokenId);
+            emit DisassociateChildToken(_tokenId, _childContract, _childTokenId);
         }
     }
 
@@ -915,7 +949,22 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
         bytes memory _data
     )
         internal virtual
-    { }
+    {
+        // token to token, no approvals needed
+        if (_to != address(this)) {        
+            for (uint256 i; i < _ids.length; ++i) {
+                // transfer to someone who doesn't already have approval
+                if (_operator != _to) {
+                    // if from still has balance after transfer, grant approval to the new owner and leave the last
+                    if (balanceOf(_operator, _ids[i]) > _amounts[i]) {
+                        approve(_to, _fromTokenId);
+                    } else {
+                        transferApproval(_operator, _to, _fromTokenId);
+                    }
+                }
+            }
+        }
+    }
 
     function _beforeTokenTransfer(
         address _operator,
@@ -937,10 +986,15 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
             if (_from == address(0)) {
                 // this is a mint because address is zero
                 idCount == 1 ? approveAtMint(_to, _ids[0]) : approveAtBatchMint(_to, _ids);
-            } else {
+            } else if (_from != address(this)) {
                 // this is a between user transfer OR BURN TODO
                 for (uint256 i; i < idCount; ++i) {
-                    transferApproval(_from, _to, _ids[i]);
+                    // if from still has balance after transfer, grant approval to the new owner and leave the last
+                    if (balanceOf(_from, _ids[i]) > _amounts[i]) {
+                        approveAtMint(_to, _ids[i]);
+                    } else {
+                        transferApproval(_from, _to, _ids[i]);
+                    }
                 }
             }
         }

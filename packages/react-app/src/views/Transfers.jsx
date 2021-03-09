@@ -8,26 +8,10 @@ const { Column, ColumnGroup } = Table;
 export default function Transfers({
   mainnetProvider,
   localProvider,
-  readContracts
+  readContracts,
+  singleTransferEvents,
+  batchTransferEvents
 }) {
-
-  const singleTransferEvents = useEventListener(
-    readContracts, 
-    "TypedERC1155Composable", 
-    "TransferSingle", 
-    localProvider, 
-    1
-  );
-  console.log("📟 TransferSingle events:", singleTransferEvents);
-
-  const batchTransferEvents = useEventListener(
-    readContracts, 
-    "TypedERC1155Composable", 
-    "TransferBatch", 
-    localProvider, 
-    1
-  );
-  console.log("📟 TransferBatch events:", batchTransferEvents);
 
   const [ transferToAddresses, setTransferToAddresses ] = useState({})
 
