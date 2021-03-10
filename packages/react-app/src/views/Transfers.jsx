@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Address, TokenId } from "../components";
 import { useEventListener } from "../hooks";
 import { List, Table } from "antd";
+import { useQuery, gql } from '@apollo/client';
 
 const { Column, ColumnGroup } = Table;
 
@@ -13,34 +14,51 @@ export default function Transfers({
   batchTransferEvents
 }) {
 
-  const [ transferToAddresses, setTransferToAddresses ] = useState({})
+  const TRANSFERS = gql`
+    query GetTransfers {
+      transfers(orderBy: timestamp) {
+        token {
+          id
+        }
+        from {
+          id
+        }
+        to {
+          id
+        }
+      }
+    }
+  `;
+
+  const { loading, error, data } = useQuery(TRANSFERS);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error :(</p>;
 
   return (
     <div>
       <div style={{ width:600, margin: "auto", marginTop:32, paddingBottom:32 }}>
         <Table 
           bordered 
-          dataSource={singleTransferEvents}
-          rowKey={(event) => [event[1], event[2], event[3], event.blocknumber].join('_')}
+          dataSource={data.transfers}
+          rowKey={(data) => [data.from.id, data.to.id, data.token.id].join("_")}
         >
         <Column
           title="TokenId"
-          key={(event) => [event[1], event[2], event[3], event.blocknumber].join('_')}
-          dataIndex="3"
-          render={(tokenId) => (
+          dataIndex="token"
+          render={(token) => (
             <TokenId 
-              id={tokenId.toHexString()}
+              id={token.id}
               fontSize={16}
             />
           )}
         />
         <Column
           title="From"
-          dataIndex="1"
-          key={(event) => [event[1], event[2], event[3], event.blocknumber].join('_')}
+          dataIndex="from"
           render={(fromAddress) => (
             <Address
-              address={fromAddress}
+              address={fromAddress.id}
               ensProvider={mainnetProvider}
               fontSize={16}
             />
@@ -48,11 +66,10 @@ export default function Transfers({
         />
         <Column
           title="To"
-          key={(event) => [event[1], event[2], event[3], event.blocknumber].join('_')}
-          dataIndex="2"
+          dataIndex="to"
           render={(toAddress) => (
             <Address
-              address={toAddress}
+              address={toAddress.id}
               ensProvider={mainnetProvider}
               fontSize={16} 
             />

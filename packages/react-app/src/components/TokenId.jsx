@@ -22,7 +22,7 @@ const { Text } = Typography;
 
 export default function TokenId(props) {
 
-  const tokenId = props.value || props.id;
+  const tokenId = props.value || props.id;  
 
   if (!tokenId) {
     return (
