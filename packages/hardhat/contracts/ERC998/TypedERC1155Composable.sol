@@ -84,12 +84,12 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
     uint256 public constant TOKEN_TYPE_SHIFT = 240;
     uint256 public constant TOKEN_TYPE_MASK = uint256(~0) << TOKEN_TYPE_SHIFT;
 
-    event BaseUriUpdated(string _baseUri);
+    event BaseUriUpdated(string baseUri);
     // TODO this will be per type!!
-    event TokenNameUpdated(string _name);
-    event TokenTypesCreated(bytes32[] _tokenTypeNames, uint256[] tokenTypeIds);
-    event ChildTypeAuthorized(uint256 _parentType, uint256 _childType);
-    event UriUpdated(uint256 indexed _tokenId, string _tokenUri);
+    event TokenNameUpdated(string name);
+    event TokenTypesCreated(bytes32[] tokenTypeNames, uint256[] tokenTypeIds);
+    event ChildTypeAuthorized(uint256 parentType, uint256 childType);
+    event UriUpdated(uint256 indexed tokenId, string tokenUri);
 
     // address private pendingInternalTransferSender;
     uint256 private pendingInternalRecipientId;

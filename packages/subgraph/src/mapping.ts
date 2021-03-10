@@ -3,7 +3,8 @@ import {
 	BigInt, 
 	Address,
 	Bytes,
-	store
+	store,
+  Value
 } from "@graphprotocol/graph-ts"
   
 import {
@@ -24,12 +25,14 @@ import {
 	TransferChildTokenBatch as TransferChildTokenBatchEvent,
   AssociateChildToken as AssociateChildTokenEvent,
   DisassociateChildToken as DisassociateChildTokenEvent,
-  TokenTypesCreated as TokenTypesCreatedEvent
+  TokenTypesCreated as TokenTypesCreatedEvent,
+  ChildTypeAuthorized
   
 	  // URI            as URIEvent,
 } from '../generated/TypedERC1155Composable/TypedERC1155Composable'
   
-import { 
+import {
+  Debug,
 	Purpose, 
 	Sender,
 	Account,
@@ -39,6 +42,7 @@ import {
   Transfer,
   Approval,
 	TokenRelationship,
+  TokenTypeRelationship,
   TokenType
 } from "../generated/schema"
   
@@ -87,7 +91,16 @@ function fetchToken(id: BigInt): Token {
   // let tokenId = registry.id.concat('-').concat(id.toHex());
   let tokenId = id.toHex();
   let token = Token.load(tokenId);
-  let tokenType = TokenType.load((id.subarray(0, (id.length == 32 ? 2 : 1)) as BigInt).toHex());
+
+  // this uses substring because it's easiest... shifting and other methods don't work
+  let tokenType = TokenType.load(tokenId.substring(0, (tokenId.length == 32 ? 4 : 3)));
+
+  if (tokenType == null) {
+    debug("Token type is null, errored token id? id: ".concat(tokenId));
+    // this is a terrible way of doing this
+    tokenType = new TokenType("0x0");
+    tokenType.name = "ERRORED TOKEN TYPE";
+  }
 
   // doesn't exist yet
   if (token == null) {
@@ -99,7 +112,7 @@ function fetchToken(id: BigInt): Token {
   }
   return token as Token;
 }
-  
+
 // Get the token balance of an account
 function fetchBalance(token: Token, account: Account): Balance {
   let balanceId = token.id.concat('-').concat(account.id)
@@ -375,7 +388,7 @@ function registerTransfer(
 
 export function handleTokenTypesCreated(event: TokenTypesCreatedEvent): void {
   let tokenTypeIds = event.params.tokenTypeIds;
-  let tokenTypeNames = event.params._tokenTypeNames;
+  let tokenTypeNames = event.params.tokenTypeNames;
 
   // we save each new token type, since the smart contract forbids duplicates
   for (let i = 0; i < tokenTypeIds.length; ++i) {
@@ -383,6 +396,19 @@ export function handleTokenTypesCreated(event: TokenTypesCreatedEvent): void {
     tokenType.name = tokenTypeNames[i].toString();
     tokenType.save();
   }
+}
+
+export function handleChildTypeAuthorized(event: ChildTypeAuthorized): void {
+  let parentType = TokenType.load(event.params.parentType.toHex());
+  let childType = TokenType.load(event.params.childType.toHex());
+
+  let relationshipId = parentType.id.concat('-').concat(childType.id);
+
+  let typeRelationship = new TokenTypeRelationship(relationshipId);
+  typeRelationship.parent = parentType.id;
+  typeRelationship.child = childType.id;
+
+  typeRelationship.save();
 }
 
 // export function handleTransferChildToken(event: TransferChildTokenEvent): void {
@@ -427,3 +453,18 @@ export function handleTokenTypesCreated(event: TokenTypesCreatedEvent): void {
 //   // save the types
 
 // }
+
+/**
+ * WORKAROUND: there's no `console.log` functionality in mapping.
+ * so we use `debug(..)` which writes a `Debug` entity to the store so you can see them in graphiql.
+ * https://github.com/daostack/subgraph/blob/master/src/utils.ts
+ */
+let debugId = 0;
+export function debug(msg: string): void {
+ 
+  let id = BigInt.fromI32(debugId).toHex();
+  let ent = new Debug(id);
+  ent.set('message', Value.fromString(msg));
+  store.set('Debug', id, ent);
+  debugId++;
+}

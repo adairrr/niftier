@@ -13,6 +13,16 @@ type Sender @entity {
   createdAt: BigInt!
   purposeCount: BigInt!
 }
+
+# WORKAROUND: there's no `console.log` functionality in mapping.
+# so we use `debug(..)` which writes a `Debug` entity to the store so you can see them in graphiql.
+# https://github.com/daostack/subgraph/blob/master/src/domain/schema.graphql
+type Debug @entity {
+	id: ID!
+	message: String!
+}
+
+
 # https://github.com/Amxx/subgraphs/blob/80a66df2d109fea3c1c0d41b5f3df5345f811ed6/subgraphs/eip1155/schema.graphql
 
 type Account @entity {
@@ -35,6 +45,15 @@ type TokenType @entity {
 	id: 						  ID!
 	name: 						  String!
 	tokens:						  [Token!]! @derivedFrom(field: "tokenType")
+	authorizedChildren:			  [TokenTypeRelationship!] @derivedFrom(field: "parent")
+	authorizedParents: 			  [TokenTypeRelationship!] @derivedFrom(field: "child")
+}
+
+type TokenTypeRelationship @entity {
+	# Set to `${parent.id}-${child.id}`
+	id:                           ID!
+	parent:                       TokenType!
+	child:                        TokenType!
 }
 
 type Token @entity {

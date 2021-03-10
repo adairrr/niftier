@@ -71,6 +71,8 @@ dataSources:
         #   handler: handleBatchApproval
         - event: TokenTypesCreated(bytes32[],uint256[])
           handler: handleTokenTypesCreated
+        - event: ChildTypeAuthorized(uint256,uint256)
+          handler: handleChildTypeAuthorized
   # - TransferChildTokenBatch(indexed address,indexed uint256,indexed address,address,uint256[],uint256[])
       # callHandlers: 
       #   - function: mint(address,bytes32,string,uint256,address,bytes)
