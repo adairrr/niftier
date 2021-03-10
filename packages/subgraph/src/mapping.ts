@@ -23,7 +23,8 @@ import {
 	TransferChildToken as TransferChildTokenEvent,
 	TransferChildTokenBatch as TransferChildTokenBatchEvent,
   AssociateChildToken as AssociateChildTokenEvent,
-  DisassociateChildToken as DisassociateChildTokenEvent
+  DisassociateChildToken as DisassociateChildTokenEvent,
+  TokenTypesCreated as TokenTypesCreatedEvent
   
 	  // URI            as URIEvent,
 } from '../generated/TypedERC1155Composable/TypedERC1155Composable'
@@ -37,7 +38,8 @@ import {
   Balance,
   Transfer,
   Approval,
-	TokenRelationship
+	TokenRelationship,
+  TokenType
 } from "../generated/schema"
   
 import {
@@ -50,6 +52,8 @@ import {
 import {
   TypedERC1155ComposableAddress
 } from '../config/config';
+
+const TOKEN_TYPE_SHIFT: u8 = 240;
   
 export function handleSetPurpose(event: SetPurpose): void {
 
@@ -83,6 +87,7 @@ function fetchToken(id: BigInt): Token {
   // let tokenId = registry.id.concat('-').concat(id.toHex());
   let tokenId = id.toHex();
   let token = Token.load(tokenId);
+  let tokenType = TokenType.load((id.subarray(0, (id.length == 32 ? 2 : 1)) as BigInt).toHex());
 
   // doesn't exist yet
   if (token == null) {
@@ -90,8 +95,7 @@ function fetchToken(id: BigInt): Token {
     // token.registry = registry.id;
     token.identifier = id;
     token.totalSupply = constants.BIGINT_ZERO as BigInt;
-    // token.children = [];
-    // token.parents = [];
+    token.tokenType = tokenType.id;
   }
   return token as Token;
 }
@@ -366,6 +370,18 @@ function registerTransfer(
       // save the types:
     token.save()
     transfer.save()
+  }
+}
+
+export function handleTokenTypesCreated(event: TokenTypesCreatedEvent): void {
+  let tokenTypeIds = event.params.tokenTypeIds;
+  let tokenTypeNames = event.params._tokenTypeNames;
+
+  // we save each new token type, since the smart contract forbids duplicates
+  for (let i = 0; i < tokenTypeIds.length; ++i) {
+    let tokenType = new TokenType(tokenTypeIds[i].toHex());
+    tokenType.name = tokenTypeNames[i].toString();
+    tokenType.save();
   }
 }
 

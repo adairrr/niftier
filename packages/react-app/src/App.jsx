@@ -11,7 +11,7 @@ import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useC
 import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address, AddressInput } from "./components";
 import { Transactor } from "./helpers";
 import { formatEther, parseEther } from "@ethersproject/units";
-import { Hints, ExampleUI, Subgraph, Gallery, Transfers } from "./views"
+import { Hints, ExampleUI, Subgraph, Gallery, Transfers, Mint } from "./views"
 import { INFURA_ID, DAI_ADDRESS, DAI_ABI, NETWORK, NETWORKS } from "./constants";
 import ReactJson from 'react-json-view'
 const { BufferList } = require('bl')
@@ -278,6 +278,9 @@ function App(props) {
           <Menu.Item key="/subgraph">
             <Link onClick={()=>{setRoute("/subgraph")}} to="/subgraph">Subgraph</Link>
           </Menu.Item>
+          <Menu.Item key="/mint">
+            <Link onClick={()=>{setRoute("/mint")}} to="/mint">Mint</Link>
+          </Menu.Item>
         </Menu>
 
         <Switch>
@@ -382,6 +385,13 @@ function App(props) {
           <Route path="/subgraph">
             <Subgraph
               subgraphUri={props.subgraphUri}
+              tx={tx}
+              writeContracts={writeContracts}
+              mainnetProvider={mainnetProvider}
+            />
+          </Route>
+          <Route path="/mint">
+            <Mint
               tx={tx}
               writeContracts={writeContracts}
               mainnetProvider={mainnetProvider}

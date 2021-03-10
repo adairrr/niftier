@@ -31,12 +31,19 @@ type Account @entity {
 # 	tokens:                       [Token!]! @derivedFrom(field: "registry")
 # }
 
+type TokenType @entity {
+	id: 						  ID!
+	name: 						  String!
+	tokens:						  [Token!]! @derivedFrom(field: "tokenType")
+}
+
 type Token @entity {
 	id:                           ID!
 	# registry:                     TokenRegistry!
 	identifier:                   BigInt!
 	URI:                          String
 	totalSupply:                  BigInt!
+	tokenType: 					  TokenType!
 	children:					  [TokenRelationship!] @derivedFrom(field: "parent")
 	parents:					  [TokenRelationship!] @derivedFrom(field: "child")
 	# TYPE????
