@@ -155,8 +155,7 @@ async function deploy(contractName: string, _args = [], overrides = {}, librarie
     " 📄",
     chalk.cyan(contractName),
     "deployed to:",
-    chalk.magenta(deployed.address),
-    chalk.grey(extraGasInfo)
+    chalk.magenta(deployed.address)
   );
   console.log(
     " ⛽",
