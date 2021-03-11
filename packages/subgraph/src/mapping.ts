@@ -26,9 +26,11 @@ import {
   AssociateChildToken as AssociateChildTokenEvent,
   DisassociateChildToken as DisassociateChildTokenEvent,
   TokenTypesCreated as TokenTypesCreatedEvent,
-  ChildTypeAuthorized
+  ChildTypeAuthorized as ChildTypeAuthorizedEvent,
+  URI as URIEvent,
+  UriUpdated as UriUpdatedEvent
   
-	  // URI            as URIEvent,
+	  // uri            as URIEvent,
 } from '../generated/TypedERC1155Composable/TypedERC1155Composable'
   
 import {
@@ -233,6 +235,18 @@ export function registerMint(
   transfer.save();
 }
 
+export function handleURI(event: URIEvent): void {
+  let token = fetchToken(event.params.id);
+  token.uri = event.params.value;
+  token.save();
+}
+
+export function handleUriUpdated(event: UriUpdatedEvent): void {
+  let token = fetchToken(event.params.tokenId);
+  token.uri = event.params.tokenUri;
+  token.save();
+}
+
 
 export function handleAssociateChildToken(event: AssociateChildTokenEvent): void {
   // let registry = new TokenRegistry(event.address.toHex());
@@ -398,7 +412,7 @@ export function handleTokenTypesCreated(event: TokenTypesCreatedEvent): void {
   }
 }
 
-export function handleChildTypeAuthorized(event: ChildTypeAuthorized): void {
+export function handleChildTypeAuthorized(event: ChildTypeAuthorizedEvent): void {
   let parentType = TokenType.load(event.params.parentType.toHex());
   let childType = TokenType.load(event.params.childType.toHex());
 

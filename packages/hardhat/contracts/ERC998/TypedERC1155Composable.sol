@@ -209,7 +209,7 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
 
         if (!_exists(tokenId)) {
             // associate URI
-            tokenUris[tokenId] = _tokenUri;
+            _setTokenUri(tokenId, _tokenUri);
             //  associate creator
             tokenCreators[tokenId] = _creator;
         }
@@ -284,7 +284,7 @@ contract TypedERC1155Composable is Initializable, ERC1155Upgradeable, ERC1155Rec
             currentTokenId = tokenIds[i];
             if (!_exists(currentTokenId)) {
                 // associate URI
-                tokenUris[currentTokenId] = _tokenUris[i];
+                _setTokenUri(currentTokenId, _tokenUris[i]);
                 //  associate creator
                 tokenCreators[currentTokenId] = _creator;
             }
@@ -911,6 +911,7 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
      * @param _tokenUri The new URI
      */
     function updateTokenUri(uint256 _tokenId, string memory _tokenUri) external onlyAdmin {
+        require(_exists(_tokenId), "URI set of nonexistent token");
         _setTokenUri(_tokenId, _tokenUri);
         emit UriUpdated(_tokenId, _tokenUri);
     }
@@ -922,8 +923,8 @@ function _validateBatchSelfComposability(uint256[] memory _tokenTypeIds) interna
      * @param _tokenUri The new URI
      */
     function _setTokenUri(uint256 _tokenId, string memory _tokenUri) internal {
-        require(_exists(_tokenId), "URI set of nonexistent token");
         tokenUris[_tokenId] = _tokenUri;
+        emit URI(_tokenUri, _tokenId);
     }
 
     /**

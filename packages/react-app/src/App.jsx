@@ -11,7 +11,7 @@ import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useC
 import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address, AddressInput, ThemeSwitch } from "./components";
 import { Transactor } from "./helpers";
 import { formatEther, parseEther } from "@ethersproject/units";
-import { Hints, ExampleUI, Subgraph, Gallery, Transfers, Mint } from "./views"
+import { Hints, ExampleUI, Subgraph, Gallery, Transfers, Mint, UserTokens } from "./views"
 import { INFURA_ID, DAI_ADDRESS, DAI_ABI, NETWORK, NETWORKS } from "./constants";
 //import Hints from "./Hints";
 import { useThemeSwitcher } from "react-css-theme-switcher";
@@ -45,7 +45,7 @@ const ipfs = ipfsAPI({host: 'ipfs.infura.io', port: '5001', protocol: 'https' })
 const targetNetwork = NETWORKS['localhost']; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
 
 // 😬 Sorry for all the console logging
-const DEBUG = true
+const DEBUG = false
 
 //EXAMPLE STARTING JSON:
 const STARTING_JSON = {
@@ -103,7 +103,7 @@ function App(props) {
 
   const [injectedProvider, setInjectedProvider] = useState();
   /* 💵 This hook will get the price of ETH from 🦄 Uniswap: */
-  const price = useExchangePrice(targetNetwork,mainnetProvider);
+  const price = useExchangePrice(targetNetwork, mainnetProvider);
 
   /* 🔥 This hook will get the price of Gas from ⛽️ EtherGasStation */
   const gasPrice = useGasPrice(targetNetwork,"fast");
@@ -129,11 +129,11 @@ function App(props) {
 
   // 🏗 scaffold-eth is full of handy hooks like this one to get your balance:
   const yourLocalBalance = useBalance(localProvider, address);
-  if(DEBUG) console.log("💵 yourLocalBalance",yourLocalBalance?formatEther(yourLocalBalance):"...")
+  if(DEBUG) console.log("💵 yourLocalBalance", yourLocalBalance ? formatEther(yourLocalBalance) : "...")
 
   // Just plug in different 🛰 providers to get your balance on different chains:
-  const yourMainnetBalance = useBalance(mainnetProvider, address);
-  if(DEBUG) console.log("💵 yourMainnetBalance",yourMainnetBalance?formatEther(yourMainnetBalance):"...")
+  // const yourMainnetBalance = useBalance(mainnetProvider, address);
+  // if(DEBUG) console.log("💵 yourMainnetBalance",yourMainnetBalance?formatEther(yourMainnetBalance):"...")
 
   // Load in your local 📝 contract and read a value from it:
   const readContracts = useContractLoader(localProvider)
@@ -146,40 +146,22 @@ function App(props) {
   // EXTERNAL CONTRACT EXAMPLE:
   //
   // If you want to bring in the mainnet DAI contract it would look like:
-  const mainnetDAIContract = useExternalContractLoader(mainnetProvider, DAI_ADDRESS, DAI_ABI)
-  console.log("🌍 DAI contract on mainnet:", mainnetDAIContract)
+  // const mainnetDAIContract = useExternalContractLoader(mainnetProvider, DAI_ADDRESS, DAI_ABI)
+  // if(DEBUG) console.log("🌍 DAI contract on mainnet:", mainnetDAIContract)
   //
   // Then read your DAI balance like:
-  const myMainnetDAIBalance = useContractReader({DAI: mainnetDAIContract},"DAI", "balanceOf",["0x34aA3F359A9D614239015126635CE7732c18fDF3"])
-  console.log("🥇 myMainnetDAIBalance:", myMainnetDAIBalance)
+  // const myMainnetDAIBalance = useContractReader({DAI: mainnetDAIContract},"DAI", "balanceOf",["0x34aA3F359A9D614239015126635CE7732c18fDF3"])
+  // if(DEBUG) console.log("🥇 myMainnetDAIBalance:", myMainnetDAIBalance)
 
 
   // keep track of a variable from the contract in the local React state:
   //📟 Listen for broadcast events
   const purpose = useContractReader(readContracts,"YourContract", "purpose")
-  console.log("🤗 purpose:",purpose)
+  if(DEBUG) console.log("🤗 purpose:",purpose)
 
   //📟 Listen for broadcast events
   const setPurposeEvents = useEventListener(readContracts, "YourContract", "SetPurpose", localProvider, 1);
-  console.log("📟 SetPurpose events:",setPurposeEvents)
-
-  const singleTransferEvents = useEventListener(
-    readContracts, 
-    "TypedERC1155Composable", 
-    "TransferSingle", 
-    localProvider, 
-    1
-  );
-  console.log("📟 TransferSingle events:", singleTransferEvents);
-
-  const batchTransferEvents = useEventListener(
-    readContracts, 
-    "TypedERC1155Composable", 
-    "TransferBatch", 
-    localProvider, 
-    1
-  );
-  console.log("📟 TransferBatch events:", batchTransferEvents);
+  if(DEBUG) console.log("📟 SetPurpose events:",setPurposeEvents)
 
   /*
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
@@ -274,6 +256,9 @@ function App(props) {
           <Menu.Item key="/gallery">
             <Link onClick={()=>{setRoute("/gallery")}} to="/gallery">Gallery</Link>
           </Menu.Item>
+          <Menu.Item key="/tokens">
+            <Link onClick={()=>{setRoute("/tokens")}} to="/tokens">Tokens</Link>
+          </Menu.Item>
           <Menu.Item key="/transfers">
             <Link onClick={()=>{setRoute("/transfers")}} to="/transfers">Transfers</Link>
           </Menu.Item>
@@ -349,13 +334,24 @@ function App(props) {
               readContracts={readContracts}
             />
           </Route>
+          <Route path="/tokens">
+            <UserTokens
+              address={address}
+              userProvider={userProvider}
+              mainnetProvider={mainnetProvider}
+              localProvider={localProvider}
+              getFromIPFS={getFromIPFS}
+              blockExplorer={blockExplorer}
+              tx={tx}
+              writeContracts={writeContracts}
+              readContracts={readContracts}
+            />
+          </Route>
           <Route path="/transfers">
             <Transfers 
               mainnetProvider={mainnetProvider}
               localProvider={localProvider}
               readContracts={readContracts}
-              singleTransferEvents={singleTransferEvents}
-              batchTransferEvents={batchTransferEvents}
             />
           </Route>
           <Route path="/composable">

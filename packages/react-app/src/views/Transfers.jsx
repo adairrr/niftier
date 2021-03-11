@@ -9,14 +9,13 @@ const { Column, ColumnGroup } = Table;
 export default function Transfers({
   mainnetProvider,
   localProvider,
-  readContracts,
-  singleTransferEvents,
-  batchTransferEvents
+  readContracts
 }) {
 
   const TRANSFERS = gql`
     query GetTransfers {
       transfers(orderBy: timestamp) {
+        timestamp
         token {
           id
         }
@@ -30,10 +29,12 @@ export default function Transfers({
     }
   `;
 
-  const { loading, error, data } = useQuery(TRANSFERS);
+  const { loading, error, data } = useQuery(TRANSFERS, {
+    pollInterval: 2000  // query every 2 seconds
+  });
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error :(</p>;
+  if (loading) return 'Loading...';
+  if (error) return `Error! ${error.message}`;
 
   return (
     <div>
@@ -41,7 +42,7 @@ export default function Transfers({
         <Table 
           bordered 
           dataSource={data.transfers}
-          rowKey={(data) => [data.from.id, data.to.id, data.token.id].join("_")}
+          rowKey={(data) => [data.from.id, data.to.id, data.token.id, data.timestamp].join("_")}
         >
         <Column
           title="TokenId"

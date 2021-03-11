@@ -1,8 +1,7 @@
 /* eslint-disable jsx-a11y/accessible-emoji */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Button, List, Card } from "antd";
-import { SyncOutlined } from '@ant-design/icons';
 import { Address, AddressInput, TokenId } from "../components";
 import { parseEther, formatEther } from "@ethersproject/units";
 import { useContractReader } from "../hooks";
@@ -20,13 +19,15 @@ export default function Gallery({
   writeContracts 
 }) {
 
+
+  
   const tokenBalance = useContractReader(
     readContracts,
     "TypedERC1155Composable", 
     "balanceOfAccount", 
     [address]
   );
-  console.log("🤗 tokenBalance:", tokenBalance);
+  // console.log("🤗 tokenBalance:", tokenBalance);
 
   //
   // 🧠 This effect will update userComposables by polling when your balance changes
@@ -67,57 +68,59 @@ export default function Gallery({
 
 
   return (
-    <div style={{ width:640, margin: "auto", marginTop:32, paddingBottom:32 }}>
-      <List
-        bordered
-        dataSource={userComposables}
-        renderItem={(item) => {
-          const id = item.id.toHexString()
-          return (
-            <List.Item key={id+"_"+item.uri+"_"+item.owner}>
+    <div>
+      <div style={{ width:640, margin: "auto", marginTop:32, paddingBottom:32 }}>
+        <List
+          bordered
+          dataSource={userComposables}
+          renderItem={(item) => {
+            const id = item.id.toHexString()
+            return (
+              <List.Item key={id+"_"+item.uri+"_"+item.owner}>
 
-              <Card title={(
+                <Card title={(
+                  <div>
+                    <span style={{fontSize:16, marginRight:8}}>
+                      <TokenId 
+                        id={id}
+                        fontSize={16}
+                      />
+                    </span> {item.name}
+                  </div>
+                )}>
+                <div><img src={item.image} style={{maxWidth:150}} /></div>
+                <div>{item.description}</div>
+                </Card>
+
                 <div>
-                  <span style={{fontSize:16, marginRight:8}}>
-                    <TokenId 
-                      id={id}
+                  owner: <Address
+                      address={item.owner}
+                      ensProvider={mainnetProvider}
+                      blockExplorer={blockExplorer}
                       fontSize={16}
-                    />
-                  </span> {item.name}
-                </div>
-              )}>
-              <div><img src={item.image} style={{maxWidth:150}} /></div>
-              <div>{item.description}</div>
-              </Card>
-
-              <div>
-                owner: <Address
-                    address={item.owner}
+                  />
+                  <AddressInput
                     ensProvider={mainnetProvider}
-                    blockExplorer={blockExplorer}
-                    fontSize={16}
-                />
-                <AddressInput
-                  ensProvider={mainnetProvider}
-                  placeholder="transfer to address"
-                  value={transferToAddresses[id]}
-                  onChange={(newValue)=>{
-                    let update = {};
-                    update[id] = newValue;
-                    setTransferToAddresses({ ...transferToAddresses, ...update});
-                  }}
-                />
-                <Button onClick={()=>{
-                  console.log("writeContracts", writeContracts);
-                  tx( writeContracts.YourCollectible.transferFrom(address, transferToAddresses[id], id) )
-                }}>
-                  Transfer
-                </Button>
-              </div>
-            </List.Item>
-          )
-        }}
-      />
+                    placeholder="transfer to address"
+                    value={transferToAddresses[id]}
+                    onChange={(newValue)=>{
+                      let update = {};
+                      update[id] = newValue;
+                      setTransferToAddresses({ ...transferToAddresses, ...update});
+                    }}
+                  />
+                  <Button onClick={()=>{
+                    console.log("writeContracts", writeContracts);
+                    tx( writeContracts.YourCollectible.transferFrom(address, transferToAddresses[id], id) )
+                  }}>
+                    Transfer
+                  </Button>
+                </div>
+              </List.Item>
+            )
+          }}
+        />
+      </div>
     </div>
   );
 }

@@ -60,7 +60,7 @@ type Token @entity {
 	id:                           ID!
 	# registry:                     TokenRegistry!
 	identifier:                   BigInt!
-	URI:                          String
+	uri:                          String
 	totalSupply:                  BigInt!
 	tokenType: 					  TokenType!
 	children:					  [TokenRelationship!] @derivedFrom(field: "parent")

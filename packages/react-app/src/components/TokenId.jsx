@@ -39,7 +39,7 @@ export default function TokenId(props) {
   if (props.minimized) {
     return (
       <span style={{ verticalAlign: "middle" }}>
-        <a style={{ color: "#222222" }}>
+        <a /*style={{ color: "#222222" }}*/>
           <Blockies seed={tokenId.toLowerCase()} size={8} scale={2} />
         </a>
       </span>
@@ -50,7 +50,7 @@ export default function TokenId(props) {
   if (props.onChange) {
     text = (
       <Text editable={{ onChange: props.onChange }} copyable={{ text: tokenId }}>
-        <a style={{ color: "#222222" }}>
+        <a /*style={{ color: "#222222" }}*/>
           {displayId}
         </a>
       </Text>
@@ -58,7 +58,7 @@ export default function TokenId(props) {
   } else {
     text = (
       <Text copyable={{ text: tokenId }}>
-        <a style={{ color: "#222222" }}>
+        <a /*style={{ color: "#222222" }}*/>
           {displayId}
         </a>
       </Text>
