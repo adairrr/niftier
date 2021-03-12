@@ -1,0 +1,212 @@
+import React, { useState, useEffect } from 'react';
+import { useDropzone } from 'react-dropzone'
+import styled, { css } from 'styled-components'
+import { Input, Button } from "antd";
+import { upload } from '../helpers/pinata'
+
+async function wait(ms) {
+  return new Promise(resolve => {
+    setTimeout(resolve, ms)
+  })
+}
+
+const Wrapper = styled.div`
+  display: grid;
+`
+
+const Fields = styled.div`
+  display: grid;
+  grid-row-gap: 20px;
+`
+
+const getColor = ({ isDragAccept, isDragReject, isDragActive }) => {
+  if (isDragAccept) {
+    return '#00e676'
+  }
+
+  if (isDragReject) {
+    return '#ff1744'
+  }
+
+  if (isDragActive) {
+    return '#2196f3'
+  }
+
+  return '#eeeeee'
+}
+
+const DropzoneContainer = styled.div`
+  ${({ theme: { bp, dp, ...theme }, ...props }) => css`
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    border-width: 2px;
+    border-radius: 2px;
+    border-color: ${getColor(props)};
+    border-style: dashed;
+    color: #bdbdbd;
+    outline: none;
+    transition: border 0.24s ease-in-out;
+  `}
+`
+
+const thumbsContainer = {
+  display: "flex",
+  flexDirection: "row",
+  flexWrap: "wrap",
+  marginTop: 16,
+  padding: 20
+};
+
+const thumb = {
+  position: "relative",
+  display: "inline-flex",
+  borderRadius: 2,
+  border: "1px solid #eaeaea",
+  marginBottom: 8,
+  marginRight: 8,
+  width: 100,
+  height: 100,
+  padding: 4,
+  boxSizing: "border-box"
+};
+
+const thumbInner = {
+  display: "flex",
+  minWidth: 0,
+  overflow: "hidden"
+};
+
+const img = {
+  display: "block",
+  width: "auto",
+  height: "100%"
+};
+
+export default function PinataDropzone(props) {
+
+  const [filenames, setFilenames] = useState('')
+  const [title, setTitle] = useState('')
+
+  const {
+    getRootProps,
+    acceptedFiles,
+    getInputProps,
+    isDragActive,
+    isDragAccept,
+    isDragReject,
+  } = useDropzone({
+    accept: 'image/*',
+    onDrop: (files) => {
+      let names = [];
+      files.forEach((file) => {
+        console.log(file);
+        names.push(file.name);
+        // add a preview to each file
+        Object.assign(file, {
+          preview: URL.createObjectURL(file)
+        })
+      })
+      setFilenames(names);
+    },
+  });
+
+  async function submit() {
+    // Upload file to Pinata/IPFS:
+    console.log("Uploading file")
+    const uploadResp = await upload({
+      file: acceptedFiles[0],
+    })
+    const uploadData = await uploadResp.json()
+    
+    console.log(`Upload data : ${uploadData}`);
+    console.log(uploadData);
+  }
+
+  const filesAvailableForUpload = acceptedFiles.length > 0;
+
+  const thumbs = acceptedFiles.map((file, index) => (
+    <div style={thumb} key={file.name}>
+      <div style={thumbInner}>
+        <img src={file.preview} style={img} alt="" />
+      </div>
+    </div>
+  ));
+
+  useEffect(
+    () => () => {
+      // Make sure to revoke the data uris to avoid memory leaks
+      acceptedFiles.forEach((file) => URL.revokeObjectURL(file.preview));
+    },
+    [acceptedFiles]
+  );
+
+  return (
+    <>
+      <h1>Upload</h1>
+
+      <Fields>
+        <DropzoneContainer
+          {...getRootProps({ isDragActive, isDragAccept, isDragReject })}
+        >
+          <input {...getInputProps()} />
+          <p>Drag 'n' drop some files here, or click to select files</p>
+        </DropzoneContainer>
+        <aside style={thumbsContainer}>{thumbs}</aside>
+
+        <Input
+          type="text"
+          name="title"
+          placeholder="Filename"
+          onChange={e => setTitle(e.target.value)}
+          value={title}
+        />
+
+        {filesAvailableForUpload && (
+          <div>
+            <Button color="default" variant="contained" onClick={submit}>
+              Upload
+            </Button>
+          </div>
+        )}
+      </Fields>
+    </>
+  );
+}
+
+
+
+
+
+
+  // const onDrop = useCallback((files) => {
+  //   if (files && files.length > 0){
+  //     if (props.onLoadStart) props.onLoadStart(files.map((x) => parseName(x.name)))
+  //     async.map(files, (file, cb) => {
+  //       toBuffer(file, (err, buff) => {
+  //         if (err) return cb(err);
+  //         ipfs.add(buff).then((results) => {
+  //           console.debug("=> IPFS Dropzone added: ", results.cid.string)
+  //           let _file = parseName(file.name)
+  //           cb(null, {..._file, cid: results.cid.string})
+  //         })
+  //       })
+  //     }, (err, results) => {
+  //       if(err) return console.error("=> IPFS Dropzone: IPFS Upload Error: ", err)
+  //       if(props.onLoad) props.onLoad(results)
+  //     })
+  //   }
+  // }, [])
+
+  // const parseName = (name) => {
+  //   let ext = name.match(/\.[^/.]+$/)
+  //   let file = name.replace(/\.[^/.]+$/, "")
+  //   return {
+  //     ext: ext ? ext[0] : null,
+  //     name: file
+  //   }
+  // }
+
+  // const dropzoneRef = createRef()

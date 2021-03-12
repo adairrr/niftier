@@ -1,10 +1,9 @@
-import React, { useState } from "react";
+import React from "react";
 import { Address, TokenId } from "../components";
-import { useEventListener } from "../hooks";
-import { List, Table } from "antd";
+import { Table } from "antd";
 import { useQuery, gql } from '@apollo/client';
 
-const { Column, ColumnGroup } = Table;
+const { Column } = Table;
 
 export default function Transfers({
   mainnetProvider,
@@ -33,8 +32,8 @@ export default function Transfers({
     pollInterval: 2000  // query every 2 seconds
   });
 
-  if (loading) return 'Loading...';
-  if (error) return `Error! ${error.message}`;
+  if (loading) return <div>'Loading...'</div>;
+  if (error) return <div>`Error! ${error.message}`</div>;
 
   return (
     <div>

@@ -34,11 +34,11 @@ const noContractDisplay = (
 
 const isQueryable = fn => (fn.stateMutability === "view" || fn.stateMutability === "pure") && fn.inputs.length === 0;
 
-export default function Contract({ customContract, account, gasPrice, signer, provider, name, show, price, blockExplorer }) {
+export default function Contract({ customContract, /*account, */gasPrice, signer, provider, name, show, price, blockExplorer }) {
 
   const contracts = useContractLoader(provider);
   let contract
-  if(!customContract){
+  if(!customContract) {
     contract = contracts ? contracts[name] : "";
   }else{
     contract = customContract
@@ -91,7 +91,7 @@ export default function Contract({ customContract, account, gasPrice, signer, pr
                 price={price}
                 blockExplorer={blockExplorer}
               />
-              {account}
+              {/* {account} */}
             </div>
           </div>
         }

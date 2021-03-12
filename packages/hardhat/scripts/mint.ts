@@ -29,7 +29,7 @@ const main = async () => {
     "description": "It's actually a bison?",
     "external_url": "https://austingriffith.com/portfolio/paintings/",// <-- this can link to a page for the specific file too
     "image": "https://austingriffith.com/images/paintings/buffalo.jpg",
-    "name": "Buffalo",
+    "name": "Parent token buffalo",
     "attributes": [
        {
          "trait_type": "BackgroundColor",
@@ -70,7 +70,7 @@ const main = async () => {
     "description": "What is it so worried about?",
     "external_url": "https://austingriffith.com/portfolio/paintings/",// <-- this can link to a page for the specific file too
     "image": "https://austingriffith.com/images/paintings/zebra.jpg",
-    "name": "Zebra",
+    "name": "Child token Zebra",
     "attributes": [
        {
          "trait_type": "BackgroundColor",

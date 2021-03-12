@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { ReactElement, useCallback, useEffect, useState } from "react";
 import { BrowserRouter, Switch, Route, Link } from "react-router-dom";
 import "antd/dist/antd.css";
 import {  JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
@@ -11,7 +11,7 @@ import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useC
 import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address, AddressInput, ThemeSwitch } from "./components";
 import { Transactor } from "./helpers";
 import { formatEther, parseEther } from "@ethersproject/units";
-import { Hints, ExampleUI, Subgraph, Gallery, Transfers, Mint, UserTokens } from "./views"
+import { Hints, ExampleUI, Subgraph, Transfers, Mint, UserTokens } from "./views"
 import { INFURA_ID, DAI_ADDRESS, DAI_ABI, NETWORK, NETWORKS } from "./constants";
 //import Hints from "./Hints";
 import { useThemeSwitcher } from "react-css-theme-switcher";
@@ -67,7 +67,7 @@ const STARTING_JSON = {
 
 //helper function to "Get" from IPFS
 // you usually go content.toString() after this...
-const getFromIPFS = async hashToGet => {
+const getFromIPFS = async (hashToGet: string) => {
   for await (const file of ipfs.get(hashToGet)) {
     console.log(file.path)
     if (!file.content) continue;
@@ -101,7 +101,7 @@ const blockExplorer = targetNetwork.blockExplorer;
 
 function App(props) {
 
-  const [injectedProvider, setInjectedProvider] = useState();
+  const [injectedProvider, setInjectedProvider] = useState<Web3Provider>();
   /* 💵 This hook will get the price of ETH from 🦄 Uniswap: */
   const price = useExchangePrice(targetNetwork, mainnetProvider);
 
@@ -169,7 +169,7 @@ function App(props) {
   */
 
 
-  let networkDisplay = ""
+  let networkDisplay: ReactElement;
   if (localChainId && selectedChainId && localChainId != selectedChainId ) {
     networkDisplay = (
       <div style={{zIndex:2, position:'absolute', right:0,top:60,padding:16}}>
@@ -204,16 +204,16 @@ function App(props) {
     }
   }, [loadWeb3Modal]);
 
-  const [route, setRoute] = useState();
+  const [route, setRoute] = useState<string>();
   useEffect(() => {
     setRoute(window.location.pathname)
   }, [setRoute]);
 
-  let faucetHint = ""
+  let faucetHint: ReactElement
   const faucetAvailable = localProvider && localProvider.connection && localProvider.connection.url && localProvider.connection.url.indexOf(window.location.hostname)>=0 && !process.env.REACT_APP_PROVIDER && price > 1;
 
   const [ faucetClicked, setFaucetClicked ] = useState( false );
-  if(!faucetClicked&&localProvider&&localProvider._network&&localProvider._network.chainId==31337&&yourLocalBalance&&formatEther(yourLocalBalance)<=0){
+  if(!faucetClicked && localProvider && localProvider._network && localProvider._network.chainId==31337 && yourLocalBalance){
     faucetHint = (
       <div style={{padding:16}}>
         <Button type={"primary"} onClick={()=>{
@@ -252,9 +252,6 @@ function App(props) {
           </Menu.Item>
           <Menu.Item key="/composable">
             <Link onClick={()=>{setRoute("/composable")}} to="/composable">ERC1155Composable</Link>
-          </Menu.Item>
-          <Menu.Item key="/gallery">
-            <Link onClick={()=>{setRoute("/gallery")}} to="/gallery">Gallery</Link>
           </Menu.Item>
           <Menu.Item key="/tokens">
             <Link onClick={()=>{setRoute("/tokens")}} to="/tokens">Tokens</Link>
@@ -296,8 +293,12 @@ function App(props) {
               name="ComposableOrchestrator"
               signer={userProvider.getSigner()}
               provider={localProvider}
-              address={address}
+              // address={address}
               blockExplorer={blockExplorer}
+              gasPrice={gasPrice}
+              price={price}
+              customContract={undefined}
+              show={undefined}
             />
 
             { /* uncomment for a second contract:
@@ -321,25 +322,10 @@ function App(props) {
             />
             */ }
           </Route>
-          <Route path="/gallery">
-            <Gallery
-              address={address}
-              userProvider={userProvider}
-              mainnetProvider={mainnetProvider}
-              localProvider={localProvider}
-              getFromIPFS={getFromIPFS}
-              blockExplorer={blockExplorer}
-              tx={tx}
-              writeContracts={writeContracts}
-              readContracts={readContracts}
-            />
-          </Route>
           <Route path="/tokens">
             <UserTokens
               address={address}
-              userProvider={userProvider}
               mainnetProvider={mainnetProvider}
-              localProvider={localProvider}
               getFromIPFS={getFromIPFS}
               blockExplorer={blockExplorer}
               tx={tx}
@@ -359,8 +345,12 @@ function App(props) {
               name="TypedERC1155Composable"
               signer={userProvider.getSigner()}
               provider={localProvider}
-              address={address}
+              // address={address}
               blockExplorer={blockExplorer}
+              gasPrice={gasPrice}
+              price={price}
+              customContract={undefined}
+              show={undefined}
             />
           </Route>
           <Route path="/hints">
@@ -396,9 +386,11 @@ function App(props) {
           </Route>
           <Route path="/mint">
             <Mint
+              address={address}
+              getFromIPFS={getFromIPFS}
               tx={tx}
               writeContracts={writeContracts}
-              mainnetProvider={mainnetProvider}
+              readContracts={readContracts}
             />
           </Route>
         </Switch>
@@ -419,6 +411,7 @@ function App(props) {
            loadWeb3Modal={loadWeb3Modal}
            logoutOfWeb3Modal={logoutOfWeb3Modal}
            blockExplorer={blockExplorer}
+           minimized={false}
          />
          {faucetHint}
       </div>
