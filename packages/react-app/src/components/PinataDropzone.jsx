@@ -2,13 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone'
 import styled, { css } from 'styled-components'
 import { Input, Button } from "antd";
-import { upload } from '../helpers/pinata'
-
-async function wait(ms) {
-  return new Promise(resolve => {
-    setTimeout(resolve, ms)
-  })
-}
+import { uploadFile } from '../helpers/pinata'
 
 const Wrapper = styled.div`
   display: grid;
@@ -85,10 +79,13 @@ const img = {
   height: "100%"
 };
 
-export default function PinataDropzone(props) {
+export default function PinataDropzone({ onSuccessfulUpload }) {
 
-  const [filenames, setFilenames] = useState('')
-  const [title, setTitle] = useState('')
+  const [ filenames, setFilenames ] = useState('');
+  const [ title, setTitle ] = useState('');
+  const [ uploadResponse, setUploadResponse ] = useState({});
+  const [ previews, setPreviews ] = useState([]);
+  const [ uploading, setUploading ] = useState(false);
 
   const {
     getRootProps,
@@ -101,50 +98,54 @@ export default function PinataDropzone(props) {
     accept: 'image/*',
     onDrop: (files) => {
       let names = [];
+      let previews = [];
       files.forEach((file) => {
         console.log(file);
         names.push(file.name);
         // add a preview to each file
-        Object.assign(file, {
-          preview: URL.createObjectURL(file)
-        })
+        previews.push(URL.createObjectURL(file))
       })
       setFilenames(names);
+      setPreviews(previews);
     },
   });
 
-  async function submit() {
+  const url = `${process.env.REACT_APP_PINATA_API_URL}/pinning/pinFileToIPFS`
+
+  async function upload() {
     // Upload file to Pinata/IPFS:
     console.log("Uploading file")
-    const uploadResp = await upload({
-      file: acceptedFiles[0],
-    })
+    setUploading(true);
+
+    const uploadResp = await uploadFile(acceptedFiles[0]);
     const uploadData = await uploadResp.json()
-    
+
     console.log(`Upload data : ${uploadData}`);
-    console.log(uploadData);
+    setUploadResponse(uploadData)
+    setUploading(false);
+    // call props hook
+    onSuccessfulUpload(uploadData)
+    
   }
 
   const filesAvailableForUpload = acceptedFiles.length > 0;
 
-  const thumbs = acceptedFiles.map((file, index) => (
-    <div style={thumb} key={file.name}>
+  const thumbs = previews.map((filePreview, index) => (
+    <div style={thumb} key={filenames[index]}>
       <div style={thumbInner}>
-        <img src={file.preview} style={img} alt="" />
+        <img src={filePreview} style={img} alt="" />
       </div>
     </div>
   ));
 
-  useEffect(
-    () => () => {
-      // Make sure to revoke the data uris to avoid memory leaks
-      acceptedFiles.forEach((file) => URL.revokeObjectURL(file.preview));
-    },
-    [acceptedFiles]
-  );
+  useEffect(() => () => {
+    // Make sure to revoke the data uris to avoid memory leaks
+    acceptedFiles.forEach((file) => URL.revokeObjectURL(file.preview));
+  }, [acceptedFiles]);
 
   return (
     <>
+
       <h1>Upload</h1>
 
       <Fields>
@@ -156,18 +157,18 @@ export default function PinataDropzone(props) {
         </DropzoneContainer>
         <aside style={thumbsContainer}>{thumbs}</aside>
 
-        <Input
+        {/* <Input
           type="text"
           name="title"
           placeholder="Filename"
           onChange={e => setTitle(e.target.value)}
           value={title}
-        />
+        /> */}
 
         {filesAvailableForUpload && (
           <div>
-            <Button color="default" variant="contained" onClick={submit}>
-              Upload
+            <Button style={{margin:8}} loading={uploading} size="large" shape="round" type="primary" onClick={upload}>
+              Upload Image
             </Button>
           </div>
         )}

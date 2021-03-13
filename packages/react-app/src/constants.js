@@ -7,6 +7,8 @@ export const ETHERSCAN_KEY = "PSW8C433Q667DVEX5BCRMGNAH9FSGFZ7Q8";
 //BLOCKNATIVE ID FOR Notify.js:
 export const BLOCKNATIVE_DAPPID = "0b58206a-f3c0-4701-a62f-73c7243e8c77"
 
+// PINATA IPFS URL
+export const PINATA_IPFS_PREFIX = "https://gateway.pinata.cloud/ipfs/"
 
 // EXTERNAL CONTRACTS
 

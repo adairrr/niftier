@@ -6,6 +6,7 @@ import { Address, AddressInput, TokenId } from "../components";
 import { useQuery, gql } from '@apollo/client';
 import { BigNumber, utils } from 'ethers';
 import { JsonRpcProvider } from "@ethersproject/providers";
+import { PINATA_IPFS_PREFIX } from "../constants";
 
 type UserTokensProps = {
   address: string, 
@@ -69,7 +70,8 @@ const UserTokens = ({
           const token = balance.token;
           
           try {
-            const tokenUri = token.uri;
+            const tokenUri = token.uri.replace(PINATA_IPFS_PREFIX, '');
+            
             console.log(`Fetching ipfs data for ${token.id} with uri: ${tokenUri}`);
             if (tokenUri != null) {
               const jsonManifestBuffer = await getFromIPFS(tokenUri);

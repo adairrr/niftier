@@ -2,12 +2,9 @@
 
 import React, { useState } from "react";
 import "antd/dist/antd.css";
-import { Button, Typography, Table, Input, Select } from "antd";
+import { Select } from "antd";
 import { useQuery, gql } from '@apollo/client';
-import { Address } from "../components";
-import fetch from 'isomorphic-fetch';
-import { utils } from "ethers";
-import { useDropzone } from 'react-dropzone'
+
 
 const { Option } = Select;
 
@@ -51,7 +48,7 @@ interface AuthorizedParent {
   }
 } 
 
-interface TokenType {
+export interface TokenType {
   id: string,
   name: string,
   authorizedChildren: AuthorizedChild[],
@@ -62,19 +59,29 @@ interface TokenTypeData {
   tokenTypes: TokenType[]
 }
 
-const TokenTypeSelector = ({}) => {
+type TokenTypeSelectorProps = {
+  selectChild?: boolean;
+  onSelectedParent: (parent: TokenType) => void;
+}
+
+
+const TokenTypeSelector = ({ selectChild = false, onSelectedParent }: TokenTypeSelectorProps) => {
 
   const { loading, error, data } = useQuery<TokenTypeData>(TOKEN_TYPES);
   
-  const [parentTokenTypeName, setParentTokenTypeName] = useState(null);
-  const [childTokenTypes, setChildTokenTypes] = useState(null);
-  const [childTokenTypeName, setChildTokenTypeName] = useState(null);
+  const [parentTokenTypeName, setParentTokenTypeName] = useState<string>(null);
+  const [childTokenTypes, setChildTokenTypes] = useState<AuthorizedChild[]>(null);
+  const [childTokenTypeName, setChildTokenTypeName] = useState<string>(null);
 
 
   const handleParentTypeChange = (parentTypeIndex) => {
     console.log(parentTypeIndex);
     setParentTokenTypeName(data.tokenTypes[parentTypeIndex].name);
     setChildTokenTypes(data.tokenTypes[parentTypeIndex].authorizedChildren);
+    console.log(`Type selected: ${data.tokenTypes[parentTypeIndex]}`)
+    console.log(data.tokenTypes[parentTypeIndex])
+    console.log(`index selected: ${parentTypeIndex}`)
+    onSelectedParent(data.tokenTypes[parentTypeIndex]);
   };
 
   const onChildTypeChange = (childTypeIndex) => {
@@ -86,16 +93,29 @@ const TokenTypeSelector = ({}) => {
 
   return (
     <>
-      <div style={{width:780, margin: "auto", paddingBottom:64}}>
-        <Select defaultValue={data.tokenTypes[0].name} style={{ width: 180 }} onChange={handleParentTypeChange}>
-          {data.tokenTypes.map((tokenType, index) => (
+      <div >
+        <Select 
+          showSearch
+          placeholder="Select a Type"
+          style={{ width: 180 }} 
+          onChange={handleParentTypeChange}
+          filterOption={(input, option) => data.tokenTypes[option.value].name.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+        >
+          {data.tokenTypes.map((tokenType: TokenType, index: number) => (
             <Option key={index} value={index}>{tokenType.name}</Option>
           ))}
           {/* {console.log(`Children of ${parentTokenTypeName} are ${childTokenTypes}`)} */}
         </Select>
-        {childTokenTypes && childTokenTypes.length != 0 &&
-          <Select style={{ width: 180 }} value={childTokenTypes[0].child.name} onChange={onChildTypeChange}>
-            {childTokenTypes.map((childTokenType, index: number) => (
+        {selectChild && childTokenTypes && childTokenTypes.length !== 0 &&
+          <Select 
+            showSearch
+            placeholder="Select a Child Type"
+            style={{ width: 180 }} 
+            value={childTokenTypes[0].child.name} 
+            onChange={onChildTypeChange}
+            filterOption={(input, option) => option.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+          >// TODO FIK THE CHILDREN FILTER
+            {childTokenTypes.map((childTokenType: AuthorizedChild, index: number) => (
               <Option key={index} value={index}>{childTokenType.child.name}</Option>
             ))}
             {console.log(`ChildType name: ${childTokenTypeName}`)}
