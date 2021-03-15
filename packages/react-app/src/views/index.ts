@@ -4,3 +4,5 @@ export { default as Subgraph } from "./Subgraph";
 export { default as Transfers } from "./Transfers";
 export { default as Mint } from "./Mint";
 export { default as UserTokens } from "./UserTokens";
+export { default as TokenView } from "./TokenView";
+export { default as Token } from "./Token";

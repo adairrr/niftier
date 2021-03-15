@@ -15,7 +15,7 @@ const delayMS = 1000 //sometimes xDAI needs a 6000ms break lol 😅
 const main = async () => {
 
   // ADDRESS TO MINT TO:
-  const toAddress = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
+  const toAddress = "0x0f3121E65EB4cfe53F18F24eC77fB6A4B476956e";
 
   console.log("\n\n 🎫 Minting to " + toAddress + "...\n");
 
@@ -33,7 +33,7 @@ const main = async () => {
     "attributes": [
        {
          "trait_type": "BackgroundColor",
-         "value": "green"
+         "value": "blue"
        },
        {
          "trait_type": "Eyes",
@@ -74,7 +74,7 @@ const main = async () => {
     "attributes": [
        {
          "trait_type": "BackgroundColor",
-         "value": "blue"
+         "value": "tren"
        },
        {
          "trait_type": "Eyes",
@@ -87,22 +87,60 @@ const main = async () => {
     ]
   }
   console.log("Uploading zebra...")
-  const childTokenUri = await ipfs.add(JSON.stringify(zebra))
+  const zebraChildTokenUri = await ipfs.add(JSON.stringify(zebra))
 
-  console.log(`Minting zebra with IPFS hash (${childTokenUri.path})`)
-  let childTokenId = await testUtils.mintAndGetId(
+  console.log(`Minting zebra with IPFS hash (${zebraChildTokenUri.path})`)
+  let zebraChildTokenId = await testUtils.mintAndGetId(
     composableContract,
     composableContract.address,
     testConsts.LAYER_TYPE,
-    childTokenUri.path,
+    zebraChildTokenUri.path,
     1,
     toAddress,
     parentTokenId
   );
 
-  console.log(`childTokenId: ${childTokenId.toHexString()}`);
+  console.log(`zebraChildTokenId: ${zebraChildTokenId.toHexString()}`);
 
-  // await sleep(delayMS)
+  await sleep(delayMS)
+
+  const fish = {
+    "description": "Wow would you take a look at this fish",
+    "external_url": "https://austingriffith.com/portfolio/paintings/",// <-- this can link to a page for the specific file too
+    "image": "https://austingriffith.com/images/paintings/fish.jpg",
+    "name": "Child token Fish",
+    "attributes": [
+       {
+         "trait_type": "BackgroundColor",
+         "value": "abab"
+       },
+       {
+         "trait_type": "Eyes",
+         "value": "googly"
+       },
+       {
+         "trait_type": "Stamina",
+         "value": 38
+       }
+    ]
+  }
+  console.log("Uploading fish...")
+  const fishChildTokenUri = await ipfs.add(JSON.stringify(fish))
+
+  console.log(`Minting fish with IPFS hash (${fishChildTokenUri.path})`)
+  let childTokenId = await testUtils.mintAndGetId(
+    composableContract,
+    composableContract.address,
+    testConsts.LAYER_TYPE,
+    fishChildTokenUri.path,
+    1,
+    toAddress,
+    parentTokenId
+  );
+
+  console.log(`fishChildTokenId: ${childTokenId.toHexString()}`);
+
+  await sleep(delayMS);
 
   // console.log("Transferring Ownership of YourCollectible to " + toAddress + "...");
 

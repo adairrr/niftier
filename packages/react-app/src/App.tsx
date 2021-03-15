@@ -11,16 +11,15 @@ import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useC
 import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address, AddressInput, ThemeSwitch } from "./components";
 import { Transactor } from "./helpers";
 import { formatEther, parseEther } from "@ethersproject/units";
-import { Hints, ExampleUI, Subgraph, Transfers, Mint, UserTokens } from "./views"
+import { Hints, ExampleUI, Subgraph, Transfers, Mint, UserTokens, TokenView, Token } from "./views"
 import { INFURA_ID, DAI_ADDRESS, DAI_ABI, NETWORK, NETWORKS } from "./constants";
 //import Hints from "./Hints";
 import { useThemeSwitcher } from "react-css-theme-switcher";
 
 import ReactJson from 'react-json-view'
-const { BufferList } = require('bl')
+import { Canvas } from "react-three-fiber";
 // https://www.npmjs.com/package/ipfs-http-client
-const ipfsAPI = require('ipfs-http-client');
-const ipfs = ipfsAPI({host: 'ipfs.infura.io', port: '5001', protocol: 'https' })
+
 /*
     Welcome to 🏗 scaffold-eth !
 
@@ -45,40 +44,7 @@ const ipfs = ipfsAPI({host: 'ipfs.infura.io', port: '5001', protocol: 'https' })
 const targetNetwork = NETWORKS['localhost']; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
 
 // 😬 Sorry for all the console logging
-const DEBUG = false
-
-//EXAMPLE STARTING JSON:
-const STARTING_JSON = {
-  "description": "It's actually a bison?",
-  "external_url": "https://austingriffith.com/portfolio/paintings/",// <-- this can link to a page for the specific file too
-  "image": "https://austingriffith.com/images/paintings/buffalo.jpg",
-  "name": "Buffalo",
-  "attributes": [
-     {
-       "trait_type": "BackgroundColor",
-       "value": "green"
-     },
-     {
-       "trait_type": "Eyes",
-       "value": "googly"
-     }
-  ]
-}
-
-//helper function to "Get" from IPFS
-// you usually go content.toString() after this...
-const getFromIPFS = async (hashToGet: string) => {
-  for await (const file of ipfs.get(hashToGet)) {
-    console.log(file.path)
-    if (!file.content) continue;
-    const content = new BufferList()
-    for await (const chunk of file.content) {
-      content.append(chunk)
-    }
-    console.log(content)
-    return content
-  }
-}
+const DEBUG = false;
 
 // 🛰 providers
 if(DEBUG) console.log("📡 Connecting to Mainnet Ethereum");
@@ -229,7 +195,6 @@ function App(props) {
     )
   }
 
-  const [ yourJSON, setYourJSON ] = useState( STARTING_JSON );
   const [ sending, setSending ] = useState()
   const [ ipfsHash, setIpfsHash ] = useState()
   const [ ipfsDownHash, setIpfsDownHash ] = useState()
@@ -270,6 +235,9 @@ function App(props) {
           </Menu.Item>
           <Menu.Item key="/mint">
             <Link onClick={()=>{setRoute("/mint")}} to="/mint">Mint</Link>
+          </Menu.Item>
+          <Menu.Item key="/tokenview">
+            <Link onClick={()=>{setRoute("/tokenview")}} to="/tokenview">view</Link>
           </Menu.Item>
         </Menu>
 
@@ -326,7 +294,6 @@ function App(props) {
             <UserTokens
               address={address}
               mainnetProvider={mainnetProvider}
-              getFromIPFS={getFromIPFS}
               blockExplorer={blockExplorer}
               tx={tx}
               writeContracts={writeContracts}
@@ -387,12 +354,27 @@ function App(props) {
           <Route path="/mint">
             <Mint
               address={address}
-              getFromIPFS={getFromIPFS}
               tx={tx}
               writeContracts={writeContracts}
               readContracts={readContracts}
             />
           </Route>
+          <Route 
+            exact path='/token/:tokenId' 
+            render={({match}) => (
+              <Token 
+                address={address}
+                tokenId={match['tokenId']}
+              />
+          )}/>
+          {/* <Route path="/tokenview">
+            <Canvas>
+              <ambientLight />
+              <pointLight position={[10, 10, 10]} />
+              <TokenView position={[-1.2, 0, 0]} />
+              <TokenView position={[1.2, 0, 0]} />
+            </Canvas>
+          </Route> */}
         </Switch>
       </BrowserRouter>
 

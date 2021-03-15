@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import Blockies from "react-blockies";
 import { Typography, Skeleton } from "antd";
+import { Link } from "react-router-dom";
 const { Text } = Typography;
 
 
@@ -27,7 +28,6 @@ type TokenIdProps = {
   size: string,
   onChange?: () => void
 }
-
 class TokenId extends Component<TokenIdProps> {
 
   static defaultProps = {
@@ -64,7 +64,7 @@ class TokenId extends Component<TokenIdProps> {
     let text;
     if (this.props.onChange) {
       text = (
-        <Text editable={{ onChange: this.props.onChange }} copyable={{ text: tokenId }}>
+        <Text editable={{ onChange: this.props.onChange }} copyable>
           <a /*style={{ color: "#222222" }}*/>
             {displayId}
           </a>
@@ -72,20 +72,20 @@ class TokenId extends Component<TokenIdProps> {
       );
     } else {
       text = (
-        <Text copyable={{ text: tokenId }}>
-          <a /*style={{ color: "#222222" }}*/>
-            {displayId}
-          </a>
-        </Text>
+        <Link to={`/token/${tokenId}`} component={Typography.Link}>
+          <Text copyable={{ text: tokenId }}>
+            <>{displayId}</>
+          </Text>
+        </Link>
       );
     }
 
     return (
       <span>
         <span style={{ verticalAlign: "middle" }}>
-          <Blockies seed={tokenId.toLowerCase()} size={8} scale={this.props.fontSize?this.props.fontSize/7:4} />
+          <Blockies seed={tokenId.toLowerCase()} size={8} scale={this.props.fontSize ? this.props.fontSize / 7 : 4} />
         </span>
-        <span style={{ verticalAlign: "middle", paddingLeft: 5, fontSize: this.props.fontSize?this.props.fontSize:28 }}>{text}</span>
+        <span style={{ verticalAlign: "middle", paddingLeft: 5, fontSize: this.props.fontSize ? this.props.fontSize : 28 }}>{text}</span>
       </span>
     );
   }  

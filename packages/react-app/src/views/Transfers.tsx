@@ -1,7 +1,8 @@
 import React from "react";
 import { Address, TokenId } from "../components";
 import { Table } from "antd";
-import { useQuery, gql } from '@apollo/client';
+import { useQuery } from '@apollo/client';
+import { TRANSFERS_QUERY } from "../apollo/queries";
 
 const { Column } = Table;
 
@@ -11,24 +12,7 @@ export default function Transfers({
   readContracts
 }) {
 
-  const TRANSFERS = gql`
-    query GetTransfers {
-      transfers(orderBy: timestamp) {
-        timestamp
-        token {
-          id
-        }
-        from {
-          id
-        }
-        to {
-          id
-        }
-      }
-    }
-  `;
-
-  const { loading, error, data } = useQuery(TRANSFERS, {
+  const { loading, error, data } = useQuery(TRANSFERS_QUERY, {
     pollInterval: 2000  // query every 2 seconds
   });
 

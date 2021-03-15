@@ -7,11 +7,12 @@ import { useQuery, gql } from '@apollo/client';
 import { BigNumber, utils } from 'ethers';
 import { JsonRpcProvider } from "@ethersproject/providers";
 import { PINATA_IPFS_PREFIX } from "../constants";
+import { ACCOUNT_BALANCE_QUERY } from '../apollo/queries'
+import { getFromIPFS } from "../hooks";
 
 type UserTokensProps = {
   address: string, 
   mainnetProvider: JsonRpcProvider, 
-  getFromIPFS, 
   blockExplorer: string,
   tx, 
   readContracts, 
@@ -21,35 +22,20 @@ type UserTokensProps = {
 const UserTokens = ({
   address, 
   mainnetProvider, 
-  getFromIPFS, 
   blockExplorer,
   tx, 
   readContracts, 
   writeContracts 
 }: UserTokensProps) => {
 
-
-  const ACCOUNT_BALANCE = gql`
-    query UserTokens($accountId: ID!) {
-      account(id: $accountId) {
-        id
-        balances {
-          token {
-            id
-            uri
-          }
-          value
-        }
-      }
-    }
-  `;
-
   const componentIsMounted = useRef(true);
 
   const [ userTokens, setUserTokens ] = useState([]);
-  const [ transferToAddresses, setTransferToAddresses ] = useState({})
+  const [ userTokenImages, setUserTokenImages ] = useState({})
+  const [ transferToAddresses, setTransferToAddresses ] = useState([])
+  const [ fetching, setFetching ] = useState(false);
   
-  const { loading, error, data } = useQuery(ACCOUNT_BALANCE, {
+  const { loading, error, data } = useQuery(ACCOUNT_BALANCE_QUERY, {
     variables: { accountId: address.toLowerCase() },
     pollInterval: 2000 // poll every 2 seconds
   });
@@ -63,10 +49,12 @@ const UserTokens = ({
 
   useEffect(() => {
     const fetchUserTokens = async () => {
-      let queriedTokens = [];
+      setFetching(true);
+      console.log(data);
       if (!userTokens || data.account.balances.length !== userTokens.length) {
+        let queriedTokens = [];
         data.account.balances.forEach(async (balance) => {
-          if (balance.value === 0) return; // TODO should update mapping to remove balance
+          if (balance.value === '0') return; // TODO should update mapping to remove balance?
           const token = balance.token;
           
           try {
@@ -85,16 +73,18 @@ const UserTokens = ({
           } catch (err) {
             console.log(err);
           }
-        });
+        }
+        );
         if (componentIsMounted.current) {
           setUserTokens(queriedTokens);
         }
       }
+      setFetching(false);
     }
     if (!loading && data && data.account) {
       fetchUserTokens();
     }
-  }, [data, transferToAddresses]);
+  }, [data]);
 
   if (loading) return (<span>'Loading...'</span>);
   if (error) return (<span>`Error! ${error.message}`</span>);
@@ -108,6 +98,7 @@ const UserTokens = ({
       <div style={{ width:640, margin: "auto", marginTop:32, paddingBottom:32 }}>
         <List
           bordered
+          loading={fetching}
           dataSource={userTokens}
           renderItem={(token) => {
             const tokenId = token.id;
@@ -122,9 +113,9 @@ const UserTokens = ({
                       />
                     </span> {token.name}
                   </div>
-                )}>
-                <div><img src={token.image} style={{maxWidth:150}} /></div>
-                <div>{token.description}</div>
+                  )} loading={fetching}>
+                  <div><img src={token.image} style={{maxWidth:150}} /></div>
+                  <div>{token.description}</div>
                 </Card>
 
                 <div>
@@ -138,7 +129,7 @@ const UserTokens = ({
                     ensProvider={mainnetProvider}
                     placeholder="transfer to address"
                     value={transferToAddresses[tokenId]}
-                    onChange={(newValue)=>{
+                    onChange={(newValue: string)=>{
                       let update = {};
                       update[tokenId] = newValue;
                       setTransferToAddresses({ ...transferToAddresses, ...update});
@@ -156,7 +147,7 @@ const UserTokens = ({
                   }}>
                     Transfer
                   </Button>
-                  <Button onClick={()=>{
+                  <Button onClick={() => {
                     console.log("readContracts", readContracts);
                     tx( readContracts.TypedERC1155Composable.balanceOf(
                       address, 

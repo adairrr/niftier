@@ -63,6 +63,13 @@ const config: HardhatUserConfig = {
         (you can put in a mnemonic here to set the deployer locally)
       */
     },
+    // hardhat: {
+    //   forking: {
+    //     // https://hardhat.org/guides/mainnet-forking.html
+    //     url: "https://eth-mainnet.alchemyapi.io/v2/bu9LAD4DHYIyvhnS5SRRQh0fJ85Tl4Cx",
+    //     blockNumber: 12037854
+    //   }
+    // },
     rinkeby: {
       url: "https://rinkeby.infura.io/v3/460f40a260564ac4a4f4b3fffb032dad", //<---- YOUR INFURA ID! (or it won't work)
       accounts: {

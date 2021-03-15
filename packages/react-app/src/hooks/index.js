@@ -16,3 +16,5 @@ export { default as useNonce } from "./Nonce";
 export { default as useTokenList } from "./TokenList";
 export { default as useDebounce } from "./Debounce";
 export { default as TokenTypeSelector } from "./TokenTypeSelector";
+export { default as getFromIPFS } from "./IPFS";
+export { default as fetchTokenMetadata } from "./FetchTokenMetadata";

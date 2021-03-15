@@ -28,7 +28,6 @@ interface TokenJson {
 }
 
 
-
 const STARTING_JSON: TokenJson = {
   "description": "Token description",
   "external_url": "https://austingriffith.com/portfolio/paintings/",// <-- this can link to a page for the specific file too
@@ -48,7 +47,6 @@ const STARTING_JSON: TokenJson = {
 
 type MintProps = {
   address, 
-  getFromIPFS, 
   tx, 
   readContracts, 
   writeContracts 
@@ -56,7 +54,6 @@ type MintProps = {
 
 const Mint = ({
   address, 
-  getFromIPFS, 
   tx, 
   readContracts, 
   writeContracts
