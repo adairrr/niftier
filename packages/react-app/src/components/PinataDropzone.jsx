@@ -110,8 +110,6 @@ export default function PinataDropzone({ onSuccessfulUpload }) {
     },
   });
 
-  const url = `${process.env.REACT_APP_PINATA_API_URL}/pinning/pinFileToIPFS`
-
   async function upload() {
     // Upload file to Pinata/IPFS:
     console.log("Uploading file")

@@ -13,6 +13,7 @@ import { PinataResponse, uploadJson } from "../helpers/pinata"
 import { TokenTypeSelector } from "../hooks"
 import { TokenType } from "../hooks/TokenTypeSelector";
 import { PINATA_IPFS_PREFIX } from "../constants"
+import { DraggableDropzone } from "../components/Files";
 const { TextArea } = Input;
 
 interface TokenAttribute {
@@ -122,7 +123,8 @@ const Mint = ({
     <>
     <div style={{display: 'flex', alignItems: 'center'}}>
       <div style={{border:"1px solid #cccccc", padding:16, width:400, margin:"auto",marginTop:64}}>
-        <PinataDropzone onSuccessfulUpload={handleSuccessfulUpload}/>
+        {/* <PinataDropzone onSuccessfulUpload={handleSuccessfulUpload}/> */}
+        <DraggableDropzone onSuccessfulUpload={handleSuccessfulUpload}/>
         <Input
             type="text"
             name="title"

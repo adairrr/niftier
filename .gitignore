@@ -14,6 +14,7 @@ packages/react-app/.env.development
 packages/hardhat/cache
 packages/hardhat/typechain
 
+docker/ceramic-node/config.json
 
 docker/**/data
 

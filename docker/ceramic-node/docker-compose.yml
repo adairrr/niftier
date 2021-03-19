@@ -1,0 +1,14 @@
+version: '3'
+services:
+  ceramic-ipfs:
+    build: .
+    # user: 'node'
+    working_dir: /root/.ceramic
+    ports:
+      - '7007:7007'
+    expose: 
+      - '7007'
+    volumes:
+      - ./data/ceramic:/root/.ceramic
+    entrypoint: ["docker-entrypoint.sh", "run-ceramic-daemon.sh"]
+

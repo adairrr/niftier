@@ -18,3 +18,4 @@ export { default as Swap } from "./Swap";
 export { default as TokenId } from "./TokenId";
 export { default as ThemeSwitch } from "./ThemeSwitch";
 export { default as PinataDropzone } from "./PinataDropzone";
+export { default as EmptyWithDescription } from "./EmptyWithDescription";

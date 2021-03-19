@@ -1,8 +1,8 @@
 /* eslint-disable jsx-a11y/accessible-emoji */
 
 import React, { useState, useEffect, useRef } from "react";
-import { Button, List, Card } from "antd";
-import { Address, AddressInput, TokenId } from "../components";
+import { Button, List, Card, Empty } from "antd";
+import { Address, AddressInput, EmptyWithDescription, TokenId } from "../components";
 import { useQuery, gql } from '@apollo/client';
 import { BigNumber, utils } from 'ethers';
 import { JsonRpcProvider } from "@ethersproject/providers";
@@ -88,7 +88,11 @@ const UserTokens = ({
 
   if (loading) return (<span>'Loading...'</span>);
   if (error) return (<span>`Error! ${error.message}`</span>);
-  if (data.account == null) return (<span>`Account: ${address.toLowerCase()} does not exist in the database.`</span>)
+  if (data.account == null) return (
+    <EmptyWithDescription description="No tokens!">
+      <Button type="primary">Create some</Button>
+    </EmptyWithDescription>
+  )
   if (!userTokens) return (<span>WAIT</span>);
   // if (userTokens.length == 0) return 'Waiting';
   // if (data.account == null) return `No balance found for ${address}`;

@@ -1,16 +1,24 @@
 import React from "react";
 import { PageHeader } from "antd";
+import WalletConnect from "./WalletConnect";
 
 // displays a page header
 
-export default function Header() {
+interface HeaderProps {
+  account: JSX.Element;
+}
+
+export default function Header({ account }: HeaderProps) {
   return (
-    <a href="https://github.com/austintgriffith/scaffold-eth" target="_blank" rel="noopener noreferrer">
+    <a >
       <PageHeader
         title="🖼 NFT Canvas"
         subTitle="Collaborative, programmable art"
         style={{ cursor: "pointer" }}
-      />
+        extra={account}
+      >
+        {/* {account} */}
+      </PageHeader>
     </a>
   );
 }
