@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/accessible-emoji */
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import { Button, List, Card, Empty } from "antd";
 import { Address, AddressInput, EmptyWithDescription, TokenId } from "../components";
 import { useQuery, gql } from '@apollo/client';
@@ -9,9 +9,9 @@ import { JsonRpcProvider } from "@ethersproject/providers";
 import { PINATA_IPFS_PREFIX } from "../constants";
 import { ACCOUNT_BALANCE_QUERY } from '../apollo/queries'
 import { getFromIPFS } from "../hooks";
+import { AddressContext } from "../contexts";
 
 type UserTokensProps = {
-  address: string, 
   mainnetProvider: JsonRpcProvider, 
   blockExplorer: string,
   tx, 
@@ -20,13 +20,14 @@ type UserTokensProps = {
 }
 
 const UserTokens = ({
-  address, 
   mainnetProvider, 
   blockExplorer,
   tx, 
   readContracts, 
   writeContracts 
 }: UserTokensProps) => {
+
+  const currentAddress = useContext(AddressContext);
 
   const componentIsMounted = useRef(true);
 
@@ -36,7 +37,7 @@ const UserTokens = ({
   const [ fetching, setFetching ] = useState(false);
   
   const { loading, error, data } = useQuery(ACCOUNT_BALANCE_QUERY, {
-    variables: { accountId: address.toLowerCase() },
+    variables: { accountId: currentAddress.toLowerCase() },
     pollInterval: 2000 // poll every 2 seconds
   });
 
@@ -67,7 +68,7 @@ const UserTokens = ({
               try {
                 const jsonManifest = JSON.parse(jsonManifestBuffer.toString());
                 console.log("jsonManifest", jsonManifest);
-                queriedTokens.push({ id:token.id, uri:tokenUri, owner: address, ...jsonManifest });
+                queriedTokens.push({ id:token.id, uri:tokenUri, owner: currentAddress, ...jsonManifest });
               } catch(e) {console.log(e)}
             }
           } catch (err) {
@@ -142,7 +143,7 @@ const UserTokens = ({
                   <Button onClick={()=>{
                     console.log("writeContracts", writeContracts);
                     tx( writeContracts.TypedERC1155Composable.safeTransferFrom(
-                      address, 
+                      currentAddress, 
                       transferToAddresses[tokenId],
                       tokenId,
                       1,
@@ -154,7 +155,7 @@ const UserTokens = ({
                   <Button onClick={() => {
                     console.log("readContracts", readContracts);
                     tx( readContracts.TypedERC1155Composable.balanceOf(
-                      address, 
+                      currentAddress, 
                       BigNumber.from(tokenId)
                     ));
                   }}>

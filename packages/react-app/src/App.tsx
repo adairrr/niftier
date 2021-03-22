@@ -1,4 +1,4 @@
-import React, { ReactElement, useCallback, useEffect, useState } from 'react';
+import React, { createContext, ReactElement, useCallback, useEffect, useState } from 'react';
 import { BrowserRouter, Switch, Route, Link } from 'react-router-dom';
 import 'antd/dist/antd.css';
 import {  JsonRpcProvider, Web3Provider } from '@ethersproject/providers';
@@ -16,7 +16,15 @@ import { RouterMenu } from './RouterMenu';
 import WalletConnect, { logoutOfWeb3Modal, web3Modal } from './components/WalletConnect';
 import { initiateCeramicWithIDX } from './helpers/ceramic';
 import CeramicDocs from './views/CeramicDocs';
+import Landing from './components/Landing';
+import Footer from './components/Landing/Footer1';
+import './components/Landing/less/antMotionStyle.less';
+import styled from 'styled-components';
+import { AddressContext } from './contexts';
 
+import {
+  Footer11DataSource,
+} from './components/Landing/data.source';
 
 /// 📡 What chain are your contracts deployed to?
 const targetNetwork = NETWORKS['localhost']; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
@@ -45,7 +53,8 @@ const blockExplorer = targetNetwork.blockExplorer;
 
 function App(props) {
 
-  const [injectedProvider, setInjectedProvider] = useState<Web3Provider>();
+  const [ injectedProvider, setInjectedProvider ] = useState<Web3Provider>();
+
   /* 💵 This hook will get the price of ETH from 🦄 Uniswap: */
   const price = useExchangePrice(targetNetwork, mainnetProvider);
 
@@ -54,6 +63,8 @@ function App(props) {
   // Use your injected provider from 🦊 Metamask or if you don't have it then instantly generate a 🔥 burner wallet.
   const userProvider = useUserProvider(injectedProvider, localProvider);
   const address = useUserAddress(userProvider);
+
+  const [ currentAddress, setCurrentAddress ] = useState<string>(address);
 
   if(DEBUG) console.log("👩‍💼 selected address:", address)
 
@@ -122,9 +133,14 @@ function App(props) {
 
   useEffect(() => {
     if (web3Modal.cachedProvider) {
+      console.log("Loading web3 model");
       loadWeb3Modal();
     }
   }, [loadWeb3Modal]);
+
+  useEffect(() => {
+    setCurrentAddress(address);
+  }, [address]);
 
   const [route, setRoute] = useState<string>();
   useEffect(() => {
@@ -154,7 +170,6 @@ function App(props) {
   const account = (
     <div style={{ /*position: "fixed", */textAlign: "right", right: 0, top: 0, padding: 0 }}>
       <Account
-        address={address}
         localProvider={localProvider}
         userProvider={userProvider}
         mainnetProvider={mainnetProvider}
@@ -171,22 +186,26 @@ function App(props) {
 
   return (
     <div className="App">
+      <AddressContext.Provider value={currentAddress}>
 
       <BrowserRouter>
-      <Layout className="layout">
-        <Header account={account}/>
-        {/* {networkDisplay} */}
-        <RouterMenu/>
-        {faucetHint}
-      </Layout>
+        <Layout className="layout">
+          <Header account={account}/>
+          {/* {networkDisplay} */}
+          <RouterMenu/>
+          {faucetHint}
+        </Layout>
 
         <Switch>
-          <Route exact path="/">
+          <Route exact path="/" >
+            <Landing />
+          </Route>
+
+          <Route exact path="/orchestrator">
             <Contract
               name="ComposableOrchestrator"
               signer={userProvider.getSigner()}
               provider={localProvider}
-              // address={address}
               blockExplorer={blockExplorer}
               gasPrice={gasPrice}
               price={price}
@@ -207,7 +226,6 @@ function App(props) {
           </Route>
           <Route path="/tokens">
             <UserTokens
-              address={address}
               mainnetProvider={mainnetProvider}
               blockExplorer={blockExplorer}
               tx={tx}
@@ -227,7 +245,6 @@ function App(props) {
               name="TypedERC1155Composable"
               signer={userProvider.getSigner()}
               provider={localProvider}
-              // address={address}
               blockExplorer={blockExplorer}
               gasPrice={gasPrice}
               price={price}
@@ -268,7 +285,6 @@ function App(props) {
           </Route>
           <Route path="/mint">
             <Mint
-              address={address}
               tx={tx}
               writeContracts={writeContracts}
               readContracts={readContracts}
@@ -278,7 +294,6 @@ function App(props) {
             exact path='/token/:tokenId' 
             render={({match}) => (
               <Token 
-                address={address}
                 tokenId={match['tokenId']}
               />
           )}/>
@@ -297,47 +312,54 @@ function App(props) {
       </BrowserRouter>
 
       <ThemeSwitch />
+      
+      <Footer 
+        id="Footer1_1"
+        key="Footer1_1"
+        dataSource={Footer11DataSource}
+        isMobile={false}
+      />
 
-      {/* 🗺 Extra UI like gas price, eth price, faucet, and support: */}
-       <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 20, padding: 10 }}>
-         <Row align="middle" gutter={[4, 4]}>
-           <Col span={8}>
-             <Ramp price={price} address={address} networks={NETWORKS}/>
-           </Col>
+            {/* 🗺 Extra UI like gas price, eth price, faucet, and support: */}
+      <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 20, padding: 10 }}>
+        <Row align="middle" gutter={[4, 4]}>
+          <Col span={8}>
+            <Ramp price={price} address={address} networks={NETWORKS}/>
+          </Col>
 
-           <Col span={8} style={{ textAlign: "center", opacity: 0.8 }}>
-             <GasGauge gasPrice={gasPrice} />
-           </Col>
-           <Col span={8} style={{ textAlign: "center", opacity: 1 }}>
-             <Button
-               onClick={() => {
-                 window.open("https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA");
-               }}
-               size="large"
-               shape="round"
-             >
-               <span style={{ marginRight: 8 }} role="img" aria-label="support">
-                 💬
-               </span>
-               Support
-             </Button>
-           </Col>
-         </Row>
+          <Col span={8} style={{ textAlign: "center", opacity: 0.8 }}>
+            <GasGauge gasPrice={gasPrice} />
+          </Col>
+          <Col span={8} style={{ textAlign: "center", opacity: 1 }}>
+            <Button
+              onClick={() => {
+                window.open("https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA");
+              }}
+              size="large"
+              shape="round"
+            >
+              <span style={{ marginRight: 8 }} role="img" aria-label="support">
+                💬
+              </span>
+              Support
+            </Button>
+          </Col>
+        </Row>
 
-         <Row align="middle" gutter={[4, 4]}>
-           <Col span={24}>
-             {
-               /*  if the local provider has a signer, let's show the faucet:  */
-               faucetAvailable ? (
-                 <Faucet localProvider={localProvider} price={price} ensProvider={mainnetProvider}/>
-               ) : (
-                 ""
-               )
-             }
-           </Col>
-         </Row>
-       </div>
-
+        <Row align="middle" gutter={[4, 4]}>
+          <Col span={24}>
+            {
+              /*  if the local provider has a signer, let's show the faucet:  */
+              faucetAvailable ? (
+                <Faucet localProvider={localProvider} price={price} ensProvider={mainnetProvider}/>
+              ) : (
+                ""
+              )
+            }
+          </Col>
+        </Row>
+      </div>
+      </AddressContext.Provider>
     </div>
   );
 }

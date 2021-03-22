@@ -11,8 +11,8 @@ export function RouterMenu() {
 
   return (
     <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
-      <Menu.Item key="/">
-        <Link onClick={()=>{setRoute("/")}} to="/">ComposableOrchestrator</Link>
+      <Menu.Item key="/orchestrator">
+        <Link onClick={()=>{setRoute("/orchestrator")}} to="/orchestrator">ComposableOrchestrator</Link>
       </Menu.Item>
       <Menu.Item key="/composable">
         <Link onClick={()=>{setRoute("/composable")}} to="/composable">ERC1155Composable</Link>

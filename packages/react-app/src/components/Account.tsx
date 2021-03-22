@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Button } from "antd";
 import Address from "./Address";
 import Balance from "./Balance";
 import Wallet from "./Wallet";
+import { AddressContext } from "../contexts";
 
 /*
   ~ What it does? ~
@@ -39,7 +40,6 @@ import Wallet from "./Wallet";
 */
 
 export default function Account({
-  address,
   userProvider,
   localProvider,
   mainnetProvider,
@@ -50,6 +50,8 @@ export default function Account({
   logoutOfWeb3Modal,
   blockExplorer,
 }) {
+  const currentAddress = useContext(AddressContext);
+
   const modalButtons = [];
   if (web3Modal) {
     if (web3Modal.cachedProvider) {
@@ -84,9 +86,9 @@ export default function Account({
     ""
   ) : (
     <span>
-      {address ? <Address address={address} ensProvider={mainnetProvider} blockExplorer={blockExplorer} /> : "Connecting..."}
-      <Balance address={address} provider={localProvider} price={price} />
-      <Wallet address={address} provider={userProvider} ensProvider={mainnetProvider} price={price} />
+      {currentAddress ? <Address address={currentAddress} ensProvider={mainnetProvider} blockExplorer={blockExplorer} /> : "Connecting..."}
+      <Balance address={currentAddress} provider={localProvider} price={price} />
+      <Wallet address={currentAddress} provider={userProvider} ensProvider={mainnetProvider} price={price} />
     </span>
   );
 

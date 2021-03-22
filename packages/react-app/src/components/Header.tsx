@@ -10,7 +10,7 @@ interface HeaderProps {
 
 export default function Header({ account }: HeaderProps) {
   return (
-    <a >
+    <>
       <PageHeader
         title="🖼 NFT Canvas"
         subTitle="Collaborative, programmable art"
@@ -19,6 +19,6 @@ export default function Header({ account }: HeaderProps) {
       >
         {/* {account} */}
       </PageHeader>
-    </a>
+    </>
   );
 }

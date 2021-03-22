@@ -1,5 +1,5 @@
 import ReactDOM from 'react-dom'
-import React, { useState, useEffect, useRef, Component } from 'react';
+import React, { useState, useEffect, useRef, Component, useContext } from 'react';
 import { Canvas, MeshProps, useFrame } from 'react-three-fiber';
 import type { Mesh } from 'three'
 import { Button, List, Card, Image, Row, Col, Typography } from 'antd';
@@ -11,13 +11,13 @@ import { TOKEN_QUERY } from '../apollo/queries';
 import { PINATA_IPFS_PREFIX } from '../constants';
 import { fetchTokenMetadata, getFromIPFS } from '../hooks';
 import { TokenMetadata } from '../hooks/FetchTokenMetadata';
+import { AddressContext } from '../contexts';
 const { Meta } = Card;
 const { Paragraph, Title } = Typography;
 // import Title from 'antd/lib/typography/Title';
 // import { FallbackImage } from '../images';
 
 type TokenProps = {
-  address: string,
   tokenId: string
 }
 
@@ -51,7 +51,10 @@ interface TokenQueryData {
 }
 
 // TODO what is it with react dom routing? I have no idea what these props would be... match doesn't work
-const Token = ({address, ...props}: TokenProps) => {
+const Token = ({...props}: TokenProps) => {
+
+  const currentAddress = useContext(AddressContext);
+
   const {tokenId} = useParams<TokenParams>(); // gotten from the route...
 
   const componentIsMounted = useRef(true);
@@ -94,14 +97,14 @@ const Token = ({address, ...props}: TokenProps) => {
       console.log(data);
 
       if (data && data.token) {
-        const parentMetadata = await fetchTokenMetadata(data.token.id, data.token.uri, address);
+        const parentMetadata = await fetchTokenMetadata(data.token.id, data.token.uri, currentAddress);
 
         if (data.token.children.length > 0) {
           let childTokenMetadatas = [];
           data.token.children.forEach(async (childToken: ChildToken) => {
             const child = childToken.child;
             console.log(child);
-            const childMetadata = await fetchTokenMetadata(child.id, child.uri, address);
+            const childMetadata = await fetchTokenMetadata(child.id, child.uri, currentAddress);
             childTokenMetadatas.push(childMetadata);
           });
 
