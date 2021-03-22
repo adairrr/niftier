@@ -174,38 +174,3 @@ export default function PinataDropzone({ onSuccessfulUpload }) {
     </>
   );
 }
-
-
-
-
-
-
-  // const onDrop = useCallback((files) => {
-  //   if (files && files.length > 0){
-  //     if (props.onLoadStart) props.onLoadStart(files.map((x) => parseName(x.name)))
-  //     async.map(files, (file, cb) => {
-  //       toBuffer(file, (err, buff) => {
-  //         if (err) return cb(err);
-  //         ipfs.add(buff).then((results) => {
-  //           console.debug("=> IPFS Dropzone added: ", results.cid.string)
-  //           let _file = parseName(file.name)
-  //           cb(null, {..._file, cid: results.cid.string})
-  //         })
-  //       })
-  //     }, (err, results) => {
-  //       if(err) return console.error("=> IPFS Dropzone: IPFS Upload Error: ", err)
-  //       if(props.onLoad) props.onLoad(results)
-  //     })
-  //   }
-  // }, [])
-
-  // const parseName = (name) => {
-  //   let ext = name.match(/\.[^/.]+$/)
-  //   let file = name.replace(/\.[^/.]+$/, "")
-  //   return {
-  //     ext: ext ? ext[0] : null,
-  //     name: file
-  //   }
-  // }
-
-  // const dropzoneRef = createRef()

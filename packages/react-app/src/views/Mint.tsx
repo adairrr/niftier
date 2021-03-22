@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import "antd/dist/antd.css";
-import { Button, Typography, Table, Input, Select } from "antd";
+import { Button, Typography, Table, Input, Select, Collapse, Card } from "antd";
 import { useQuery, gql } from '@apollo/client';
 import { Address } from "../components";
 import fetch from 'isomorphic-fetch';
@@ -14,7 +14,9 @@ import { TokenTypeSelector } from "../hooks"
 import { TokenType } from "../hooks/TokenTypeSelector";
 import { PINATA_IPFS_PREFIX } from "../constants"
 import { DraggableDropzone } from "../components/Files";
+import NewLayerCard from "../components/NewLayerCard";
 const { TextArea } = Input;
+const { Panel } = Collapse;
 
 interface TokenAttribute {
   trait_type: string,
@@ -118,10 +120,25 @@ const Mint = ({
       utils.toUtf8Bytes('') // TODO make functions for these lols
     ));
   }
+  function callback(key) {
+    console.log(key);
+  }
 
   return (
     <>
+    <Collapse defaultActiveKey={['1']} onChange={callback}>
+        <Panel header="This is panel header 1" key="1">
+          <NewLayerCard address={address}/>
+        </Panel>
+        <Panel header="This is panel header 2" key="2">
+          <p>oeui</p>
+        </Panel>
+        <Panel header="This is panel header 3" key="3">
+          <p>euid</p>
+        </Panel>
+      </Collapse>
     <div style={{display: 'flex', alignItems: 'center'}}>
+      
       <div style={{border:"1px solid #cccccc", padding:16, width:400, margin:"auto",marginTop:64}}>
         {/* <PinataDropzone onSuccessfulUpload={handleSuccessfulUpload}/> */}
         <DraggableDropzone onSuccessfulUpload={handleSuccessfulUpload}/>

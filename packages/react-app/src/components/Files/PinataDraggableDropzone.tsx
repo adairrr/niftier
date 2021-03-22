@@ -1,41 +1,54 @@
 import React, { useState, useCallback, useRef } from "react";
 import "antd/dist/antd.css";
-import { Upload, Button, message, Tooltip, Modal } from "antd";
+import { Upload, Button, message, Tooltip, Modal, Card } from "antd";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import update from "immutability-helper";
-import { PlusOutlined, UploadOutlined } from "@ant-design/icons";
+import { EditOutlined, EllipsisOutlined, FileAddOutlined, LoadingOutlined, PlusOutlined, SettingOutlined, UploadOutlined } from "@ant-design/icons";
 import { uploadFileCustomRequest, pinFileToIPFSUrl, unpinFile, PinataResponse } from '../../helpers/pinata';
 import { UploadRequestOption as RcCustomRequestOptions } from 'rc-upload/lib/interface';
+import { UploadFile } from "antd/lib/upload/interface";
+
+const { Dragger } = Upload;
 
 
-
-type PinataListUploadProps = {
-  onSuccessfulUpload: any;
+type PinataDraggableDropzoneProps = {
+  onSuccessfulUpload?: any;
+  singleFile?: boolean
 }
-const PinataListUpload: React.FC<PinataListUploadProps> = ({ onSuccessfulUpload }) => {
+const PinataDraggableDropzone: React.FC<PinataDraggableDropzoneProps> = ({ onSuccessfulUpload = undefined, singleFile = false }) => {
   const [ fileList, setFileList ] = useState([]);
   const [ pinataResponseMap, setPinataResponseMap] = useState<Map<string, PinataResponse>>(new Map());
   const [ previewVisible, setPreviewVisible ] = useState(false);
   const [ previewImage, setPreviewImage ] = useState('');
   const [ previewTitle, setPreviewTitle ] = useState('');
+  const [ uploading, setUploading ] = useState(false);
+  const [ singleImageUrl, setSingleImageUrl ] = useState(null);
 
-  const onChangeFile = ({ file: newFile, fileList: newFileList, event }) => {
+  const onChangeFile = async ({ file: newFile, fileList: newFileList, event }) => {
     console.log(event);
     setFileList(newFileList);
 
     switch(newFile.status) {
       case 'uploading':
+        setUploading(true);
         console.log(newFile, newFileList);
         break;
       case 'done':
+        setUploading(false);
         message.success(`${newFile.name} file uploaded successfully`);
         pinataResponseMap.set(newFile.uid, newFile.response.data);
         // TODO need to account for all files!!!!!!
-        onSuccessfulUpload(newFile.response.data);
+        if (onSuccessfulUpload) onSuccessfulUpload(newFile.response.data);
         setPinataResponseMap(pinataResponseMap);
+
+        await assignFilePreview(newFile);
+    
+        setSingleImageUrl(newFile.url || newFile.preview);
+
         break;
       case 'error': 
+        setUploading(false);
         message.error(`${newFile.name} file upload failed.`);
         break;
       default:
@@ -44,6 +57,14 @@ const PinataListUpload: React.FC<PinataListUploadProps> = ({ onSuccessfulUpload 
         break;
     }
   };
+
+  const assignFilePreview = async (file: UploadFile) => {
+    // TODO this only really works for images and we'll probably want an audio preview and other previews.
+    if (!file.url && !file.preview) {
+      // @ts-ignore
+      file.preview = await getBase64(file.originFileObj);
+    }
+  }
 
   const onRemoveFile = async (removedFile) => {
     // remove from ipfs
@@ -67,10 +88,9 @@ const PinataListUpload: React.FC<PinataListUploadProps> = ({ onSuccessfulUpload 
     message.success(`${removedFile.name} file removed successfully`);
   }
 
-  const handlePreview = async (file) => {
-    if (!file.url && !file.preview) {
-      file.preview = await getBase64(file.originFileObj);
-    }
+  const handlePreview = async (file: UploadFile) => {
+    
+    await assignFilePreview(file);
 
     setPreviewImage(file.url || file.preview);
     setPreviewVisible(true);
@@ -96,7 +116,51 @@ const PinataListUpload: React.FC<PinataListUploadProps> = ({ onSuccessfulUpload 
     format: (percent) => `${parseFloat(percent.toFixed(2))}%`
   };
 
-  return (
+  const singleUploadButton = (
+    <p className="ant-upload-drag-icon">
+      {uploading ? <LoadingOutlined /> : 
+        <>
+          <FileAddOutlined />
+          <p className="ant-upload-text">Click or drag to upload media</p>
+          <p className="ant-upload-hint">
+            Image/Audio/Video/3D
+          </p>
+        </>}
+      </p>
+  );
+
+  const singleFileUpload = (
+    <>
+    {singleImageUrl ? 
+      <Card
+        cover={
+          <img src={singleImageUrl}/* style={{ width: '100%' }} */ />
+        }
+        actions={[
+          <SettingOutlined key="setting" />,
+          <EditOutlined key="edit" />,
+          <EllipsisOutlined key="ellipsis" />,
+        ]}
+      >
+      </Card>
+       : 
+       <Dragger 
+       name='file'
+       action={pinFileToIPFSUrl}
+       onChange={onChangeFile}
+       customRequest={uploadFileCustomRequest}
+       onRemove={onRemoveFile}
+       showUploadList={false}
+       listType="picture"
+     >
+       {singleUploadButton}
+       
+     </Dragger>}
+    </>
+    
+  );
+
+  const pictureCardUpload = (
     <DndProvider backend={HTML5Backend}>
       
       <Upload
@@ -131,6 +195,8 @@ const PinataListUpload: React.FC<PinataListUploadProps> = ({ onSuccessfulUpload 
       </Modal>
     </DndProvider>
   );
+
+  return (singleFile ? singleFileUpload : pictureCardUpload);
 };
 
 function getBase64(file: Blob) {
@@ -142,6 +208,6 @@ function getBase64(file: Blob) {
   });
 }
 
-export default PinataListUpload;
+export default PinataDraggableDropzone;
 
 // 

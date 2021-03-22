@@ -1,1 +1,1 @@
-export { default as DraggableDropzone } from './DraggableDropzone';
+export { default as DraggableDropzone } from './PinataDraggableDropzone';
