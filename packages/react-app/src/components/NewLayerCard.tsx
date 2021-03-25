@@ -12,10 +12,10 @@ const { Option } = Select;
 type LayerCardProps = {
     name?: string;
     address: string;
-    onFormValuesChange: (changedValues: any, allValues: any) => void;
+    onFormValuesChange: (formId: string, changedValues: any, allValues: any) => void;
 }
 
-const LayerCard: FunctionComponent<LayerCardProps> = ({ name, address, onFormValuesChange }) => {
+const LayerCard: FunctionComponent<LayerCardProps> = ({ name, address, onFormValuesChange: extOnValuesChange }) => {
 
   const [ tokenRecipient, setTokenRecipient ] = useState('self');
 
@@ -23,21 +23,19 @@ const LayerCard: FunctionComponent<LayerCardProps> = ({ name, address, onFormVal
     setTokenRecipient(recipient);
   }
 
-  // const onFormValuesChange = (changedValues, allValues) => {
-  //   console.log(changedValues, allValues);
-  //   // console.log(allValues);
-  // }
+  const onFormValuesChange = (changedValues, allValues) => extOnValuesChange(name, changedValues, allValues);
 
   
   return (
     <Card>
       <Form 
-        labelCol={{ span: 4 }} 
+        name={name ? name : ''}
+        labelCol={{ span: 4 }}
         wrapperCol={{ span: 18 }}
         onValuesChange={onFormValuesChange}
       >
-        <Row gutter={8}>
-          <Col span={18}>
+        <Row gutter={4}>
+          <Col span={16}>
             <Form.Item name={['name']} label="Name">
               <Input
                 placeholder='Have fun with it!'
@@ -110,8 +108,13 @@ const LayerCard: FunctionComponent<LayerCardProps> = ({ name, address, onFormVal
               />
             </Form.Item> valuePropName="uploadedFileUrl" getValueFromEvent={normFile}*/}
           </Col>
-          <Col span={6}>
-            <Form.Item name={['image']} valuePropName='onChange'getValueFromEvent={(e) => e.fileUrlPreview } >
+          <Col span={8}>
+            <Form.Item 
+              name={['image']}
+              valuePropName='onChange'
+              getValueFromEvent={(e) => e.fileUrlPreview } 
+              noStyle
+            >
               <PinataDraggableDropzone singleFile={true}/>
             </Form.Item>
           </Col>

@@ -1,13 +1,12 @@
 import React from 'react';
-import { Tabs } from 'antd';
+import { Tabs, TabsProps } from 'antd';
 import { DndProvider, DragSource, DropTarget } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-
-const { TabPane } = Tabs;
 
 // Drag & Drop node
 class TabNode extends React.Component {
   render() {
+    //@ts-ignore
     const { connectDragSource, connectDropTarget, children } = this.props;
 
     return connectDragSource(connectDropTarget(children));
@@ -46,17 +45,37 @@ const WrapTabNode = DropTarget('DND_NODE', cardTarget, connect => ({
   }))(TabNode),
 );
 
-export default class DraggableTabs extends React.Component {
-  state = {
-    order: [],
-  };
+interface DraggableTabOrder {
+  order?: string[];
+}
+
+interface DraggableTabsProps extends TabsProps {
+  onOrderChange?: (value: DraggableTabOrder) => void;
+}
+
+interface DraggableTabsState {
+  order: string[];
+}
+
+class DraggableTabs extends React.Component<DraggableTabsProps, DraggableTabsState> {
+
+  constructor(props) {
+    super(props);
+    this.onOrderChange = this.onOrderChange.bind(this);
+    this.state = { order: [] };
+  }
+
+  // we want to be able to get the order in a higher level component
+  onOrderChange = (changedValue: DraggableTabOrder) => this.props.onOrderChange(changedValue);
 
   moveTabNode = (dragKey, hoverKey) => {
     const newOrder = this.state.order.slice();
     const { children } = this.props;
 
     React.Children.forEach(children, c => {
+      //@ts-ignore
       if (newOrder.indexOf(c.key) === -1) {
+        //@ts-ignore
         newOrder.push(c.key);
       }
     });
@@ -75,12 +94,14 @@ export default class DraggableTabs extends React.Component {
     this.setState({
       order: newOrder,
     });
+    this.onOrderChange({ order: newOrder })
     
   };
 
   renderTabBar = (props, DefaultTabBar) => (
     <DefaultTabBar {...props}>
       {node => (
+        //@ts-ignore
         <WrapTabNode key={node.key} index={node.key} moveTabNode={this.moveTabNode}>
           {node}
         </WrapTabNode>
@@ -91,6 +112,8 @@ export default class DraggableTabs extends React.Component {
   render() {
     const { order } = this.state;
     const { children } = this.props;
+    // remove onOrderChange prop
+    const { onOrderChange, ...props } = this.props;
 
     const tabs = [];
     React.Children.forEach(children, c => {
@@ -119,10 +142,12 @@ export default class DraggableTabs extends React.Component {
 
     return (
       <DndProvider backend={HTML5Backend}>
-        <Tabs renderTabBar={this.renderTabBar} {...this.props}>
+        <Tabs renderTabBar={this.renderTabBar} {...props}>
           {orderTabs}
         </Tabs>
       </DndProvider>
     );
   }
 }
+
+export default DraggableTabs;

@@ -1,12 +1,10 @@
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState } from "react";
 import "antd/dist/antd.css";
-import { Upload, Button, message, Tooltip, Modal, Card } from "antd";
-import { DndProvider, useDrag, useDrop } from "react-dnd";
+import { Upload, message, Modal, Card, Image } from "antd";
+import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import update from "immutability-helper";
 import { EditOutlined, EllipsisOutlined, FileAddOutlined, LoadingOutlined, PlusOutlined, SettingOutlined, UploadOutlined } from "@ant-design/icons";
 import { uploadFileCustomRequest, pinFileToIPFSUrl, unpinFile, PinataResponse } from '../../helpers/pinata';
-import { UploadRequestOption as RcCustomRequestOptions } from 'rc-upload/lib/interface';
 import { UploadFile } from "antd/lib/upload/interface";
 
 const { Dragger } = Upload;
@@ -33,7 +31,7 @@ const PinataDraggableDropzone: React.FC<PinataDraggableDropzoneProps> = ({
   const [ uploading, setUploading ] = useState(false);
   const [ singleImageUrl, setSingleImageUrl ] = useState(null);
 
-  const triggerPreviewChange = (changedValue: { fileUrlPreview?: string }) => {
+  const triggerPreviewChange = (changedValue: FilePreview) => {
     onChange?.({ ...changedValue });
   };
 
@@ -58,7 +56,6 @@ const PinataDraggableDropzone: React.FC<PinataDraggableDropzoneProps> = ({
     
         setSingleImageUrl(newFile.url || newFile.preview);
         triggerPreviewChange({ fileUrlPreview: newFile.url || newFile.preview });
-        console.log(triggerPreviewChange);
 
         break;
       case 'error': 
@@ -146,17 +143,18 @@ const PinataDraggableDropzone: React.FC<PinataDraggableDropzoneProps> = ({
   const singleFileUpload = (
     <>
     {singleImageUrl ? 
-      <Card
-        cover={
-          <img src={singleImageUrl}/* style={{ width: '100%' }} */ />
-        }
-        actions={[
-          <SettingOutlined key="setting" />,
-          <EditOutlined key="edit" />,
-          <EllipsisOutlined key="ellipsis" />,
-        ]}
-      >
-      </Card>
+      // <Card
+      //   cover={
+      //     <img src={singleImageUrl}/* style={{ width: '100%' }} */ />
+      //   }
+      //   actions={[
+      //     <SettingOutlined key="setting" />,
+      //     <EditOutlined key="edit" />,
+      //     <EllipsisOutlined key="ellipsis" />,
+      //   ]}
+      // >
+      // </Card>
+      <Image src={singleImageUrl} width='100%' style={{ border: '1px solid #555' }} />
        : 
       <Dragger 
         name='file'
