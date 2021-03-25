@@ -8,20 +8,14 @@ const { Dragger } = Upload;
 const { Text } = Typography;
 const { Option } = Select;
 
-// interface FieldData {
-//   name: string | number | (string | number)[];
-//   value?: any;
-//   touched?: boolean;
-//   validating?: boolean;
-//   errors?: string[];
-// }
 
 type LayerCardProps = {
     name?: string;
     address: string;
+    onFormValuesChange: (changedValues: any, allValues: any) => void;
 }
 
-const LayerCard: FunctionComponent<LayerCardProps> = ({ name, address }) => {
+const LayerCard: FunctionComponent<LayerCardProps> = ({ name, address, onFormValuesChange }) => {
 
   const [ tokenRecipient, setTokenRecipient ] = useState('self');
 
@@ -29,22 +23,22 @@ const LayerCard: FunctionComponent<LayerCardProps> = ({ name, address }) => {
     setTokenRecipient(recipient);
   }
 
-  const onFormValuesChange = (changedValues, allValues) => {
-    console.log(changedValues);
-    console.log(allValues);
-  }
+  // const onFormValuesChange = (changedValues, allValues) => {
+  //   console.log(changedValues, allValues);
+  //   // console.log(allValues);
+  // }
 
   
   return (
     <Card>
       <Form 
         labelCol={{ span: 4 }} 
-        wrapperCol={{ span: 16 }}
+        wrapperCol={{ span: 18 }}
         onValuesChange={onFormValuesChange}
       >
         <Row gutter={8}>
           <Col span={18}>
-            <Form.Item name={['user', 'introduction']} label="Layer name">
+            <Form.Item name={['name']} label="Name">
               <Input
                 placeholder='Have fun with it!'
                 // TODO this needs to take dark mode into account
@@ -55,7 +49,7 @@ const LayerCard: FunctionComponent<LayerCardProps> = ({ name, address }) => {
                 }
               />
             </Form.Item>
-            <Form.Item name={['aoeu', 'oeuioeui']} label="Layer description">
+            <Form.Item name={['description']} label="Description">
               <TextArea 
                 rows={4}
                 autoSize
@@ -64,7 +58,7 @@ const LayerCard: FunctionComponent<LayerCardProps> = ({ name, address }) => {
             </Form.Item>
             <Form.Item
               // name="recipient"
-              label="Mint recipient"
+              label="Recipient"
             >
               <Input.Group compact style={{ textAlign: 'left', width: '100%' }}
 >
@@ -72,11 +66,11 @@ const LayerCard: FunctionComponent<LayerCardProps> = ({ name, address }) => {
                   // style={{ float: 'left' }}
                   name={['recipient', 'select']} 
                   // noStyle 
+                  initialValue='self'
                   style={{ width: '17%' }}
                   rules={[{ required: true, message: 'Recipient is required' }]}
                 >
                   <Select 
-                    defaultValue='self' 
                     placeholder="Please select a recipient" 
                     onChange={onSelectRecipient}
                   >
@@ -91,6 +85,7 @@ const LayerCard: FunctionComponent<LayerCardProps> = ({ name, address }) => {
                   // style={{ float: 'left' }}
                   // style={{ display: "inline-block"}}
                   style={{ width: '83%' }}
+                  initialValue={address}
                   rules={[{ 
                     type: 'string', 
                     len: 42,
@@ -101,7 +96,6 @@ const LayerCard: FunctionComponent<LayerCardProps> = ({ name, address }) => {
                   <Input 
                     allowClear 
                     disabled={tokenRecipient === 'self'}
-                    defaultValue={address} 
                     placeholder={tokenRecipient === 'self' ? address : 'address'}
                     style={{ textAlign: 'left', width: '100%' }}
                   />
@@ -114,10 +108,12 @@ const LayerCard: FunctionComponent<LayerCardProps> = ({ name, address }) => {
                 checkedChildren={<CheckOutlined />}
                 unCheckedChildren={<CloseOutlined />}
               />
-            </Form.Item> */}
+            </Form.Item> valuePropName="uploadedFileUrl" getValueFromEvent={normFile}*/}
           </Col>
           <Col span={6}>
-            <PinataDraggableDropzone singleFile={true}/>
+            <Form.Item name={['image']} valuePropName='onChange'getValueFromEvent={(e) => e.fileUrlPreview } >
+              <PinataDraggableDropzone singleFile={true}/>
+            </Form.Item>
           </Col>
         </Row>
       </Form>

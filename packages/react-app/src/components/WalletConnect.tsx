@@ -1,9 +1,10 @@
 import WalletConnectProvider from '@walletconnect/web3-provider';
 import { Alert } from 'antd';
-import React, { useEffect, ReactElement, useCallback, useState } from 'react';
+import React, { useEffect, ReactElement, useCallback, useState, useContext } from 'react';
 import { INFURA_ID, NETWORK, NETWORKS } from '../constants';
 import Web3Modal from 'web3modal';
 import { Web3Provider } from '@ethersproject/providers';
+import { ThemeContext } from '../contexts';
 
 const targetNetwork = NETWORKS['localhost']; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
 
@@ -21,10 +22,16 @@ export const web3Modal = new Web3Modal({
       },
     },
   },
+  theme: 'dark'
 });
 
+// TODO this doesn't work -_-
+export const updateWeb3ModalTheme = async (theme: string) => {
+  await web3Modal.updateTheme(theme);
+}
+
 export const logoutOfWeb3Modal = async () => {
-  await web3Modal.clearCachedProvider();
+  web3Modal.clearCachedProvider();
   setTimeout(() => {
     window.location.reload();
   }, 1);

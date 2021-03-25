@@ -11,12 +11,20 @@ import { UploadFile } from "antd/lib/upload/interface";
 
 const { Dragger } = Upload;
 
+interface FilePreview {
+  fileUrlPreview?: string;
+}
 
 type PinataDraggableDropzoneProps = {
   onSuccessfulUpload?: any;
-  singleFile?: boolean
+  singleFile?: boolean;
+  onChange?: (value: FilePreview) => void;
 }
-const PinataDraggableDropzone: React.FC<PinataDraggableDropzoneProps> = ({ onSuccessfulUpload = undefined, singleFile = false }) => {
+const PinataDraggableDropzone: React.FC<PinataDraggableDropzoneProps> = ({ 
+  onSuccessfulUpload = undefined, 
+  singleFile = false, 
+  onChange
+}) => {
   const [ fileList, setFileList ] = useState([]);
   const [ pinataResponseMap, setPinataResponseMap] = useState<Map<string, PinataResponse>>(new Map());
   const [ previewVisible, setPreviewVisible ] = useState(false);
@@ -24,6 +32,10 @@ const PinataDraggableDropzone: React.FC<PinataDraggableDropzoneProps> = ({ onSuc
   const [ previewTitle, setPreviewTitle ] = useState('');
   const [ uploading, setUploading ] = useState(false);
   const [ singleImageUrl, setSingleImageUrl ] = useState(null);
+
+  const triggerPreviewChange = (changedValue: { fileUrlPreview?: string }) => {
+    onChange?.({ ...changedValue });
+  };
 
   const onChangeFile = async ({ file: newFile, fileList: newFileList, event }) => {
     console.log(event);
@@ -45,6 +57,8 @@ const PinataDraggableDropzone: React.FC<PinataDraggableDropzoneProps> = ({ onSuc
         await assignFilePreview(newFile);
     
         setSingleImageUrl(newFile.url || newFile.preview);
+        triggerPreviewChange({ fileUrlPreview: newFile.url || newFile.preview });
+        console.log(triggerPreviewChange);
 
         break;
       case 'error': 
@@ -117,7 +131,7 @@ const PinataDraggableDropzone: React.FC<PinataDraggableDropzoneProps> = ({ onSuc
   };
 
   const singleUploadButton = (
-    <p className="ant-upload-drag-icon">
+    <div className="ant-upload-drag-icon">
       {uploading ? <LoadingOutlined /> : 
         <>
           <FileAddOutlined />
@@ -126,7 +140,7 @@ const PinataDraggableDropzone: React.FC<PinataDraggableDropzoneProps> = ({ onSuc
             Image/Audio/Video/3D
           </p>
         </>}
-      </p>
+      </div>
   );
 
   const singleFileUpload = (
@@ -144,18 +158,18 @@ const PinataDraggableDropzone: React.FC<PinataDraggableDropzoneProps> = ({ onSuc
       >
       </Card>
        : 
-       <Dragger 
-       name='file'
-       action={pinFileToIPFSUrl}
-       onChange={onChangeFile}
-       customRequest={uploadFileCustomRequest}
-       onRemove={onRemoveFile}
-       showUploadList={false}
-       listType="picture"
-     >
-       {singleUploadButton}
+      <Dragger 
+        name='file'
+        action={pinFileToIPFSUrl}
+        onChange={onChangeFile}
+        customRequest={uploadFileCustomRequest}
+        onRemove={onRemoveFile}
+        showUploadList={false}
+        listType="picture"
+      >
+        {singleUploadButton}
        
-     </Dragger>}
+      </Dragger>}
     </>
     
   );

@@ -11,6 +11,8 @@ packages/hardhat/artifacts
 packages/hardhat/deployments
 packages/react-app/src/contracts
 packages/react-app/.env.development
+# TODO this is temporary 
+packages/react-app/src/components/Three
 packages/hardhat/cache
 packages/hardhat/typechain
 

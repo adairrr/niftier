@@ -1,3 +1,2 @@
-import { createContext } from 'react';
-
-export const AddressContext = createContext<string>('');
+export { default as AddressContext } from './AddressContext';
+export { default as ThemeContext } from './ThemeContext';

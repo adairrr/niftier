@@ -1,6 +1,7 @@
 import React from "react";
 import { PageHeader } from "antd";
 import WalletConnect from "./WalletConnect";
+import AccountDropdown from "./Header/AccountDropdown";
 
 // displays a page header
 
@@ -15,7 +16,8 @@ export default function Header({ account }: HeaderProps) {
         title="🖼 NFT Canvas"
         subTitle="Collaborative, programmable art"
         style={{ cursor: "pointer" }}
-        extra={account}
+        extra={
+          <>{account}</>}
       >
         {/* {account} */}
       </PageHeader>

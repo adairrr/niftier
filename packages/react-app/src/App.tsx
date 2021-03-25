@@ -1,4 +1,4 @@
-import React, { createContext, ReactElement, useCallback, useEffect, useState } from 'react';
+import React, { createContext, ReactElement, useCallback, useContext, useEffect, useState } from 'react';
 import { BrowserRouter, Switch, Route, Link } from 'react-router-dom';
 import 'antd/dist/antd.css';
 import {  JsonRpcProvider, Web3Provider } from '@ethersproject/providers';
@@ -20,11 +20,12 @@ import Landing from './components/Landing';
 import Footer from './components/Landing/Footer1';
 import './components/Landing/less/antMotionStyle.less';
 import styled from 'styled-components';
-import { AddressContext } from './contexts';
+import { AddressContext, ThemeContext } from './contexts';
 
 import {
   Footer11DataSource,
 } from './components/Landing/data.source';
+import AccountDropdown from './components/Header/AccountDropdown';
 
 /// 📡 What chain are your contracts deployed to?
 const targetNetwork = NETWORKS['localhost']; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
@@ -52,6 +53,8 @@ const blockExplorer = targetNetwork.blockExplorer;
 
 
 function App(props) {
+
+  const themeContext = useContext(ThemeContext);
 
   const [ injectedProvider, setInjectedProvider ] = useState<Web3Provider>();
 
@@ -113,11 +116,11 @@ function App(props) {
   // keep track of a variable from the contract in the local React state:
   //📟 Listen for broadcast events
   const purpose = useContractReader(readContracts,"YourContract", "purpose")
-  if(DEBUG) console.log("🤗 purpose:",purpose)
+  if (DEBUG) console.log("🤗 purpose:",purpose)
 
   //📟 Listen for broadcast events
   const setPurposeEvents = useEventListener(readContracts, "YourContract", "SetPurpose", localProvider, 1);
-  if(DEBUG) console.log("📟 SetPurpose events:",setPurposeEvents)
+  if (DEBUG) console.log("📟 SetPurpose events:",setPurposeEvents)
 
   /*
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
@@ -125,10 +128,17 @@ function App(props) {
   */
 
   const loadWeb3Modal = useCallback(async () => {
-    console.log("Adair is connecting");
-    const provider = await web3Modal.connect();
-    console.log("Adair has connected")
-    setInjectedProvider(new Web3Provider(provider));
+    if (DEBUG) console.log("User is connecting to web3");
+    try {
+      const provider = await web3Modal.connect();
+      if (DEBUG) console.log("User has connected to web3")
+      console.log(provider)
+      setInjectedProvider(new Web3Provider(provider));
+    } catch (e) { 
+      // catches 'Modal closed by user'
+      if (DEBUG) console.log(e);
+    };
+    
   }, [setInjectedProvider]);
 
   useEffect(() => {
@@ -183,6 +193,14 @@ function App(props) {
     </div>
   );
 
+  const accountDropdown = (
+    <AccountDropdown
+      web3Modal={web3Modal}
+      loadWeb3Modal={loadWeb3Modal}
+      logoutOfWeb3Modal={logoutOfWeb3Modal}
+    />
+  )
+
 
   return (
     <div className="App">
@@ -190,7 +208,7 @@ function App(props) {
 
       <BrowserRouter>
         <Layout className="layout">
-          <Header account={account}/>
+          <Header account={accountDropdown}/>
           {/* {networkDisplay} */}
           <RouterMenu/>
           {faucetHint}
@@ -311,7 +329,7 @@ function App(props) {
         </Switch>
       </BrowserRouter>
 
-      <ThemeSwitch />
+      <ThemeSwitch web3Modal={web3Modal}/>
       
       <Footer 
         id="Footer1_1"
@@ -363,35 +381,5 @@ function App(props) {
     </div>
   );
 }
-
-
-// /*
-//   Web3 modal helps us "connect" external wallets:
-// */
-// const web3Modal = new Web3Modal({
-//   // network: "mainnet", // optional
-//   cacheProvider: true, // optional
-//   providerOptions: {
-//     walletconnect: {
-//       package: WalletConnectProvider, // required
-//       options: {
-//         infuraId: INFURA_ID,
-//       },
-//     },
-//   },
-// });
-
-// const logoutOfWeb3Modal = async () => {
-//   await web3Modal.clearCachedProvider();
-//   setTimeout(() => {
-//     window.location.reload();
-//   }, 1);
-// };
-
-//  window.ethereum && window.ethereum.on('chainChanged', chainId => {
-//   setTimeout(() => {
-//     window.location.reload();
-//   }, 1);
-// })
 
 export default App;
