@@ -3,6 +3,7 @@ import { Avatar, Button, Popconfirm, Tabs } from 'antd';
 import { DraggableTabs, NewLayerCard } from '..';
 import { AddressContext } from '../../contexts';
 import { CloseOutlined } from '@ant-design/icons';
+import { DraggableTabOrder } from '../DraggableTabs';
 
 const { TabPane } = Tabs;
 
@@ -10,11 +11,15 @@ const initialLayerTabs = [
   { title: 'Layer 1', preview: undefined, key: '1' },
 ];
 
-type LayerTabsProps = {
-
+interface OrderedLayerMedia {
+  media?: string[];
 }
 
-const LayerTabs: FunctionComponent<LayerTabsProps> = ({  }) => {
+type LayerTabsProps = {
+  onLayerMediaChange?: (value: OrderedLayerMedia) => void;
+}
+
+const LayerTabs: FunctionComponent<LayerTabsProps> = ({ onLayerMediaChange }) => {
 
   const currentAddress = useContext(AddressContext);
 
@@ -24,9 +29,14 @@ const LayerTabs: FunctionComponent<LayerTabsProps> = ({  }) => {
   const [ layerTabs, setLayerTabs ] = useState(initialLayerTabs);
   const [ showTabImages, setShowTabImages ] = useState(false);
 
+  const triggerLayerMediaChange = (changedValue: OrderedLayerMedia) => {
+    onLayerMediaChange?.({ ...changedValue });
+  };
+
   const onTabChange = (activeKey: string) => setActiveTabKey(activeKey);
 
-  const onTabAction = (targetTabKey: string, tabAction: string) => {
+  const onTabAction = (targetTabKey: string, tabAction: 'add' | 'remove') => {
+    console.log("In LayerTabs", tabAction);
     if (tabAction === 'add') onAddTab();
   }
 
@@ -86,9 +96,21 @@ const LayerTabs: FunctionComponent<LayerTabsProps> = ({  }) => {
     }
   }
 
-  const onTabOrderChange = (changedValue: any) => {
+  const onTabOrderChange = (changedValue: DraggableTabOrder) => {
     console.log("Hello?")
     console.log(changedValue);
+
+    let changedOrder = changedValue.order;
+
+    const tabMedias = layerTabs.slice().sort((a, b) => {
+      return changedOrder.indexOf(a.key) - changedOrder.indexOf(b.key);
+    }).map((tab) => tab.preview);
+
+    console.log(layerTabs);
+    console.log(changedValue.order);
+    console.log(tabMedias);
+
+    // triggerLayerMediaChange({media: tabMedias});
   };
 
   const toggleTabView = () => setShowTabImages(!showTabImages);
@@ -121,6 +143,7 @@ const LayerTabs: FunctionComponent<LayerTabsProps> = ({  }) => {
       activeKey={activeTabKey}
       onEdit={onTabAction}
       onChange={onTabChange}
+      // onCloseTab={onCloseTab}
       onOrderChange={onTabOrderChange}
       tabBarExtraContent={{ left: tabViewButton }}
     >

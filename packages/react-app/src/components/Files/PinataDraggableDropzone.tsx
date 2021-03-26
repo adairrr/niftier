@@ -154,7 +154,7 @@ const PinataDraggableDropzone: React.FC<PinataDraggableDropzoneProps> = ({
       //   ]}
       // >
       // </Card>
-      <Image src={singleImageUrl} width='100%' style={{ border: '1px solid #555' }} />
+      <Image src={singleImageUrl} width='100%'/>
        : 
       <Dragger 
         name='file'

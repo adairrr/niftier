@@ -45,12 +45,14 @@ const WrapTabNode = DropTarget('DND_NODE', cardTarget, connect => ({
   }))(TabNode),
 );
 
-interface DraggableTabOrder {
+export interface DraggableTabOrder {
   order?: string[];
 }
 
 interface DraggableTabsProps extends TabsProps {
+  // onCloseTab?: (targetTabKey: string) => void;
   onOrderChange?: (value: DraggableTabOrder) => void;
+
 }
 
 interface DraggableTabsState {
@@ -61,17 +63,34 @@ class DraggableTabs extends React.Component<DraggableTabsProps, DraggableTabsSta
 
   constructor(props) {
     super(props);
+    // this.onCloseTab = this.onCloseTab.bind(this);
     this.onOrderChange = this.onOrderChange.bind(this);
     this.state = { order: [] };
   }
 
+  // // hook to call once we confirm a closed tab
+  // onCloseTab = (targetTabKey: string) => {
+
+  //   const newOrder = this.state.order.slice();
+
+  //   const indexToRemove = newOrder.indexOf(targetTabKey);
+  //   console.log('newOrder index', indexToRemove);
+  //   if (indexToRemove > -1) newOrder.splice(indexToRemove, 1);
+
+  //   this.setState({ order: newOrder });
+  //   this.onOrderChange({ order: newOrder });
+  //   this.props.onCloseTab(targetTabKey);
+  // }
+  
   // we want to be able to get the order in a higher level component
   onOrderChange = (changedValue: DraggableTabOrder) => this.props.onOrderChange(changedValue);
-
+  
+  
   moveTabNode = (dragKey, hoverKey) => {
-    const newOrder = this.state.order.slice();
+    let newOrder = this.state.order.slice();
     const { children } = this.props;
 
+    // add any new children
     React.Children.forEach(children, c => {
       //@ts-ignore
       if (newOrder.indexOf(c.key) === -1) {
@@ -79,6 +98,37 @@ class DraggableTabs extends React.Component<DraggableTabsProps, DraggableTabsSta
         newOrder.push(c.key);
       }
     });
+
+    const tabs = [];
+    React.Children.forEach(children, c => {
+      tabs.push(c);
+    });
+
+    if (newOrder.length > tabs.length) {
+      // const newOrder = this.state.order.slice();
+
+      const tabKeys = tabs.map((tab) => tab.key);
+
+      console.log("got tab keys: ", tabKeys);
+      console.log("starting with order", newOrder)
+
+      // find key that is different
+      newOrder = newOrder.filter((key) => {
+        return tabKeys.indexOf(key) !== -1;
+      });
+
+      console.log("Setting new order", newOrder);
+
+      this.setState({ order: newOrder });
+
+      // order = newOrder;
+
+  //   const indexToRemove = newOrder.indexOf(targetTabKey);
+  //   console.log('newOrder index', indexToRemove);
+  //   if (indexToRemove > -1) newOrder.splice(indexToRemove, 1);
+    }
+
+    // TODO remove any old children
 
     const dragIndex = newOrder.indexOf(dragKey);
     const hoverIndex = newOrder.indexOf(hoverKey);
@@ -110,7 +160,7 @@ class DraggableTabs extends React.Component<DraggableTabsProps, DraggableTabsSta
   );
 
   render() {
-    const { order } = this.state;
+    let { order } = this.state;
     const { children } = this.props;
     // remove onOrderChange prop
     const { onOrderChange, ...props } = this.props;
@@ -142,7 +192,10 @@ class DraggableTabs extends React.Component<DraggableTabsProps, DraggableTabsSta
 
     return (
       <DndProvider backend={HTML5Backend}>
-        <Tabs renderTabBar={this.renderTabBar} {...props}>
+        <Tabs 
+          renderTabBar={this.renderTabBar}
+          {...props}
+        >
           {orderTabs}
         </Tabs>
       </DndProvider>
