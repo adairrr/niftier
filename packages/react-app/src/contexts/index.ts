@@ -1,2 +1,2 @@
 export { default as AddressContext } from './AddressContext';
-export { default as ThemeContext } from './ThemeContext';
+export { default as useThemeContext } from './ThemeContext';

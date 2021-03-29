@@ -4,7 +4,6 @@ import React, { useEffect, ReactElement, useCallback, useState, useContext } fro
 import { INFURA_ID, NETWORK, NETWORKS } from '../constants';
 import Web3Modal from 'web3modal';
 import { Web3Provider } from '@ethersproject/providers';
-import { ThemeContext } from '../contexts';
 
 const targetNetwork = NETWORKS['localhost']; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
 

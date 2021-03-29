@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useContext } from "react";
 import { Switch } from "antd";
 import { useThemeSwitcher } from "react-css-theme-switcher";
-import { ThemeContext } from '../contexts';
+import { useThemeContext } from '../contexts';
 // import { updateWeb3ModalTheme } from './WalletConnect';
 
 export default function ThemeSwitcher({ web3Modal }) {
 
-  const { theme, setTheme } = useContext(ThemeContext)
+  const { theme, toggleTheme: toggleThemeContext } = useThemeContext();
 
   const [ isDarkMode, setIsDarkMode ] = useState(theme !== 'light');
   const { switcher, currentTheme, status, themes } = useThemeSwitcher();
@@ -20,7 +20,7 @@ export default function ThemeSwitcher({ web3Modal }) {
   const toggleTheme = (isChecked) => {
     setIsDarkMode(isChecked);
     switcher({ theme: isChecked ? themes.dark : themes.light });
-    setTheme(isChecked ? 'dark' : 'light');
+    toggleThemeContext();
   };
 
   // Avoid theme change flicker

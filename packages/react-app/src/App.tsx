@@ -20,7 +20,8 @@ import Landing from './components/Landing';
 import Footer from './components/Landing/Footer1';
 import './components/Landing/less/antMotionStyle.less';
 import styled from 'styled-components';
-import { AddressContext, ThemeContext } from './contexts';
+import { AddressContext } from './contexts';
+import { ThemeContextProvider } from './contexts/ThemeContext';
 
 import {
   Footer11DataSource,
@@ -53,8 +54,6 @@ const blockExplorer = targetNetwork.blockExplorer;
 
 
 function App(props) {
-
-  const themeContext = useContext(ThemeContext);
 
   const [ injectedProvider, setInjectedProvider ] = useState<Web3Provider>();
 
@@ -205,6 +204,7 @@ function App(props) {
   return (
     <div className="App">
       <AddressContext.Provider value={currentAddress}>
+      <ThemeContextProvider>
 
       <BrowserRouter>
         <Layout className="layout">
@@ -377,6 +377,7 @@ function App(props) {
           </Col>
         </Row>
       </div>
+      </ThemeContextProvider>
       </AddressContext.Provider>
     </div>
   );
