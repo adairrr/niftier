@@ -36,7 +36,7 @@ const cardSource = {
   },
 };
 
-const WrapTabNode = DropTarget('DND_NODE', cardTarget, connect => ({
+const TabNodeWrapper = DropTarget('DND_NODE', cardTarget, connect => ({
   connectDropTarget: connect.dropTarget(),
 }))(
   DragSource('DND_NODE', cardSource, (connect, monitor) => ({
@@ -67,20 +67,6 @@ class DraggableTabs extends React.Component<DraggableTabsProps, DraggableTabsSta
     this.onOrderChange = this.onOrderChange.bind(this);
     this.state = { order: [] };
   }
-
-  // // hook to call once we confirm a closed tab
-  // onCloseTab = (targetTabKey: string) => {
-
-  //   const newOrder = this.state.order.slice();
-
-  //   const indexToRemove = newOrder.indexOf(targetTabKey);
-  //   console.log('newOrder index', indexToRemove);
-  //   if (indexToRemove > -1) newOrder.splice(indexToRemove, 1);
-
-  //   this.setState({ order: newOrder });
-  //   this.onOrderChange({ order: newOrder });
-  //   this.props.onCloseTab(targetTabKey);
-  // }
   
   // we want to be able to get the order in a higher level component
   onOrderChange = (changedValue: DraggableTabOrder) => this.props.onOrderChange(changedValue);
@@ -152,9 +138,9 @@ class DraggableTabs extends React.Component<DraggableTabsProps, DraggableTabsSta
     <DefaultTabBar {...props}>
       {node => (
         //@ts-ignore
-        <WrapTabNode key={node.key} index={node.key} moveTabNode={this.moveTabNode}>
+        <TabNodeWrapper key={node.key} index={node.key} moveTabNode={this.moveTabNode}>
           {node}
-        </WrapTabNode>
+        </TabNodeWrapper>
       )}
     </DefaultTabBar>
   );

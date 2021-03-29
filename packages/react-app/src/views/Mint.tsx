@@ -21,7 +21,8 @@ import DraggableTabs from "../components/DraggableTabs";
 import { ImageViewer } from "../components/Three";
 import { LayerTabs } from "../components/Mint";
 import useImage from 'use-image';
-import { Stage as KonvaStage, Layer as KonvaLayer, Image as KonvaImage } from 'react-konva';
+import { Stage as KonvaStage, Layer as KonvaLayer, Image as KonvaImage, Layer } from 'react-konva';
+import { OrderedLayerMD } from '../components/Mint/LayerTabs';
 
 const { TextArea } = Input;
 const { TabPane } = Tabs;
@@ -83,6 +84,7 @@ const Mint: FunctionComponent<MintProps> = ({ tx, readContracts, writeContracts 
   const [ uploadedJsonData, setUploadedJsonData ] = useState<PinataResponse>(null);
   const [ jsonHash, setJsonHash ] = useState<string>();
   const [ tokenName, setTokenName ] = useState<string>(null);
+  const [ layerMedia, setLayerMedia ] = useState([]);
 
   const handleSuccessfulUpload = (uploadResponse: PinataResponse) => {
     console.log("Upload response")
@@ -130,14 +132,38 @@ const Mint: FunctionComponent<MintProps> = ({ tx, readContracts, writeContracts 
     ));
   }
 
+  useEffect(() => {
+    
+  }, [layerMedia]);
+
+  const onLayersChange = (media: OrderedLayerMD) => {
+    // TODO this only works with images#
+    // setLayerMedia(media.layers.map((layer) => layer.preview));
+    setLayerMedia(media.layers.map((layer) => getImage(layer.preview)));
+  }
+
+  const getImage = (imageSrc: string): HTMLImageElement => {
+    if (!imageSrc) return undefined;
+    console.log("gettingImage")
+    let img = new Image(550, 617);
+    img.src = imageSrc;
+    return img;
+  }
+
   return (
     <>
-      {/* <ImageViewer src='https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png' onClose={() => {}}/> */}
       <div style={{border:"1px solid #cccccc", padding:16, width:800, margin:"auto",marginTop:64}}>
-        <LayerTabs />
+        <LayerTabs onLayersChange={onLayersChange}/>
         <Divider/>
-        <KonvaStage width={500} height={900}>
-
+        <KonvaStage width={550} height={617}>
+        <KonvaLayer>
+          {layerMedia.slice().reverse().map((media, index) => (
+              media ? 
+                <KonvaImage image={media} key={index}/>
+              : 
+              <></>
+          ))}
+          </KonvaLayer> 
         </KonvaStage>
       </div>
       <div >
