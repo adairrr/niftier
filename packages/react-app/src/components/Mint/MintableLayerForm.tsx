@@ -1,99 +1,47 @@
-import React, { ChangeEvent, FunctionComponent, useState, useEffect, useCallback, useRef } from 'react';
-import { Form, Card, Typography, Input, Tooltip, Row, Col, Upload, Switch, Select } from 'antd';
-import { CheckOutlined, CloseOutlined, FileAddOutlined, QuestionCircleOutlined } from '@ant-design/icons';
-import { SingleFileDropzone } from './Files/SingleFileDropzone';
-import PinataDraggableDropzone from './Files/PinataDraggableDropzone';
-const { TextArea } = Input;
-const { Dragger } = Upload;
-const { Text } = Typography;
+import React, { useContext, useState } from 'react';
+import MintableLayer from '../../store/MintableLayer';
+import { observer } from 'mobx-react-lite';
+import { Form, Card, Input, Tooltip, Row, Col, Select, Switch } from 'antd';
+import { CheckOutlined, CloseOutlined, QuestionCircleOutlined } from '@ant-design/icons';
+import { AddressContext } from '../../contexts';
+import PinataDraggableDropzone from '../Files/PinataDraggableDropzone';
+import { PinataResponse } from '../../helpers/pinata';
 const { Option } = Select;
+const { TextArea } = Input;
 
-export const CACHED_FORM_PREFIX: string = 'NewLayerCard-';
-
-type LayerCardProps = {
-    name?: string;
-    address: string;
-    onFormValuesChange: (formId: string, changedValues: any, allValues: any) => void;
+interface MintableLayerFormProps {
+  layer: MintableLayer;
 }
 
-const LayerCard: FunctionComponent<LayerCardProps> = ({ name, address, onFormValuesChange: extOnValuesChange }) => {
+const MintableLayerForm: React.FC<MintableLayerFormProps> = ({ layer }) => {
 
-  const CACHED_FORM_KEY = CACHED_FORM_PREFIX.concat(name);
-
-  const [ form ] = Form.useForm();
+  const currentAddress = useContext(AddressContext);
 
   const [ tokenRecipient, setTokenRecipient ] = useState('self');
 
-  // run once on page load
-  useEffect(() => {
-    restoreFormValues();
-  }, []);
-
-  const restoreFormValues = useCallback((/* omitFields: Array<string> = [] */) => {
-    const cache = localStorage.getItem(CACHED_FORM_KEY);
-    if (cache) {
-      const values = JSON.parse(cache);
-      const keys = Object.keys(values);
-
-      // // Remove useless fields
-      // omitFields.forEach(key => {
-      //   delete values[key];
-      // });
-
-      if (values.type) {
-        form.setFieldsValue({
-          type: values.type
-        });
-      }
-
-      // Next frame (IE 9 not support RAF)
-      setTimeout(() => {
-        // Remove useless value
-        const currentValues = form.getFieldsValue();
-        keys.forEach(key => {
-          if (!(key in currentValues)) {
-            delete values[key];
-          }
-        });
-
-        form.setFieldsValue(values);
-      }, 100);
-    }
-  }, []);
-
-  const onSelectRecipient = (recipient: string) => {
-    setTokenRecipient(recipient);
+  // TODO use this instead of onFormValuesChange garbage
+  const updateLayerProperty = (key: string, value: string) => {
+    layer[key] = value
   }
 
   const onFormValuesChange = (changedValues, allValues) => {
-    // store the values in local storage
-    cacheFormValues(allValues);
-    extOnValuesChange(name, changedValues, allValues)
+    console.log(changedValues);
+    if (changedValues.name) layer.setName(changedValues.name);
+    if (changedValues.description) layer.setDescription(changedValues.description);
+    if (changedValues.recipient && changedValues.recipient.address) layer.setRecipientAddress(changedValues.recipient.address);
+    if (changedValues.image) layer.setMediaPrevew(changedValues.image);
   };
 
-  const cacheFormValues = (allValues) => {
-    let preForm = {};
-    try {
-      preForm = JSON.parse(localStorage.getItem(CACHED_FORM_KEY) as string) || {};
-    } catch (err) { /* Do nothing */}
-
-    const cachedForm: any = { ...preForm };
-    Object.keys(allValues).forEach(key => {
-      if (allValues[key]) cachedForm[key] = allValues[key];
-    });
-
-    localStorage.setItem(CACHED_FORM_KEY, JSON.stringify(cachedForm, null, 2));
+  const handleSuccessfulUpload = (uploadResponse: PinataResponse) => {
+    console.log("Upload response")
+    console.log(uploadResponse);
+    layer.setMediaUri(uploadResponse.IpfsHash);
   }
 
-  // TODO we need to clear the cache!!!!! after submit
-  // localStorage.removeItem(CACHED_FORM_KEY);
-
-  
   return (
     <Card>
       <Form 
-        form={form}
-        name={name ? name : ''}
+        name={layer.id}
         labelCol={{ span: 4 }}
         wrapperCol={{ span: 18 }}
         onValuesChange={onFormValuesChange}
@@ -134,7 +82,7 @@ const LayerCard: FunctionComponent<LayerCardProps> = ({ name, address, onFormVal
                 >
                   <Select 
                     placeholder="Please select a recipient" 
-                    onChange={onSelectRecipient}
+                    onChange={(recipient: string) => setTokenRecipient(recipient)}
                   >
                     <Option value="self">Self</Option>
                     <Option value="user">User</Option>
@@ -147,7 +95,7 @@ const LayerCard: FunctionComponent<LayerCardProps> = ({ name, address, onFormVal
                   // style={{ float: 'left' }}
                   // style={{ display: "inline-block"}}
                   style={{ width: '83%' }}
-                  initialValue={address}
+                  initialValue={currentAddress}
                   rules={[{ 
                     type: 'string', 
                     len: 42,
@@ -158,7 +106,7 @@ const LayerCard: FunctionComponent<LayerCardProps> = ({ name, address, onFormVal
                   <Input 
                     allowClear 
                     disabled={tokenRecipient === 'self'}
-                    placeholder={tokenRecipient === 'self' ? address : 'address'}
+                    placeholder={tokenRecipient === 'self' ? currentAddress : 'address'}
                     style={{ textAlign: 'left', width: '100%' }}
                   />
                 </Form.Item>
@@ -179,14 +127,18 @@ const LayerCard: FunctionComponent<LayerCardProps> = ({ name, address, onFormVal
               getValueFromEvent={(e) => e.fileUrlPreview } 
               noStyle
             >
-              <PinataDraggableDropzone singleFile={true}/>
+              <PinataDraggableDropzone singleFile={true} onSuccessfulUpload={handleSuccessfulUpload}/>
             </Form.Item>
           </Col>
         </Row>
       </Form>
+      <Switch
+        style={{ float: 'left' }}
+        checkedChildren={<CheckOutlined />}
+        unCheckedChildren={<CloseOutlined />}
+      />
     </Card>
   );
-  
-}
+};
 
-export default LayerCard;
+export default observer(MintableLayerForm);

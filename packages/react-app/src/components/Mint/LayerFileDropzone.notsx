@@ -1,0 +1,17 @@
+import React, { useContext, useState } from 'react';
+import MintableLayer from '../../store/MintableLayer';
+import { observer } from 'mobx-react-lite';
+import PinataDraggableDropzone, { FilePreview } from '../Files/PinataDraggableDropzone';
+
+interface LayerFileDropzoneProps {
+  layer: MintableLayer;
+  onChange?: (value: FilePreview) => void;
+}
+
+const LayerFileDropzone: React.FC<LayerFileDropzoneProps> = ({ layer, onChange }) => {
+  return (
+    <PinataDraggableDropzone singleFile={true} onChange={onChange} />
+  );
+}
+
+export default observer(LayerFileDropzone);

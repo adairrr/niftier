@@ -19,7 +19,8 @@
     "noEmit": true,
     "noImplicitAny": false,
     "jsx": "react-jsx",
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "useDefineForClassFields": true
   },
   "include": [
     "src"

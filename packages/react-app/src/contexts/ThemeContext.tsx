@@ -1,12 +1,12 @@
 import React, { createContext, useContext, useMemo } from 'react'
-import { useLocalStorage } from '../hooks';
+import { useLocalStorage } from 'react-use';
 
 // const theme = window.localStorage.getItem('theme');
 
 // lets use dark mode by default!
 interface ThemeContext {
-	theme: 'dark' | 'light';
-	setTheme: () => void;
+	theme: string;
+	setTheme: any; // React.Dispatch<React.SetStateAction<string>>;
 	toggleTheme: () => void;
 }
 
@@ -27,7 +27,7 @@ export const ThemeContextProvider = ({ children }: { children: React.ReactNode; 
 
 	const preferDark = window && window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-	const [ theme, setTheme ] = useLocalStorage(
+	const [ theme, setTheme, ] = useLocalStorage(
 		'theme',
 		preferDark ? 'dark' : 'light'
 	);

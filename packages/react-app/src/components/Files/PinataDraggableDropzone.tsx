@@ -9,7 +9,7 @@ import { UploadFile } from "antd/lib/upload/interface";
 
 const { Dragger } = Upload;
 
-interface FilePreview {
+export interface FilePreview {
   fileUrlPreview?: string;
 }
 

@@ -1,15 +1,15 @@
-import React, { createContext, ReactElement, useCallback, useContext, useEffect, useState } from 'react';
-import { BrowserRouter, Switch, Route, Link } from 'react-router-dom';
+import React, { ReactElement, useCallback, useEffect, useState } from 'react';
+import { BrowserRouter, Switch, Route } from 'react-router-dom';
 import 'antd/dist/antd.css';
 import {  JsonRpcProvider, Web3Provider } from '@ethersproject/providers';
 import './App.css';
-import { Row, Col, Button, Layout, Alert, Input, List, Card, Switch as SwitchD } from 'antd';
+import { Row, Col, Button, Layout, Switch as SwitchD } from 'antd';
 import { useUserAddress } from 'eth-hooks';
 import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useEventListener, useBalance, useExternalContractLoader } from './hooks';
-import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address, AddressInput, ThemeSwitch } from './components';
+import { Header, Account, Faucet, Ramp, Contract, GasGauge, ThemeSwitch } from './components';
 import { Transactor } from './helpers';
 import { formatEther, parseEther } from '@ethersproject/units';
-import { Hints, ExampleUI, Subgraph, Transfers, Mint, UserTokens, TokenView, Token } from './views'
+import { Hints, ExampleUI, Subgraph, Transfers, Mint, UserTokens, Token } from './views'
 import { INFURA_ID, DAI_ADDRESS, DAI_ABI, NETWORK, NETWORKS } from './constants';
 //import Hints from './Hints';
 import { RouterMenu } from './RouterMenu';
@@ -19,7 +19,6 @@ import CeramicDocs from './views/CeramicDocs';
 import Landing from './components/Landing';
 import Footer from './components/Landing/Footer1';
 import './components/Landing/less/antMotionStyle.less';
-import styled from 'styled-components';
 import { AddressContext } from './contexts';
 import { ThemeContextProvider } from './contexts/ThemeContext';
 
