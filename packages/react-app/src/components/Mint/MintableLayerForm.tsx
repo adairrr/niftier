@@ -2,7 +2,7 @@ import React, { useContext, useState } from 'react';
 import MintableLayer from '../../store/MintableLayer';
 import { observer } from 'mobx-react-lite';
 import { Form, Card, Input, Tooltip, Row, Col, Select, Switch } from 'antd';
-import { CheckOutlined, CloseOutlined, QuestionCircleOutlined } from '@ant-design/icons';
+import * as AntIcon from "@ant-design/icons";
 import { AddressContext } from '../../contexts';
 import PinataDraggableDropzone from '../Files/PinataDraggableDropzone';
 import { PinataResponse } from '../../helpers/pinata';
@@ -54,7 +54,7 @@ const MintableLayerForm: React.FC<MintableLayerFormProps> = ({ layer }) => {
                 // TODO this needs to take dark mode into account
                 suffix={
                   <Tooltip title="Extra information">
-                    <QuestionCircleOutlined style={{ color: 'rgba(0,0,0,.45)' }} />
+                    <AntIcon.QuestionCircleOutlined style={{ color: 'rgba(0,0,0,.45)' }} />
                   </Tooltip>
                 }
               />
@@ -134,8 +134,8 @@ const MintableLayerForm: React.FC<MintableLayerFormProps> = ({ layer }) => {
       </Form>
       <Switch
         style={{ float: 'left' }}
-        checkedChildren={<CheckOutlined />}
-        unCheckedChildren={<CloseOutlined />}
+        checkedChildren={<AntIcon.CheckOutlined />}
+        unCheckedChildren={<AntIcon.CloseOutlined />}
       />
     </Card>
   );

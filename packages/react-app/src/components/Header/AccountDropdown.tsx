@@ -1,5 +1,5 @@
 import React, { useState, useContext, FunctionComponent } from 'react';
-import { LoginOutlined, LogoutOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
+import * as AntIcon from "@ant-design/icons";
 import { Avatar, Menu, Spin } from 'antd';
 // import styles from './accountDropdown.less';
 import HeaderDropdown from './HeaderDropdown';
@@ -57,23 +57,23 @@ const AccountDropdown: FunctionComponent<AccountDropdownProps> = ({ web3Modal, l
       {web3Modal && web3Modal.cachedProvider ? (
         <>
         <Menu.Item key="profile">
-          <UserOutlined />
+          <AntIcon.UserOutlined />
           Profile
         </Menu.Item>
         <Menu.Item key="settings">
-          <SettingOutlined />
+          <AntIcon.SettingOutlined />
           Settings
         </Menu.Item>
         <Menu.Divider />
         <Menu.Item key="logout">
-          <LogoutOutlined />
+          <AntIcon.LogoutOutlined />
           Logout
         </Menu.Item>
         </>
       ) : (
         <>
         <Menu.Item key="connect">
-          <LoginOutlined />
+          <AntIcon.LoginOutlined />
           Connect
         </Menu.Item>
         </>

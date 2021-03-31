@@ -3,7 +3,7 @@ import "antd/dist/antd.css";
 import { Upload, message, Modal, Card, Image } from "antd";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { EditOutlined, EllipsisOutlined, FileAddOutlined, LoadingOutlined, PlusOutlined, SettingOutlined, UploadOutlined } from "@ant-design/icons";
+import * as AntIcon from "@ant-design/icons";
 import { uploadFileCustomRequest, pinFileToIPFSUrl, unpinFile, PinataResponse } from '../../helpers/pinata';
 import { UploadFile } from "antd/lib/upload/interface";
 
@@ -110,7 +110,7 @@ const PinataDraggableDropzone: React.FC<PinataDraggableDropzoneProps> = ({
 
   const uploadButton = (
     <div>
-      <PlusOutlined />
+      <AntIcon.PlusOutlined />
       <div style={{ marginTop: 8 }}>Upload</div>
     </div>
   );
@@ -129,9 +129,9 @@ const PinataDraggableDropzone: React.FC<PinataDraggableDropzoneProps> = ({
 
   const singleUploadButton = (
     <div className="ant-upload-drag-icon">
-      {uploading ? <LoadingOutlined /> : 
+      {uploading ? <AntIcon.LoadingOutlined /> : 
         <>
-          <FileAddOutlined />
+          <AntIcon.FileAddOutlined />
           <p className="ant-upload-text">Click or drag to upload media</p>
           <p className="ant-upload-hint">
             Image/Audio/Video/3D
