@@ -6,7 +6,7 @@ import './App.css';
 import { Row, Col, Button, Layout, Switch as SwitchD } from 'antd';
 import { useUserAddress } from 'eth-hooks';
 import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useEventListener, useBalance, useExternalContractLoader } from './hooks';
-import { Header, Account, Faucet, Ramp, Contract, GasGauge, ThemeSwitch } from './components';
+import { Account, Faucet, Ramp, Contract, GasGauge, ThemeSwitch } from './components';
 import { Transactor } from './helpers';
 import { formatEther, parseEther } from '@ethersproject/units';
 import { Hints, ExampleUI, Subgraph, Transfers, Mint, UserTokens, Token } from './views'
@@ -21,11 +21,14 @@ import Footer from './components/Landing/Footer1';
 import './components/Landing/less/antMotionStyle.less';
 import { AddressContext } from './contexts';
 import { ThemeContextProvider } from './contexts/ThemeContext';
+import {SiteHeader, SiteSider } from './components/Layout';
 
 import {
   Footer11DataSource,
 } from './components/Landing/data.source';
 import AccountDropdown from './components/Header/AccountDropdown';
+import { NotFound404Page } from './views/exception';
+import Icon from '@ant-design/icons';
 
 /// 📡 What chain are your contracts deployed to?
 const targetNetwork = NETWORKS['localhost']; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
@@ -206,139 +209,132 @@ function App(props) {
       <ThemeContextProvider>
 
       <BrowserRouter>
-        <Layout className="layout">
-          <Header account={accountDropdown}/>
+        <Layout className="layout" style={{ minHeight: '100vh' }}>
+          <SiteSider />
           {/* {networkDisplay} */}
-          <RouterMenu/>
-          {faucetHint}
+          {/* <RouterMenu/> */}
+          
+          <Layout className="site-layout" style={{ marginLeft: 200 }}>
+            <SiteHeader account={accountDropdown}/>
+            <ThemeSwitch web3Modal={web3Modal}/>
+            <Layout.Content style={{ margin: '24px 16px', padding: 24, minHeight: 280 }}>
+
+
+              {faucetHint}
+              <Switch>
+                <Route exact path="/" >
+                  <Landing />
+                </Route>
+
+                <Route exact path="/orchestrator">
+                  <Contract
+                    name="ComposableOrchestrator"
+                    signer={userProvider.getSigner()}
+                    provider={localProvider}
+                    blockExplorer={blockExplorer}
+                    gasPrice={gasPrice}
+                    price={price}
+                    customContract={undefined}
+                    show={undefined}
+                  />
+                </Route>
+                <Route path="/tokens">
+                  <UserTokens
+                    mainnetProvider={mainnetProvider}
+                    blockExplorer={blockExplorer}
+                    tx={tx}
+                    writeContracts={writeContracts}
+                    readContracts={readContracts}
+                  />
+                </Route>
+                <Route path="/transfers">
+                  <Transfers 
+                    mainnetProvider={mainnetProvider}
+                    localProvider={localProvider}
+                    readContracts={readContracts}
+                  />
+                </Route>
+                <Route path="/composable">
+                  <Contract
+                    name="TypedERC1155Composable"
+                    signer={userProvider.getSigner()}
+                    provider={localProvider}
+                    blockExplorer={blockExplorer}
+                    gasPrice={gasPrice}
+                    price={price}
+                    customContract={undefined}
+                    show={undefined}
+                  />
+                </Route>
+                <Route path="/hints">
+                  <Hints
+                    address={address}
+                    yourLocalBalance={yourLocalBalance}
+                    mainnetProvider={mainnetProvider}
+                    price={price}
+                  />
+                </Route>
+                <Route path="/exampleui">
+                  <ExampleUI
+                    address={address}
+                    userProvider={userProvider}
+                    mainnetProvider={mainnetProvider}
+                    localProvider={localProvider}
+                    yourLocalBalance={yourLocalBalance}
+                    price={price}
+                    tx={tx}
+                    writeContracts={writeContracts}
+                    readContracts={readContracts}
+                    purpose={purpose}
+                    setPurposeEvents={setPurposeEvents}
+                  />
+                </Route>
+                <Route path="/subgraph">
+                  <Subgraph
+                    subgraphUri={props.subgraphUri}
+                    tx={tx}
+                    writeContracts={writeContracts}
+                    mainnetProvider={mainnetProvider}
+                  />
+                </Route>
+                <Route path="/mint">
+                  <Mint
+                    tx={tx}
+                    writeContracts={writeContracts}
+                    readContracts={readContracts}
+                  />
+                </Route>
+                <Route 
+                  exact path='/token/:tokenId' 
+                  render={({match}) => (
+                    <Token 
+                      tokenId={match['tokenId']}
+                    />
+                )}/>
+                <Route path='/ceramic'>
+                  <CeramicDocs />
+                </Route>
+                <Route path="*" component={NotFound404Page} /> 
+              </Switch>
+            </Layout.Content>
+
+            <Layout.Footer>
+              {/* <Footer 
+                id="Footer1_1"
+                key="Footer1_1"
+                dataSource={Footer11DataSource}
+                isMobile={false}
+              /> */}
+            </Layout.Footer>
+          </Layout>
         </Layout>
-
-        <Switch>
-          <Route exact path="/" >
-            <Landing />
-          </Route>
-
-          <Route exact path="/orchestrator">
-            <Contract
-              name="ComposableOrchestrator"
-              signer={userProvider.getSigner()}
-              provider={localProvider}
-              blockExplorer={blockExplorer}
-              gasPrice={gasPrice}
-              price={price}
-              customContract={undefined}
-              show={undefined}
-            />
-
-            { /* Uncomment to display and interact with an external contract (DAI on mainnet):
-            <Contract
-              name="DAI"
-              customContract={mainnetDAIContract}
-              signer={userProvider.getSigner()}
-              provider={mainnetProvider}
-              address={address}
-              blockExplorer={blockExplorer}
-            />
-            */ }
-          </Route>
-          <Route path="/tokens">
-            <UserTokens
-              mainnetProvider={mainnetProvider}
-              blockExplorer={blockExplorer}
-              tx={tx}
-              writeContracts={writeContracts}
-              readContracts={readContracts}
-            />
-          </Route>
-          <Route path="/transfers">
-            <Transfers 
-              mainnetProvider={mainnetProvider}
-              localProvider={localProvider}
-              readContracts={readContracts}
-            />
-          </Route>
-          <Route path="/composable">
-            <Contract
-              name="TypedERC1155Composable"
-              signer={userProvider.getSigner()}
-              provider={localProvider}
-              blockExplorer={blockExplorer}
-              gasPrice={gasPrice}
-              price={price}
-              customContract={undefined}
-              show={undefined}
-            />
-          </Route>
-          <Route path="/hints">
-            <Hints
-              address={address}
-              yourLocalBalance={yourLocalBalance}
-              mainnetProvider={mainnetProvider}
-              price={price}
-            />
-          </Route>
-          <Route path="/exampleui">
-            <ExampleUI
-              address={address}
-              userProvider={userProvider}
-              mainnetProvider={mainnetProvider}
-              localProvider={localProvider}
-              yourLocalBalance={yourLocalBalance}
-              price={price}
-              tx={tx}
-              writeContracts={writeContracts}
-              readContracts={readContracts}
-              purpose={purpose}
-              setPurposeEvents={setPurposeEvents}
-            />
-          </Route>
-          <Route path="/subgraph">
-            <Subgraph
-              subgraphUri={props.subgraphUri}
-              tx={tx}
-              writeContracts={writeContracts}
-              mainnetProvider={mainnetProvider}
-            />
-          </Route>
-          <Route path="/mint">
-            <Mint
-              tx={tx}
-              writeContracts={writeContracts}
-              readContracts={readContracts}
-            />
-          </Route>
-          <Route 
-            exact path='/token/:tokenId' 
-            render={({match}) => (
-              <Token 
-                tokenId={match['tokenId']}
-              />
-          )}/>
-          <Route path='/ceramic'>
-            <CeramicDocs />
-          </Route>
-          {/* <Route path="/tokenview">
-            <Canvas>
-              <ambientLight />
-              <pointLight position={[10, 10, 10]} />
-              <TokenView position={[-1.2, 0, 0]} />
-              <TokenView position={[1.2, 0, 0]} />
-            </Canvas>
-          </Route> */}
-        </Switch>
       </BrowserRouter>
 
-      <ThemeSwitch web3Modal={web3Modal}/>
       
-      <Footer 
-        id="Footer1_1"
-        key="Footer1_1"
-        dataSource={Footer11DataSource}
-        isMobile={false}
-      />
+      
 
             {/* 🗺 Extra UI like gas price, eth price, faucet, and support: */}
-      <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 20, padding: 10 }}>
+      {/* <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 20, padding: 10 }}>
         <Row align="middle" gutter={[4, 4]}>
           <Col span={8}>
             <Ramp price={price} address={address} networks={NETWORKS}/>
@@ -366,7 +362,7 @@ function App(props) {
         <Row align="middle" gutter={[4, 4]}>
           <Col span={24}>
             {
-              /*  if the local provider has a signer, let's show the faucet:  */
+              //  if the local provider has a signer, let's show the faucet:
               faucetAvailable ? (
                 <Faucet localProvider={localProvider} price={price} ensProvider={mainnetProvider}/>
               ) : (
@@ -375,7 +371,7 @@ function App(props) {
             }
           </Col>
         </Row>
-      </div>
+      </div> */}
       </ThemeContextProvider>
       </AddressContext.Provider>
     </div>
