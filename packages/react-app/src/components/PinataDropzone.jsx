@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone'
 import styled, { css } from 'styled-components'
-import { Input, Button } from "antd";
-import { uploadFile } from '../helpers/pinata'
+import { Button } from "antd";
+import { uploadFileWithPath } from '../helpers/pinata'
 
 const Wrapper = styled.div`
   display: grid;
@@ -115,8 +115,8 @@ export default function PinataDropzone({ onSuccessfulUpload }) {
     console.log("Uploading file")
     setUploading(true);
 
-    const uploadResp = await uploadFile(acceptedFiles[0]);
-    const uploadData = await uploadResp.json()
+    const uploadResp = await uploadFileWithPath(acceptedFiles[0]);
+    const uploadData = await uploadResp.json();
 
     console.log(`Upload data : ${uploadData}`);
     setUploadResponse(uploadData)

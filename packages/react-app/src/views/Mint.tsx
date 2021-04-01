@@ -10,18 +10,14 @@ import { TokenTypeSelector } from "../hooks"
 import { TokenType } from "../hooks/TokenTypeSelector";
 import { PINATA_IPFS_PREFIX } from "../constants"
 import { DraggableDropzone } from "../components/Files";
-import { AddressContext } from "../contexts";
-import MintableLayer from '../store/MintableLayer';
-import { MintableLayerList } from '../store/MintableLayer';
-import MintableLayersPreview from "../components/Mint/MintableLayersPreview";
+import { useAddressContext, useContractIOContext } from "../contexts";
+import MintableLayerStore from '../store/MintableLayerStore';
+import { MintableLayerListStore } from '../store/MintableLayerStore';
+import { ArtpieceStore } from "../store";
+import { ArtpieceLayerMinter, MintableLayersPreview } from "../components/Mint";
 
 const { TextArea } = Input;
 
-
-const layers = [
-  "https://llorca.github.io/react-layered-image/static/images/layer-1.png",
-  "https://llorca.github.io/react-layered-image/static/images/layer-2.png",
-];
 
 interface TokenAttribute {
   trait_type: string,
@@ -54,14 +50,13 @@ const STARTING_JSON: TokenJson = {
 }
 
 type MintProps = {
-  tx, 
-  readContracts, 
-  writeContracts 
 }
 
-const Mint: FunctionComponent<MintProps> = ({ tx, readContracts, writeContracts }) => {
+const Mint: FunctionComponent<MintProps> = ({ }) => {
 
-  const currentAddress = useContext(AddressContext);
+  const currentAddress = useAddressContext();
+  const { tx, reader, writer } = useContractIOContext();
+
 
   // TODO maybe doka image editor
   const [ tokenUri, setTokenUri ] = useState<TokenJson>(STARTING_JSON);
@@ -74,7 +69,8 @@ const Mint: FunctionComponent<MintProps> = ({ tx, readContracts, writeContracts 
   const [ uploadedJsonData, setUploadedJsonData ] = useState<PinataResponse>(null);
   const [ jsonHash, setJsonHash ] = useState<string>();
   const [ tokenName, setTokenName ] = useState<string>(null);
-  const [ layerList ] = useState(new MintableLayerList([new MintableLayer('Layer 1', true)]));
+  const [ layerList ] = useState(new MintableLayerListStore([new MintableLayerStore('Layer 1', true)]));
+  const [ artpiece] = useState(new ArtpieceStore('Artpiece'));
 
   const handleSuccessfulUpload = (uploadResponse: PinataResponse) => {
     console.log("Upload response")
@@ -112,7 +108,7 @@ const Mint: FunctionComponent<MintProps> = ({ tx, readContracts, writeContracts 
 
   const onClickMintToken = async () => {
     console.log("Minting the Token!")
-    await tx(writeContracts.TypedERC1155Composable.mint(
+    await tx(writer.TypedERC1155Composable.mint(
       currentAddress,
       utils.formatBytes32String(selectedTokenType.name),
       PINATA_IPFS_PREFIX.concat(jsonHash),
@@ -124,7 +120,8 @@ const Mint: FunctionComponent<MintProps> = ({ tx, readContracts, writeContracts 
 
   return (
     <>
-      <MintableLayersPreview layerList={layerList}/>
+      <MintableLayersPreview layerList={layerList} artpiece={artpiece}/>
+      <ArtpieceLayerMinter layerList={layerList} artpiece={artpiece} />
       <div >
         
       </div>
@@ -134,24 +131,23 @@ const Mint: FunctionComponent<MintProps> = ({ tx, readContracts, writeContracts 
           {/* <PinataDropzone onSuccessfulUpload={handleSuccessfulUpload}/> */}
           <DraggableDropzone onSuccessfulUpload={handleSuccessfulUpload}/>
           <Input
-              type="text"
-              name="title"
-              placeholder="Token Name"
-              onChange={e => setTokenName(e.target.value)}
-              value={tokenName}
+            type="text"
+            name="title"
+            placeholder="Token Name"
+            onChange={e => setTokenName(e.target.value)}
+            value={tokenName}
+          />
+          <div>
+            <TokenTypeSelector
+              onSelectedParent={setSelectedTokenType}
             />
-            <div>
-              <TokenTypeSelector
-                onSelectedParent={setSelectedTokenType}
-              />
-            </div>
-            
-            <TextArea 
-              rows={3} 
-              placeholder="Description"
-              onChange={e => setTokenDescription(e.target.value)}
-            />
-            
+          </div>
+          
+          <TextArea
+            rows={3}
+            placeholder="Description"
+            onChange={e => setTokenDescription(e.target.value)}
+          />
         </div>
         <div>
           <div style={{ paddingTop:32, width:740, margin:"auto", textAlign:"left" }}>

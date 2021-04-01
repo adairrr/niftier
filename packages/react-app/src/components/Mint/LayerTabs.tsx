@@ -4,8 +4,9 @@ import { DraggableTabs } from '..';
 import { CloseOutlined } from '@ant-design/icons';
 import { DraggableTabOrder } from '../DraggableTabs';
 import MintableLayerForm from './MintableLayerForm';
-import { MintableLayerList } from '../../store/MintableLayer';
+import { MintableLayerListStore } from '../../store/MintableLayerStore';
 import { observer } from 'mobx-react-lite';
+import { unpinFile } from '../../helpers/pinata';
 const { TabPane } = Tabs;
 
 type LayerMetadata = {
@@ -20,7 +21,7 @@ export interface OrderedLayerMD {
 }
 
 interface LayerTabsProps {
-  layerList: MintableLayerList;
+  layerList: MintableLayerListStore;
 }
 
 const LayerTabs: React.FC<LayerTabsProps> = ({ layerList }) => {
@@ -29,7 +30,7 @@ const LayerTabs: React.FC<LayerTabsProps> = ({ layerList }) => {
 
   const [ newTabIndex, setNewTabIndex ] = useState(2);
 
-  const [ activeTabKey, setActiveTabKey ] = useState(layerList.layers[0].id);
+  const [ activeTabKey, setActiveTabKey ] = useState(layerList.layers[0] ? layerList.layers[0].id : undefined);
   console.log(activeTabKey);
   const [ showTabImages, setShowTabImages ] = useState(false);
 
@@ -55,7 +56,16 @@ const LayerTabs: React.FC<LayerTabsProps> = ({ layerList }) => {
     setActiveTabKey(newLayer.id);
   }
 
-  const onCloseTab = (targetTabKey: string) => {
+  const onCloseTab = async (targetTabKey: string) => {
+    // unpin file first
+    const layerToUnpin = layerList.getLayerWithId(targetTabKey);
+    if (layerToUnpin && layerToUnpin.mediaUri) {
+      const unpinResp = await unpinFile(layerToUnpin.mediaUri);
+      if (!unpinResp.ok) {
+        console.log(`File was not successfully unpinned; error: ${unpinResp}`)
+      }
+    }
+
     const newActiveLayerId = layerList.removeLayer(activeTabKey, targetTabKey);
     setActiveTabKey(newActiveLayerId);
     
@@ -101,11 +111,6 @@ const LayerTabs: React.FC<LayerTabsProps> = ({ layerList }) => {
       onEdit={onTabAction}
       onChange={onTabChange}
       style={{ height: 300 }} // show '...' when there are too many tabs
-      // renderTabBar={(props, DefaultTabBar) => {
-      //   return <DefaultTabBar {...props} />;
-      // }}
-      // tabBarStyle={{alignItems: 'flex-end'}}
-      // onCloseTab={onCloseTab}
       onOrderChange={onTabOrderChange}
       tabBarExtraContent={{ left: tabViewButton }}
     >

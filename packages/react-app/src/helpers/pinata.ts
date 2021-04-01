@@ -2,7 +2,7 @@ import fetch from 'isomorphic-fetch'
 // import pinataSDK from '@pinata/sdk'; // The pinata sdk is broken
 import { FileWithPath } from "file-selector";
 import { RcFile } from 'antd/lib/upload';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { UploadRequestOption as RcCustomRequestOptions } from 'rc-upload/lib/interface';
 
 const pinataHeaders = {
@@ -19,7 +19,7 @@ export interface PinataResponse {
 export const pinFileToIPFSUrl = `${process.env.REACT_APP_PINATA_API_URL}/pinning/pinFileToIPFS`;
 
 // file is probably RCFile?
-export function getFileFormDataWithMetadata(file: any, fileName: string) {
+export function getFileFormDataWithMetadata(file: any, fileName?: string) {
   let data = new FormData()
   data.append('file', file)
 
@@ -60,7 +60,35 @@ export function uploadFileCustomRequest(customRequest: RcCustomRequestOptions) {
     .catch(customRequest.onError);
 }
 
-export async function uploadFile(file: FileWithPath) {
+export async function uploadFile(file: File): Promise<PinataResponse> {
+  const data = getFileFormDataWithMetadata(file);
+
+  let response: AxiosResponse<any>;
+  let error = false;
+
+  await axios.post(pinFileToIPFSUrl, data, {
+      //@ts-ignore
+      maxBodyLength: 'Infinity', //this is needed to prevent axios from erroring out with large files
+      headers: {
+          //@ts-ignore
+          'Content-Type': `multipart/form-data; boundary=${data._boundary}`,
+          pinata_api_key: process.env.REACT_APP_PINATA_API_KEY,
+          pinata_secret_api_key: process.env.REACT_APP_PINATA_API_SECRET
+      }
+    })
+    .then((resp) => {
+      // console.log("Response from uploadFile", resp);
+      response = resp;
+    })
+    .catch((error) => {
+      error = true;
+      console.log(error);
+    });
+    
+    return !error ? response.data as PinataResponse : null;
+}
+
+export async function uploadFileWithPath(file: FileWithPath) {
   let data = new FormData()
   data.append('file', file)
 
