@@ -2,7 +2,6 @@ import React, { useRef, useState } from "react";
 import { PageHeader, Layout, Menu, MenuTheme } from "antd";
 import WalletConnect from "../WalletConnect";
 import AccountDropdown from "../Header/AccountDropdown";
-import windowSize from 'react-window-size';
 import useThemeContext from '../../contexts/ThemeContext';
 import { NavLink, useLocation, useRouteMatch } from "react-router-dom";
 import * as AntIcon from "@ant-design/icons";

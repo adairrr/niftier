@@ -11,7 +11,7 @@ import { TOKEN_QUERY } from '../apollo/queries';
 import { PINATA_IPFS_PREFIX } from '../constants';
 import { fetchTokenMetadata, getFromIPFS } from '../hooks';
 import { TokenMetadata } from '../hooks/FetchTokenMetadata';
-import { AddressContext } from '../contexts';
+import { useAddressContext } from '../contexts';
 const { Meta } = Card;
 const { Paragraph, Title } = Typography;
 // import Title from 'antd/lib/typography/Title';
@@ -53,7 +53,7 @@ interface TokenQueryData {
 // TODO what is it with react dom routing? I have no idea what these props would be... match doesn't work
 const Token = ({...props}: TokenProps) => {
 
-  const currentAddress = useContext(AddressContext);
+  const currentAddress = useAddressContext();
 
   const {tokenId} = useParams<TokenParams>(); // gotten from the route...
 

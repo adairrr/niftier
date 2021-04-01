@@ -1,5 +1,7 @@
-import React, { createContext } from 'react';
+import React, { createContext, useContext } from 'react';
 
-const AddressContext = createContext<string>('');
+export const AddressContext = createContext<string>('');
 
-export default AddressContext;
+export const useAddressContext = () => useContext(AddressContext);
+
+export default useAddressContext;

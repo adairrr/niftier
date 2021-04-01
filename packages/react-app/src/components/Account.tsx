@@ -3,7 +3,7 @@ import { Button } from "antd";
 import Address from "./Address";
 import Balance from "./Balance";
 import Wallet from "./Wallet";
-import { AddressContext } from "../contexts";
+import { useAddressContext } from "../contexts";
 
 /*
   ~ What it does? ~
@@ -50,7 +50,7 @@ export default function Account({
   logoutOfWeb3Modal,
   blockExplorer,
 }) {
-  const currentAddress = useContext(AddressContext);
+  const currentAddress = useAddressContext();
 
   const modalButtons = [];
   if (web3Modal) {

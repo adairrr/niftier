@@ -1,4 +1,4 @@
-import React, { ReactElement, useCallback, useEffect, useState } from 'react';
+import React, { createContext, ReactElement, useCallback, useEffect, useState } from 'react';
 import { BrowserRouter, Switch, Route } from 'react-router-dom';
 import 'antd/dist/antd.css';
 import {  JsonRpcProvider, Web3Provider } from '@ethersproject/providers';
@@ -19,16 +19,15 @@ import CeramicDocs from './views/CeramicDocs';
 import Landing from './components/Landing';
 import Footer from './components/Landing/Footer1';
 import './components/Landing/less/antMotionStyle.less';
-import { AddressContext } from './contexts';
+import { AddressContext, ContractIOContext } from './contexts';
 import { ThemeContextProvider } from './contexts/ThemeContext';
-import {SiteHeader, SiteSider } from './components/Layout';
+import { SiteHeader, SiteSider } from './components/Layout';
 
 import {
   Footer11DataSource,
 } from './components/Landing/data.source';
 import AccountDropdown from './components/Header/AccountDropdown';
 import { NotFound404Page } from './views/exception';
-import Icon from '@ant-design/icons';
 
 /// 📡 What chain are your contracts deployed to?
 const targetNetwork = NETWORKS['localhost']; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
@@ -96,12 +95,19 @@ function App(props) {
   // if(DEBUG) console.log("💵 yourMainnetBalance",yourMainnetBalance?formatEther(yourMainnetBalance):"...")
 
   // Load in your local 📝 contract and read a value from it:
-  const readContracts = useContractLoader(localProvider)
-  if(DEBUG) console.log("📝 readContracts", readContracts)
+  const readContracts = useContractLoader(localProvider);
+  if(DEBUG) console.log("📝 readContracts", readContracts);
 
   // If you want to make 🔐 write transactions to your contracts, use the userProvider:
-  const writeContracts = useContractLoader(userProvider)
-  if(DEBUG) console.log("🔐 writeContracts", writeContracts)
+  const writeContracts = useContractLoader(userProvider);
+  if(DEBUG) console.log("🔐 writeContracts", writeContracts);
+
+  const contractsIo = {
+    tx: tx,
+    reader: readContracts,
+    writer: writeContracts
+  };
+
 
   // EXTERNAL CONTRACT EXAMPLE:
   //
@@ -206,6 +212,7 @@ function App(props) {
   return (
     <div className="App">
       <AddressContext.Provider value={currentAddress}>
+      <ContractIOContext.Provider value={contractsIo}>
       <ThemeContextProvider>
 
       <BrowserRouter>
@@ -282,9 +289,6 @@ function App(props) {
                     localProvider={localProvider}
                     yourLocalBalance={yourLocalBalance}
                     price={price}
-                    tx={tx}
-                    writeContracts={writeContracts}
-                    readContracts={readContracts}
                     purpose={purpose}
                     setPurposeEvents={setPurposeEvents}
                   />
@@ -298,11 +302,7 @@ function App(props) {
                   />
                 </Route>
                 <Route path="/mint">
-                  <Mint
-                    tx={tx}
-                    writeContracts={writeContracts}
-                    readContracts={readContracts}
-                  />
+                  <Mint />
                 </Route>
                 <Route 
                   exact path='/token/:tokenId' 
@@ -373,6 +373,7 @@ function App(props) {
         </Row>
       </div> */}
       </ThemeContextProvider>
+      </ContractIOContext.Provider>
       </AddressContext.Provider>
     </div>
   );

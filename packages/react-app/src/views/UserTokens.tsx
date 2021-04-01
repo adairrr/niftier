@@ -9,7 +9,7 @@ import { JsonRpcProvider } from "@ethersproject/providers";
 import { PINATA_IPFS_PREFIX } from "../constants";
 import { ACCOUNT_BALANCE_QUERY } from '../apollo/queries'
 import { getFromIPFS } from "../hooks";
-import { AddressContext } from "../contexts";
+import { useAddressContext } from "../contexts";
 
 type UserTokensProps = {
   mainnetProvider: JsonRpcProvider, 
@@ -27,7 +27,7 @@ const UserTokens = ({
   writeContracts 
 }: UserTokensProps) => {
 
-  const currentAddress = useContext(AddressContext);
+  const currentAddress = useAddressContext();
 
   const componentIsMounted = useRef(true);
 

@@ -1,21 +1,21 @@
 import React, { useContext, useState } from 'react';
-import MintableLayer from '../../store/MintableLayer';
+import MintableLayerStore from '../../store/MintableLayerStore';
 import { observer } from 'mobx-react-lite';
 import { Form, Card, Input, Tooltip, Row, Col, Select, Switch } from 'antd';
 import * as AntIcon from "@ant-design/icons";
-import { AddressContext } from '../../contexts';
+import { useAddressContext } from '../../contexts';
 import PinataDraggableDropzone from '../Files/PinataDraggableDropzone';
 import { PinataResponse } from '../../helpers/pinata';
 const { Option } = Select;
 const { TextArea } = Input;
 
 interface MintableLayerFormProps {
-  layer: MintableLayer;
+  layer: MintableLayerStore;
 }
 
 const MintableLayerForm: React.FC<MintableLayerFormProps> = ({ layer }) => {
 
-  const currentAddress = useContext(AddressContext);
+  const currentAddress = useAddressContext();
 
   const [ tokenRecipient, setTokenRecipient ] = useState('self');
 
@@ -33,8 +33,7 @@ const MintableLayerForm: React.FC<MintableLayerFormProps> = ({ layer }) => {
   };
 
   const handleSuccessfulUpload = (uploadResponse: PinataResponse) => {
-    console.log("Upload response")
-    console.log(uploadResponse);
+    console.log("Upload response (MintableLayerForm)", uploadResponse);
     layer.setMediaUri(uploadResponse.IpfsHash);
   }
 

@@ -5,6 +5,7 @@ import { Button, List, Divider, Input, Card, DatePicker, Slider, Switch, Progres
 import { SyncOutlined } from '@ant-design/icons';
 import { Address, Balance } from "../components";
 import { parseEther, formatEther } from "@ethersproject/units";
+import { useContractIOContext } from "../contexts";
 
 export default function ExampleUI({
   purpose, 
@@ -15,12 +16,11 @@ export default function ExampleUI({
   localProvider, 
   yourLocalBalance, 
   price, 
-  tx, 
-  readContracts, 
-  writeContracts 
 }) {
 
   const [newPurpose, setNewPurpose] = useState("loading...");
+
+  const { tx, reader, writer } = useContractIOContext();
 
   return (
     <div>
@@ -39,7 +39,7 @@ export default function ExampleUI({
           <Button onClick={()=>{
             console.log("newPurpose",newPurpose)
             /* look how you call setPurpose on your contract: */
-            tx( writeContracts.YourContract.setPurpose(newPurpose) )
+            tx( writer.YourContract.setPurpose(newPurpose) )
           }}>Set Purpose</Button>
         </div>
 
@@ -97,7 +97,7 @@ export default function ExampleUI({
 
         Your Contract Address:
         <Address
-            address={readContracts ? readContracts.YourContract.address : readContracts}
+            address={reader ? reader.YourContract.address : reader}
             ensProvider={mainnetProvider}
             fontSize={16}
         />
@@ -107,7 +107,7 @@ export default function ExampleUI({
         <div style={{margin:8}}>
           <Button onClick={()=>{
             /* look how you call setPurpose on your contract: */
-            tx( writeContracts.YourContract.setPurpose("🍻 Cheers") )
+            tx( writer.YourContract.setPurpose("🍻 Cheers") )
           }}>Set Purpose to "🍻 Cheers"</Button>
         </div>
 
@@ -118,7 +118,7 @@ export default function ExampleUI({
               here we are sending value straight to the contract's address:
             */
             tx({
-              to: writeContracts.YourContract.address,
+              to: writer.YourContract.address,
               value: parseEther("0.001")
             });
             /* this should throw an error about "no fallback nor receive function" until you add it */
@@ -128,7 +128,7 @@ export default function ExampleUI({
         <div style={{margin:8}}>
           <Button onClick={()=>{
             /* look how we call setPurpose AND send some value along */
-            tx( writeContracts.YourContract.setPurpose("💵 Paying for this one!",{
+            tx( writer.YourContract.setPurpose("💵 Paying for this one!",{
               value: parseEther("0.001")
             }))
             /* this will fail until you make the setPurpose function payable */
@@ -140,9 +140,9 @@ export default function ExampleUI({
           <Button onClick={()=>{
             /* you can also just craft a transaction and send it to the tx() transactor */
             tx({
-              to: writeContracts.YourContract.address,
+              to: writer.YourContract.address,
               value: parseEther("0.001"),
-              data: writeContracts.YourContract.interface.encodeFunctionData("setPurpose(string)",["🤓 Whoa so 1337!"])
+              data: writer.YourContract.interface.encodeFunctionData("setPurpose(string)",["🤓 Whoa so 1337!"])
             });
             /* this should throw an error about "no fallback nor receive function" until you add it */
           }}>Another Example</Button>

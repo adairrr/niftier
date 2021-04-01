@@ -4,7 +4,7 @@ import { Avatar, Menu, Spin } from 'antd';
 // import styles from './accountDropdown.less';
 import HeaderDropdown from './HeaderDropdown';
 import Web3Modal from 'web3modal';
-import { AddressContext } from '../../contexts';
+import { useAddressContext } from '../../contexts';
 import Blockies from "react-blockies";
 import Address from '../Address';
 
@@ -17,7 +17,7 @@ type AccountDropdownProps = {
 }
 const AccountDropdown: FunctionComponent<AccountDropdownProps> = ({ web3Modal, loadWeb3Modal, logoutOfWeb3Modal }) => {
 
-  const currentAddress = useContext(AddressContext);
+  const currentAddress = useAddressContext();
 
   const onMenuClick = (event: {
     key: React.Key;
