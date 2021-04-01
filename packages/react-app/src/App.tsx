@@ -28,6 +28,7 @@ import {
 } from './components/Landing/data.source';
 import AccountDropdown from './components/Header/AccountDropdown';
 import { NotFound404Page } from './views/exception';
+import EthContextProvider from './contexts/EthContextProvider';
 
 /// 📡 What chain are your contracts deployed to?
 const targetNetwork = NETWORKS['localhost']; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
@@ -65,6 +66,13 @@ function App(props) {
   const gasPrice = useGasPrice(targetNetwork, "fast");
   // Use your injected provider from 🦊 Metamask or if you don't have it then instantly generate a 🔥 burner wallet.
   const userProvider = useUserProvider(injectedProvider, localProvider);
+
+  const providers = {
+    userProvider: userProvider,
+    localProvider: localProvider,
+    mainnetProvider: mainnetProvider
+  }
+
   const address = useUserAddress(userProvider);
 
   const [ currentAddress, setCurrentAddress ] = useState<string>(address);
@@ -155,6 +163,7 @@ function App(props) {
     }
   }, [loadWeb3Modal]);
 
+  // update address when it changes
   useEffect(() => {
     setCurrentAddress(address);
   }, [address]);
@@ -187,14 +196,11 @@ function App(props) {
   const account = (
     <div style={{ /*position: "fixed", */textAlign: "right", right: 0, top: 0, padding: 0 }}>
       <Account
-        localProvider={localProvider}
-        userProvider={userProvider}
-        mainnetProvider={mainnetProvider}
+        address={currentAddress}
         price={price}
         web3Modal={web3Modal}
         loadWeb3Modal={loadWeb3Modal}
         logoutOfWeb3Modal={logoutOfWeb3Modal}
-        blockExplorer={blockExplorer}
         minimized={false}
       />
     </div>
@@ -206,13 +212,16 @@ function App(props) {
       loadWeb3Modal={loadWeb3Modal}
       logoutOfWeb3Modal={logoutOfWeb3Modal}
     />
-  )
-
+  );
 
   return (
     <div className="App">
-      <AddressContext.Provider value={currentAddress}>
-      <ContractIOContext.Provider value={contractsIo}>
+      <EthContextProvider 
+        currentAddress={currentAddress} 
+        contractsIo={contractsIo}
+        providers={providers}
+        blockExplorer={blockExplorer}
+      >
       <ThemeContextProvider>
 
       <BrowserRouter>
@@ -238,7 +247,6 @@ function App(props) {
                     name="ComposableOrchestrator"
                     signer={userProvider.getSigner()}
                     provider={localProvider}
-                    blockExplorer={blockExplorer}
                     gasPrice={gasPrice}
                     price={price}
                     customContract={undefined}
@@ -246,27 +254,16 @@ function App(props) {
                   />
                 </Route>
                 <Route path="/tokens">
-                  <UserTokens
-                    mainnetProvider={mainnetProvider}
-                    blockExplorer={blockExplorer}
-                    tx={tx}
-                    writeContracts={writeContracts}
-                    readContracts={readContracts}
-                  />
+                  <UserTokens />
                 </Route>
                 <Route path="/transfers">
-                  <Transfers 
-                    mainnetProvider={mainnetProvider}
-                    localProvider={localProvider}
-                    readContracts={readContracts}
-                  />
+                  <Transfers />
                 </Route>
                 <Route path="/composable">
                   <Contract
                     name="TypedERC1155Composable"
                     signer={userProvider.getSigner()}
                     provider={localProvider}
-                    blockExplorer={blockExplorer}
                     gasPrice={gasPrice}
                     price={price}
                     customContract={undefined}
@@ -277,16 +274,12 @@ function App(props) {
                   <Hints
                     address={address}
                     yourLocalBalance={yourLocalBalance}
-                    mainnetProvider={mainnetProvider}
                     price={price}
                   />
                 </Route>
                 <Route path="/exampleui">
                   <ExampleUI
                     address={address}
-                    userProvider={userProvider}
-                    mainnetProvider={mainnetProvider}
-                    localProvider={localProvider}
                     yourLocalBalance={yourLocalBalance}
                     price={price}
                     purpose={purpose}
@@ -364,7 +357,7 @@ function App(props) {
             {
               //  if the local provider has a signer, let's show the faucet:
               faucetAvailable ? (
-                <Faucet localProvider={localProvider} price={price} ensProvider={mainnetProvider}/>
+                <Faucet localProvider={localProvider} price={price}/>
               ) : (
                 ""
               )
@@ -373,8 +366,7 @@ function App(props) {
         </Row>
       </div> */}
       </ThemeContextProvider>
-      </ContractIOContext.Provider>
-      </AddressContext.Provider>
+      </EthContextProvider>
     </div>
   );
 }

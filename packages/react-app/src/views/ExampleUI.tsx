@@ -5,15 +5,12 @@ import { Button, List, Divider, Input, Card, DatePicker, Slider, Switch, Progres
 import { SyncOutlined } from '@ant-design/icons';
 import { Address, Balance } from "../components";
 import { parseEther, formatEther } from "@ethersproject/units";
-import { useContractIOContext } from "../contexts";
+import { useContractIOContext, useProviderContext } from "../contexts";
 
 export default function ExampleUI({
   purpose, 
   setPurposeEvents, 
-  address, 
-  mainnetProvider, 
-  userProvider, 
-  localProvider, 
+  address,
   yourLocalBalance, 
   price, 
 }) {
@@ -21,6 +18,7 @@ export default function ExampleUI({
   const [newPurpose, setNewPurpose] = useState("loading...");
 
   const { tx, reader, writer } = useContractIOContext();
+  const { localProvider } = useProviderContext();
 
   return (
     <div>
@@ -48,9 +46,8 @@ export default function ExampleUI({
 
         Your Address:
         <Address
-            address={address}
-            ensProvider={mainnetProvider}
-            fontSize={16}
+          address={address}
+          fontSize={16}
         />
 
         <Divider />
@@ -58,7 +55,6 @@ export default function ExampleUI({
         ENS Address Example:
         <Address
           address={"0x34aA3F359A9D614239015126635CE7732c18fDF3"} /* this will show as austingriffith.eth */
-          ensProvider={mainnetProvider}
           fontSize={16}
         />
 
@@ -98,7 +94,6 @@ export default function ExampleUI({
         Your Contract Address:
         <Address
             address={reader ? reader.YourContract.address : reader}
-            ensProvider={mainnetProvider}
             fontSize={16}
         />
 
@@ -164,7 +159,6 @@ export default function ExampleUI({
               <List.Item key={item.blockNumber+"_"+item.sender+"_"+item.purpose}>
                 <Address
                   address={item[0]}
-                  ensProvider={mainnetProvider}
                   fontSize={16}
                 />
                 {item[1]}

@@ -8,7 +8,7 @@ import { useTokenList } from "../hooks";
 
 const { Option } = Select;
 
-export default function Hints({yourLocalBalance, mainnetProvider, price, address }) {
+export default function Hints({yourLocalBalance, price, address }) {
 
   // Get a list of tokens from a tokenlist -> see tokenlists.org!
   const [selectedToken, setSelectedToken] = useState("Pick a token!");
@@ -101,7 +101,7 @@ export default function Hints({yourLocalBalance, mainnetProvider, price, address
         </span>
         component:
         <div style={{ width: 350, padding: 16, margin: "auto" }}>
-          <AddressInput ensProvider={mainnetProvider} />
+          <AddressInput />
         </div>
         <div>(try putting in your address, an ens address, or scanning a QR code)</div>
       </div>

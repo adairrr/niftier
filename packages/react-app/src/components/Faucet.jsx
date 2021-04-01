@@ -21,7 +21,6 @@ import { useLookupAddress } from "eth-hooks";
   <Faucet 
     price={price}
     localProvider={localProvider}  
-    ensProvider={mainnetProvider}
     placeholder={"Send local faucet"}
   />
 
@@ -29,7 +28,7 @@ import { useLookupAddress } from "eth-hooks";
 
   - Provide price={price} of ether and convert between USD and ETH in a wallet
   - Provide localProvider={localProvider} to be able to send ETH to given address
-  - Provide ensProvider={mainnetProvider} and your address will be replaced by ENS name
+  - Your address will be replaced by ENS name
               (ex. "0xa870" => "user.eth") or you can enter directly ENS name instead of address
               works both in input field & wallet
   - Provide placeholder="Send local faucet" value for the input
@@ -93,7 +92,7 @@ export default function Faucet(props) {
               shape="circle"
               icon={<SendOutlined />}
             />
-            <Wallet color="#888888" provider={props.localProvider} ensProvider={props.ensProvider} price={props.price} />
+            <Wallet color="#888888" provider={props.localProvider} price={props.price} />
           </Tooltip>
         }
       />

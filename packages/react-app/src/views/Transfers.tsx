@@ -6,11 +6,7 @@ import { TRANSFERS_QUERY } from "../apollo/queries";
 
 const { Column } = Table;
 
-export default function Transfers({
-  mainnetProvider,
-  localProvider,
-  readContracts
-}) {
+export default function Transfers({}) {
 
   const { loading, error, data } = useQuery(TRANSFERS_QUERY, {
     pollInterval: 2000  // query every 2 seconds
@@ -43,7 +39,6 @@ export default function Transfers({
           render={(fromAddress) => (
             <Address
               address={fromAddress.id}
-              ensProvider={mainnetProvider}
               fontSize={16}
             />
           )}
@@ -54,7 +49,6 @@ export default function Transfers({
           render={(toAddress) => (
             <Address
               address={toAddress.id}
-              ensProvider={mainnetProvider}
               fontSize={16} 
             />
           )}

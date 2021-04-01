@@ -1,12 +1,16 @@
 import React, { createContext, useContext } from 'react';
 
-interface ContractIO {
+export interface ContractIOContextProps {
   tx: any,
   reader: any,
   writer: any
 };
 
-export const ContractIOContext = createContext<ContractIO>({tx: undefined, reader: undefined, writer: undefined});
+export const ContractIOContext = createContext<ContractIOContextProps>({
+  tx: undefined, 
+  reader: undefined, 
+  writer: undefined
+});
 
 export const useContractIOContext = () => useContext(ContractIOContext);
 

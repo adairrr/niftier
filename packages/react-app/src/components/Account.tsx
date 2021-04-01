@@ -3,7 +3,7 @@ import { Button } from "antd";
 import Address from "./Address";
 import Balance from "./Balance";
 import Wallet from "./Wallet";
-import { useAddressContext } from "../contexts";
+import { useAddressContext, useProviderContext } from "../contexts";
 
 /*
   ~ What it does? ~
@@ -15,14 +15,10 @@ import { useAddressContext } from "../contexts";
 
   <Account
     address={address}
-    localProvider={localProvider}
-    userProvider={userProvider}
-    mainnetProvider={mainnetProvider}
     price={price}
     web3Modal={web3Modal}
     loadWeb3Modal={loadWeb3Modal}
     logoutOfWeb3Modal={logoutOfWeb3Modal}
-    blockExplorer={blockExplorer}
   />
 
   ~ Features ~
@@ -40,17 +36,14 @@ import { useAddressContext } from "../contexts";
 */
 
 export default function Account({
-  userProvider,
-  localProvider,
-  mainnetProvider,
+  address,
   price,
   minimized,
   web3Modal,
   loadWeb3Modal,
   logoutOfWeb3Modal,
-  blockExplorer,
 }) {
-  const currentAddress = useAddressContext();
+  const { localProvider, userProvider, mainnetProvider } = useProviderContext();
 
   const modalButtons = [];
   if (web3Modal) {
@@ -86,9 +79,9 @@ export default function Account({
     ""
   ) : (
     <span>
-      {currentAddress ? <Address address={currentAddress} ensProvider={mainnetProvider} blockExplorer={blockExplorer} /> : "Connecting..."}
-      <Balance address={currentAddress} provider={localProvider} price={price} />
-      <Wallet address={currentAddress} provider={userProvider} ensProvider={mainnetProvider} price={price} />
+      {address ? <Address address={address}/> : "Connecting..."}
+      <Balance address={address} provider={localProvider} price={price} />
+      <Wallet address={address} provider={userProvider} price={price} />
     </span>
   );
 

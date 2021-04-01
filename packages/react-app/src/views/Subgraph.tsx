@@ -52,7 +52,6 @@ function Subgraph(props) {
       key: 'id',
       render: (record) => <Address
                         value={record.sender.id}
-                        ensProvider={props.mainnetProvider}
                         fontSize={16}
                       />
     },

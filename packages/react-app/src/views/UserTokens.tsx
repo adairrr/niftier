@@ -1,33 +1,23 @@
 /* eslint-disable jsx-a11y/accessible-emoji */
 
-import React, { useState, useEffect, useRef, useContext } from "react";
-import { Button, List, Card, Empty } from "antd";
-import { Address, AddressInput, EmptyWithDescription, TokenId } from "../components";
+import React, { useState, useEffect, useRef, useContext } from 'react';
+import { Button, List, Card, Empty } from 'antd';
+import { Address, AddressInput, EmptyWithDescription, TokenId } from '../components';
 import { useQuery, gql } from '@apollo/client';
 import { BigNumber, utils } from 'ethers';
-import { JsonRpcProvider } from "@ethersproject/providers";
-import { PINATA_IPFS_PREFIX } from "../constants";
+import { JsonRpcProvider } from '@ethersproject/providers';
+import { PINATA_IPFS_PREFIX } from '../constants';
 import { ACCOUNT_BALANCE_QUERY } from '../apollo/queries'
-import { getFromIPFS } from "../hooks";
-import { useAddressContext } from "../contexts";
+import { getFromIPFS } from '../hooks';
+import { useAddressContext, useContractIOContext } from '../contexts';
+import { useQuery as mstUseQuery } from '../subgraph_models/reactUtils';
+import useProviderContext from '../contexts/ProviderContext';
 
-type UserTokensProps = {
-  mainnetProvider: JsonRpcProvider, 
-  blockExplorer: string,
-  tx, 
-  readContracts, 
-  writeContracts
-}
-
-const UserTokens = ({
-  mainnetProvider, 
-  blockExplorer,
-  tx, 
-  readContracts, 
-  writeContracts 
-}: UserTokensProps) => {
+const UserTokens = ({}) => {
 
   const currentAddress = useAddressContext();
+  const { tx, reader, writer } = useContractIOContext();
+  const { mainnetProvider } = useProviderContext();
 
   const componentIsMounted = useRef(true);
 
@@ -67,7 +57,7 @@ const UserTokens = ({
 
               try {
                 const jsonManifest = JSON.parse(jsonManifestBuffer.toString());
-                console.log("jsonManifest", jsonManifest);
+                console.log('jsonManifest', jsonManifest);
                 queriedTokens.push({ id:token.id, uri:tokenUri, owner: currentAddress, ...jsonManifest });
               } catch(e) {console.log(e)}
             }
@@ -90,8 +80,8 @@ const UserTokens = ({
   if (loading) return (<span>'Loading...'</span>);
   if (error) return (<span>`Error! ${error.message}`</span>);
   if (data.account == null) return (
-    <EmptyWithDescription description="No tokens!">
-      <Button type="primary">Create some</Button>
+    <EmptyWithDescription description='No tokens!'>
+      <Button type='primary'>Create some</Button>
     </EmptyWithDescription>
   )
   if (!userTokens) return (<span>WAIT</span>);
@@ -100,7 +90,7 @@ const UserTokens = ({
   
   return (
     <div>
-      <div style={{ width:640, margin: "auto", marginTop:32, paddingBottom:32 }}>
+      <div style={{ width:640, margin: 'auto', marginTop:32, paddingBottom:32 }}>
         <List
           bordered
           loading={fetching}
@@ -126,13 +116,10 @@ const UserTokens = ({
                 <div>
                   owner: <Address
                       address={token.owner}
-                      ensProvider={mainnetProvider}
-                      blockExplorer={blockExplorer}
                       fontSize={16}
                   />
                   <AddressInput
-                    ensProvider={mainnetProvider}
-                    placeholder="transfer to address"
+                    placeholder='transfer to address'
                     value={transferToAddresses[tokenId]}
                     onChange={(newValue: string)=>{
                       let update = {};
@@ -141,8 +128,8 @@ const UserTokens = ({
                     }}
                   />
                   <Button onClick={()=>{
-                    console.log("writeContracts", writeContracts);
-                    tx( writeContracts.TypedERC1155Composable.safeTransferFrom(
+                    console.log('writeContracts', writer);
+                    tx( writer.TypedERC1155Composable.safeTransferFrom(
                       currentAddress, 
                       transferToAddresses[tokenId],
                       tokenId,
@@ -153,8 +140,8 @@ const UserTokens = ({
                     Transfer
                   </Button>
                   <Button onClick={() => {
-                    console.log("readContracts", readContracts);
-                    tx( readContracts.TypedERC1155Composable.balanceOf(
+                    console.log('readContracts', reader);
+                    tx( reader.TypedERC1155Composable.balanceOf(
                       currentAddress, 
                       BigNumber.from(tokenId)
                     ));

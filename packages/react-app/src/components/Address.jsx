@@ -2,6 +2,7 @@ import React from "react";
 import Blockies from "react-blockies";
 import { Typography, Skeleton } from "antd";
 import { useLookupAddress } from "../hooks";
+import { useBlockExplorerContext, useProviderContext } from "../contexts";
 
 // changed value={address} to address={address}
 
@@ -14,15 +15,13 @@ import { useLookupAddress } from "../hooks";
 
   <Address
     address={address}
-    ensProvider={mainnetProvider}
     blockExplorer={blockExplorer}
     fontSize={fontSize}
   />
 
   ~ Features ~
 
-  - Provide ensProvider={mainnetProvider} and your address will be replaced by ENS name
-              (ex. "0xa870" => "user.eth")
+  - Your address will be replaced by ENS name (ex. "0xa870" => "user.eth")
   - Provide blockExplorer={blockExplorer}, click on address and get the link
               (ex. by default "https://etherscan.io/" or for xdai "https://blockscout.com/poa/xdai/")
   - Provide fontSize={fontSize} to change the size of address text
@@ -34,10 +33,13 @@ const blockExplorerLink = (address, blockExplorer) => `${blockExplorer || "https
 
 export default function Address(props) {
 
+  const { blockExplorer } = useBlockExplorerContext();
+  const { mainnetProvider } = useProviderContext();
+
   const address = props.value || props.address;
 
-  const ens = useLookupAddress(props.ensProvider, address);
-  const etherscanLink = blockExplorerLink(address, props.blockExplorer);
+  const ens = useLookupAddress(mainnetProvider, address);
+  const etherscanLink = blockExplorerLink(address, blockExplorer);
 
   const copyableProps = props.uncopyable ? {} : { copyable: { text: address } };
 

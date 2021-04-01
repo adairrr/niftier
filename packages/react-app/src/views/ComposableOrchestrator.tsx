@@ -37,7 +37,6 @@ export default function ComposableOrchestrator({purpose, setPurposeEvents, addre
         Your Address:
         <Address
             address={address}
-            ensProvider={mainnetProvider}
             fontSize={16}
         />
 
@@ -46,7 +45,6 @@ export default function ComposableOrchestrator({purpose, setPurposeEvents, addre
         ENS Address Example:
         <Address
           address={"0x34aA3F359A9D614239015126635CE7732c18fDF3"} /* this will show as austingriffith.eth */
-          ensProvider={mainnetProvider}
           fontSize={16}
         />
 
@@ -86,7 +84,6 @@ export default function ComposableOrchestrator({purpose, setPurposeEvents, addre
         Your Contract Address:
         <Address
             address={readContracts?readContracts.YourContract.address:readContracts}
-            ensProvider={mainnetProvider}
             fontSize={16}
         />
 
@@ -151,9 +148,8 @@ export default function ComposableOrchestrator({purpose, setPurposeEvents, addre
             return (
               <List.Item key={item.blockNumber+"_"+item.sender+"_"+item.purpose}>
                 <Address
-                    address={item[0]}
-                    ensProvider={mainnetProvider}
-                    fontSize={16}
+                  address={item[0]}
+                  fontSize={16}
                   />
                 {item[1]}
               </List.Item>

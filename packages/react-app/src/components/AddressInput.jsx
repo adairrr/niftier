@@ -4,6 +4,7 @@ import { CameraOutlined, QrcodeOutlined } from "@ant-design/icons";
 import { Input, Badge } from "antd";
 import { useLookupAddress } from "eth-hooks";
 import Blockie from "./Blockie";
+import { useProviderContext } from "../contexts";
 
 // probably we need to change value={toAddress} to address={toAddress}
 
@@ -16,7 +17,6 @@ import Blockie from "./Blockie";
 
   <AddressInput
     autoFocus
-    ensProvider={mainnetProvider}
     placeholder="Enter address"
     value={toAddress}
     onChange={setToAddress}
@@ -24,7 +24,7 @@ import Blockie from "./Blockie";
 
   ~ Features ~
 
-  - Provide ensProvider={mainnetProvider} and your address will be replaced by ENS name
+  - Your address will be replaced by ENS name
               (ex. "0xa870" => "user.eth") or you can enter directly ENS name instead of address
   - Provide placeholder="Enter address" value for the input
   - Value of the address input is stored in value={toAddress}
@@ -36,8 +36,11 @@ export default function AddressInput(props) {
   const [value, setValue] = useState(props.value);
   const [scan, setScan] = useState(false);
 
+  const { mainnetProvider } = useProviderContext();
+
+
   const currentValue = typeof props.value !== "undefined" ? props.value : value;
-  const ens = useLookupAddress(props.ensProvider, currentValue);
+  const ens = useLookupAddress(mainnetProvider, currentValue);
 
   const scannerButton = (
     <div
@@ -53,14 +56,14 @@ export default function AddressInput(props) {
     </div>
   );
 
-  const {ensProvider, onChange} = props;
+  const { onChange } = props;
   const updateAddress = useCallback(
     async newValue => {
       if (typeof newValue !== "undefined") {
         let address = newValue;
         if (address.indexOf(".eth") > 0 || address.indexOf(".xyz") > 0) {
           try {
-            const possibleAddress = await ensProvider.resolveName(address);
+            const possibleAddress = await mainnetProvider.resolveName(address);
             if (possibleAddress) {
               address = possibleAddress;
             }
@@ -73,7 +76,7 @@ export default function AddressInput(props) {
         }
       }
     },
-    [ensProvider, onChange],
+    [mainnetProvider, onChange],
   );
 
   const scanner = scan ? (
