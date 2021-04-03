@@ -15,12 +15,12 @@
     ]
   },
   "dependencies": {
-    "3id-connect": "^1.0.0-alpha.14",
+    "3id-connect": "^1.0.0-alpha.15",
     "@ant-design/dark-theme": "^2.0.2",
     "@ant-design/icons": "^4.5.0",
     "@apollo/react-hooks": "^4.0.0",
-    "@ceramicnetwork/http-client": "^0.9.6",
-    "@ceramicstudio/idx": "^0.8.0",
+    "@ceramicnetwork/http-client": "^0.11.0-rc.1",
+    "@ceramicstudio/idx": "^0.9.0",
     "@ceramicstudio/idx-constants": "^0.7.0",
     "@craco/craco": "^5.8.0",
     "@ethersproject/address": "^5.0.10",
@@ -63,12 +63,15 @@
     "ethers": "^5.0.31",
     "graphiql": "^1.0.5",
     "graphql": "^15.3.0",
+    "graphql-request": "^3.4.0",
     "image-js": "^0.31.4",
     "immutability-helper": "^3.1.1",
     "isomorphic-fetch": "^3.0.0",
     "konva": "^7.2.5",
     "mobx": "^6.1.8",
     "mobx-react-lite": "^3.2.0",
+    "mobx-state-tree": "^5.0.1",
+    "mst-gql": "^0.14.0",
     "multicodec": "^0.5.6",
     "node-watch": "^0.7.1",
     "postcss": "^8.2.6",
@@ -85,6 +88,7 @@
     "react-dropzone": "^11.3.1",
     "react-json-view": "^1.21.1",
     "react-konva": "^16.13.0-6",
+    "react-photo-gallery": "^8.0.0",
     "react-qr-reader": "^2.2.1",
     "react-router-dom": "^5.2.0",
     "react-scripts": "^3.4.4",
@@ -136,6 +140,7 @@
     "s3": "node ./scripts/s3.js",
     "ship": "yarn surge",
     "theme": "npx gulp less",
-    "watch": "node ./scripts/watch.js"
+    "watch": "node ./scripts/watch.js",
+    "generate-mst-gql": "yarn mst-gql --format ts http://localhost:8000/subgraphs/name/nft-minter/composable-contract --outDir src/subgraph_models"
   }
 }

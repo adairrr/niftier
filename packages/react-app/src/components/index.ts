@@ -19,3 +19,4 @@ export { default as ThemeSwitch } from "./ThemeSwitch";
 export { default as PinataDropzone } from "./PinataDropzone";
 export { default as EmptyWithDescription } from "./EmptyWithDescription";
 export { default as DraggableTabs } from "./DraggableTabs"
+export { default as TokenCard } from "./TokenCard"

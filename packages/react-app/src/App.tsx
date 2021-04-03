@@ -14,7 +14,6 @@ import { INFURA_ID, DAI_ADDRESS, DAI_ABI, NETWORK, NETWORKS } from './constants'
 //import Hints from './Hints';
 import { RouterMenu } from './RouterMenu';
 import WalletConnect, { logoutOfWeb3Modal, web3Modal } from './components/WalletConnect';
-import { initiateCeramicWithIDX } from './helpers/ceramic';
 import CeramicDocs from './views/CeramicDocs';
 import Landing from './components/Landing';
 import Footer from './components/Landing/Footer1';

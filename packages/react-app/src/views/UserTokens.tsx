@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Button, List, Card, Empty } from 'antd';
-import { Address, AddressInput, EmptyWithDescription, TokenId } from '../components';
+import { Address, AddressInput, EmptyWithDescription, TokenCard, TokenId } from '../components';
 import { useQuery, gql } from '@apollo/client';
 import { BigNumber, utils } from 'ethers';
 import { JsonRpcProvider } from '@ethersproject/providers';
@@ -10,26 +10,47 @@ import { PINATA_IPFS_PREFIX } from '../constants';
 import { ACCOUNT_BALANCE_QUERY } from '../apollo/queries'
 import { getFromIPFS } from '../hooks';
 import { useAddressContext, useContractIOContext } from '../contexts';
-import { useQuery as mstUseQuery } from '../subgraph_models/reactUtils';
+import { useQuery as useMstQuery } from '../subgraph_models/reactUtils';
 import useProviderContext from '../contexts/ProviderContext';
+import { observer } from 'mobx-react-lite';
+import { TokenModelType, AccountModelType, BalanceModelType } from '../subgraph_models';
+import './UserTokens.less';
+import Gallery from 'react-photo-gallery';
+import { Tabs } from 'antd';
+
+const { TabPane } = Tabs;
+
+
 
 const UserTokens = ({}) => {
 
   const currentAddress = useAddressContext();
   const { tx, reader, writer } = useContractIOContext();
-  const { mainnetProvider } = useProviderContext();
 
   const componentIsMounted = useRef(true);
 
-  const [ userTokens, setUserTokens ] = useState([]);
-  const [ userTokenImages, setUserTokenImages ] = useState({})
-  const [ transferToAddresses, setTransferToAddresses ] = useState([])
-  const [ fetching, setFetching ] = useState(false);
+  const [ userBalances, setUserBalances ] = useState<BalanceModelType[]>([]);
+
   
-  const { loading, error, data } = useQuery(ACCOUNT_BALANCE_QUERY, {
-    variables: { accountId: currentAddress.toLowerCase() },
-    pollInterval: 2000 // poll every 2 seconds
-  });
+  // const { loading, error, data } = useQuery(ACCOUNT_BALANCE_QUERY, {
+  //   variables: { accountId: currentAddress.toLowerCase() },
+  //   pollInterval: 2000 // poll every 2 seconds
+  // });
+
+  const { setQuery, data: mstData, store, error: mstError, loading: mstLoading } = useMstQuery<{balances: BalanceModelType[]}>();
+
+  useEffect(() => {
+    if (currentAddress) setQuery((store) => store.loadInitialBalances(currentAddress.toLowerCase()));
+  }, [currentAddress]);
+
+  useEffect(() => {
+    if (mstData && mstData.balances) {
+      setUserBalances(mstData.balances);
+      mstData.balances.map(balance => balance.token)
+    }
+  }, [mstData]);
+
+  console.log(mstError, mstLoading, mstData);
 
   useEffect(() => {
     // each useEffect can return a cleanup function
@@ -38,60 +59,81 @@ const UserTokens = ({}) => {
     };
   }, []); // no extra deps => the cleanup function runs this on component unmount
 
-  useEffect(() => {
-    const fetchUserTokens = async () => {
-      setFetching(true);
-      console.log(data);
-      if (!userTokens || data.account.balances.length !== userTokens.length) {
-        let queriedTokens = [];
-        data.account.balances.forEach(async (balance) => {
-          if (balance.value === '0') return; // TODO should update mapping to remove balance?
-          const token = balance.token;
-          
-          try {
-            const tokenUri = token.uri.replace(PINATA_IPFS_PREFIX, '');
-            
-            console.log(`Fetching ipfs data for ${token.id} with uri: ${tokenUri}`);
-            if (tokenUri != null) {
-              const jsonManifestBuffer = await getFromIPFS(tokenUri);
+  const loadMoreBalances = () => {
+    if (currentAddress) setQuery(store.loadMoreBalances(currentAddress.toLowerCase()));
+  }
 
-              try {
-                const jsonManifest = JSON.parse(jsonManifestBuffer.toString());
-                console.log('jsonManifest', jsonManifest);
-                queriedTokens.push({ id:token.id, uri:tokenUri, owner: currentAddress, ...jsonManifest });
-              } catch(e) {console.log(e)}
-            }
-          } catch (err) {
-            console.log(err);
-          }
-        }
-        );
-        if (componentIsMounted.current) {
-          setUserTokens(queriedTokens);
-        }
-      }
-      setFetching(false);
-    }
-    if (!loading && data && data.account) {
-      fetchUserTokens();
-    }
-  }, [data]);
 
-  if (loading) return (<span>'Loading...'</span>);
-  if (error) return (<span>`Error! ${error.message}`</span>);
-  if (data.account == null) return (
+  if (mstLoading || !mstData) return (<span>'Loading...'</span>);
+  if (mstError) return (<span>`Error! ${mstError.message}`</span>);
+  if (mstData.balances == null) return (
     <EmptyWithDescription description='No tokens!'>
       <Button type='primary'>Create some</Button>
     </EmptyWithDescription>
   )
-  if (!userTokens) return (<span>WAIT</span>);
+  if (!userBalances) return (<span>WAIT</span>);
   // if (userTokens.length == 0) return 'Waiting';
   // if (data.account == null) return `No balance found for ${address}`;
   
   return (
-    <div>
-      <div style={{ width:640, margin: 'auto', marginTop:32, paddingBottom:32 }}>
-        <List
+      <div className='UserTokens'>
+
+        <Tabs defaultActiveKey="1" centered>
+          <TabPane tab="Artpieces" key="1">
+            <List
+              grid={{
+                gutter: 50,
+                xs: 1,
+                sm: 2,
+                md: 4,
+                lg: 4,
+                xl: 4,
+                xxl: 6,
+              }}
+              bordered
+              loading={mstLoading}
+              dataSource={userBalances}
+              renderItem={(balance: BalanceModelType) => 
+                <TokenCard token={balance.token}/>
+              }
+            />
+          </TabPane>
+          <TabPane tab="Layers" key="2">
+            Content of Tab Pane 2
+          </TabPane>
+          <TabPane tab="Controllers" key="3">
+            Content of Tab Pane 3
+          </TabPane>
+        </Tabs>
+        {/* <Gallery photos={} */}
+      
+      {/* <div style={{ width:640, margin: 'auto', marginTop:32, paddingBottom:32 }}> */}
+      {/* <InfiniteScroll
+        dataLength={userBalances.length}
+        next={loadMoreBalances}
+        hasMore={true}
+        loader={<h4>Loading...</h4>}
+        endMessage={
+          <p style={{ textAlign: 'center' }}>
+            <b>Yay! You have seen it all</b>
+          </p>
+        }
+      >
+        <Masonry
+          className='token-gallery'
+          options={masonryOptions}
+          disableImagesLoaded={false}
+          updateOnEachImageLoad={false}
+        >
+          {store.sortedBalances.slice().map((balance: BalanceModelType) => (
+            <TokenCard token={balance.token} key={balance.id}/>
+          ))}
+        </Masonry>
+
+      </InfiniteScroll>
+      </div> */}
+        
+        {/* <List
           bordered
           loading={fetching}
           dataSource={userTokens}
@@ -152,10 +194,10 @@ const UserTokens = ({}) => {
               </List.Item>
             )
           }}
-        />
-      </div>
+        /> */}
+      {/* </div> */}
     </div>
   );
 }
 
-export default UserTokens;
+export default observer(UserTokens);
