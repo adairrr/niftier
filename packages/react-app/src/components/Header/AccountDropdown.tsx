@@ -7,6 +7,7 @@ import Web3Modal from 'web3modal';
 import { useAddressContext } from '../../contexts';
 import Blockies from "react-blockies";
 import Address from '../Address';
+import { initiateCeramicWithIDX } from '../../helpers/ceramic';
 
 const styles = require('./accountDropdown.less');
 
@@ -19,7 +20,7 @@ const AccountDropdown: FunctionComponent<AccountDropdownProps> = ({ web3Modal, l
 
   const currentAddress = useAddressContext();
 
-  const onMenuClick = (event: {
+  const onMenuClick = async (event: {
     key: React.Key;
     keyPath: React.Key[];
     item: React.ReactInstance;
@@ -34,7 +35,8 @@ const AccountDropdown: FunctionComponent<AccountDropdownProps> = ({ web3Modal, l
         logoutOfWeb3Modal();
         break;
       case 'connect':
-        loadWeb3Modal();
+        await loadWeb3Modal();
+        await initiateCeramicWithIDX();
         break;
       case 'settings':
 
@@ -72,10 +74,10 @@ const AccountDropdown: FunctionComponent<AccountDropdownProps> = ({ web3Modal, l
         </>
       ) : (
         <>
-        <Menu.Item key="connect">
-          <AntIcon.LoginOutlined />
-          Connect
-        </Menu.Item>
+          <Menu.Item key="connect">
+            <AntIcon.LoginOutlined />
+            Connect
+          </Menu.Item>
         </>
       )
     }
