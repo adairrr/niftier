@@ -9,7 +9,7 @@ RUN apt-get update || : && apt-get install python3 -y
 RUN apt-get install build-essential -y --no-install-recommends
 
 # install ceramic cli as root
-RUN npm install -g @ceramicnetwork/cli
+RUN npm install -g @ceramicnetwork/cli@latest
 
 WORKDIR /usr/app
 

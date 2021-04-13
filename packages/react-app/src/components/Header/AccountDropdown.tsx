@@ -8,6 +8,10 @@ import { useAddressContext } from '../../contexts';
 import Blockies from "react-blockies";
 import Address from '../Address';
 import { initiateCeramicWithIDX } from '../../helpers/ceramic';
+import { useCeramicContext } from '../../contexts/CeramicAuthProvider';
+import { observer } from 'mobx-react-lite';
+import { CeramicAuthStore } from '../../store';
+import { EthereumAuthProvider, ThreeIdConnect } from '3id-connect';
 
 const styles = require('./accountDropdown.less');
 
@@ -19,6 +23,7 @@ type AccountDropdownProps = {
 const AccountDropdown: FunctionComponent<AccountDropdownProps> = ({ web3Modal, loadWeb3Modal, logoutOfWeb3Modal }) => {
 
   const currentAddress = useAddressContext();
+  const ceramicAuth = useCeramicContext();
 
   const onMenuClick = async (event: {
     key: React.Key;
@@ -33,10 +38,14 @@ const AccountDropdown: FunctionComponent<AccountDropdownProps> = ({ web3Modal, l
     switch (key) {
       case 'logout': 
         logoutOfWeb3Modal();
+        ceramicAuth.logout();
         break;
       case 'connect':
         await loadWeb3Modal();
-        await initiateCeramicWithIDX();
+        // const newAuth = new CeramicAuthStore(new ThreeIdConnect());
+        // console.log(ceramicAuth);
+        // newAuth.login();
+        // await initiateCeramicWithIDX();
         break;
       case 'settings':
 
@@ -108,4 +117,4 @@ const AccountDropdown: FunctionComponent<AccountDropdownProps> = ({ web3Modal, l
   );
 }
 
-export default AccountDropdown;
+export default observer(AccountDropdown);

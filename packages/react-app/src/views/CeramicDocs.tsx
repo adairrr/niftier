@@ -2,6 +2,7 @@ import CeramicClient from '@ceramicnetwork/http-client';
 import React, { useEffect, useState } from 'react';
 import { initiateCeramicWithIDX } from '../helpers/ceramic';
 import { Button } from "antd";
+import { useCeramicContext, useProviderContext } from '../contexts';
   
 export const QueryDoc = (did, client: CeramicClient) => {
 
@@ -28,7 +29,6 @@ export const QueryDoc = (did, client: CeramicClient) => {
     </button>
     </>
   );
-
 }
 
 
@@ -37,16 +37,20 @@ export default function CeramicDocs() {
   
   const [ ceramicClient, setCeramicClient ] = useState<CeramicClient>(null);
   const [ document, setDocument ] = useState(null);
+  const ceramicAuth = useCeramicContext();
 
-  useEffect(() => {
-    const initClient = async () => {
-      const client = await initiateCeramicWithIDX();
-      console.log(client);
-      setCeramicClient(client);
-      console.log(client.did)
-    }
-    if (!ceramicClient) initClient();
-  }, [setCeramicClient]);
+
+  // console.log(window.ceramic);
+
+  // useEffect(() => {
+  //   const initClient = async () => {
+  //     const client = await initiateCeramicWithIDX();
+  //     console.log(client);
+  //     setCeramicClient(client);
+  //     console.log(client.did)
+  //   }
+  //   if (!ceramicClient) initClient();
+  // }, [setCeramicClient]);
 
   const create =  async () => {
     console.log(ceramicClient);
@@ -68,14 +72,20 @@ export default function CeramicDocs() {
     console.log(doc)
   }
 
+  const doLogin = () => {
+    ceramicAuth.login();
+    // initiateCeramicWithIDX();
+  }
+
 
   return (
     <>
       <div>
-        {console.log(ceramicClient)}
+        {/* {console.log(ceramicClient)} */}
         <Button onClick={create}>
           create doc
         </Button>
+        <Button onClick={doLogin}>Login?</Button>
       </div>
       <div>
         {/* <QueryDoc/> */}

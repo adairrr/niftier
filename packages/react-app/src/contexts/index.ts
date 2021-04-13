@@ -3,3 +3,4 @@ export { default as useContractIOContext, ContractIOContext } from './ContractIO
 export { default as useBlockExplorerContext, BlockExplorerContext } from './BlockExplorerContext';
 export { default as useProviderContext, ProviderContext } from './ProviderContext';
 export { default as useThemeContext } from './ThemeContext';
+export { default as CeramicAuthProvider, useCeramicContext } from './CeramicAuthProvider';

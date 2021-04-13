@@ -18,7 +18,7 @@ import CeramicDocs from './views/CeramicDocs';
 import Landing from './components/Landing';
 import Footer from './components/Landing/Footer1';
 import './components/Landing/less/antMotionStyle.less';
-import { AddressContext, ContractIOContext } from './contexts';
+import { AddressContext, CeramicAuthProvider, ContractIOContext } from './contexts';
 import { ThemeContextProvider } from './contexts/ThemeContext';
 import { SiteHeader, SiteSider } from './components/Layout';
 
@@ -28,6 +28,11 @@ import {
 import AccountDropdown from './components/Header/AccountDropdown';
 import { NotFound404Page } from './views/exception';
 import EthContextProvider from './contexts/EthContextProvider';
+import { CeramicAuthStore } from './store';
+import { EthereumAuthProvider, ThreeIdConnect } from '3id-connect';
+import { DID, DIDProvider } from 'dids'
+import ThreeIdResolver from "@ceramicnetwork/3id-did-resolver";
+
 
 /// 📡 What chain are your contracts deployed to?
 const targetNetwork = NETWORKS['localhost']; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
@@ -53,10 +58,13 @@ const localProvider = new JsonRpcProvider(localProviderUrlFromEnv);
 // 🔭 block explorer URL
 const blockExplorer = targetNetwork.blockExplorer;
 
+// const threeID = new ThreeIdConnect();
 
 function App(props) {
 
   const [ injectedProvider, setInjectedProvider ] = useState<Web3Provider>();
+  const [ authProvider, setAuthProvider ] = useState<EthereumAuthProvider>();
+  const [ didProvider, setDidProvider ] = useState<DIDProvider>();
 
   /* 💵 This hook will get the price of ETH from 🦄 Uniswap: */
   const price = useExchangePrice(targetNetwork, mainnetProvider);
@@ -145,9 +153,21 @@ function App(props) {
     if (DEBUG) console.log("User is connecting to web3");
     try {
       const provider = await web3Modal.connect();
+      const addresses = await provider.request({ method: 'eth_requestAccounts' });
+      console.log(addresses);
+
       if (DEBUG) console.log("User has connected to web3")
       console.log(provider)
       setInjectedProvider(new Web3Provider(provider));
+      // const ethAuthProv = new EthereumAuthProvider(provider, addresses[0]);
+      // setAuthProvider(ethAuthProv);
+      // console.log(ethAuthProv);
+      // console.log(threeID);
+      // await threeID.connect(ethAuthProv);
+
+      // const didProv = threeID.getDidProvider();
+      // console.log("GOT HERE:", didProv);
+      // setDidProvider(didProv as DIDProvider);
     } catch (e) { 
       // catches 'Modal closed by user'
       if (DEBUG) console.log(e);
@@ -173,8 +193,8 @@ function App(props) {
   }, [setRoute]);
 
   let faucetHint: ReactElement
-  const faucetAvailable = localProvider && localProvider.connection && localProvider.connection.url && localProvider.connection.url.indexOf(window.location.hostname)>=0 && !process.env.REACT_APP_PROVIDER && price > 1;
-
+  const faucetAvailable = localProvider && localProvider.connection && targetNetwork.name === "localhost";
+  
   // const [ faucetClicked, setFaucetClicked ] = useState( false );
   // if(!faucetClicked && localProvider && localProvider._network && localProvider._network.chainId==31337 && yourLocalBalance){
   //   faucetHint = (
@@ -205,6 +225,39 @@ function App(props) {
     </div>
   );
 
+/*
+  const authenticate = async (): Promise<string> => {
+
+    const ceramicPromise = createCeramic();
+
+
+    const [ceramic] = await Promise.all([ceramicPromise]);
+    console.log('ceramic', ceramic)
+    console.log('provider', didProvider)
+
+
+    const did = new DID({
+      provider: didProvider,
+      //@ts-ignore
+      resolver: ThreeIdResolver.getResolver(ceramic),
+    });
+    console.log(did);
+    const promise = did.authenticate();
+
+    // const promise = ceramic.setDIDProvider(didProvider);
+    console.log("Got promise", promise);
+    console.log("now awaiting promise");
+    const resp = await promise;
+    console.log("Got respones", resp);
+
+    const idx = createIDX(ceramic);
+    console.log('idx', idx);
+    
+    console.log(ceramic.did);
+    // window.did = ceramic.did;
+    return idx.id;
+  }
+*/
   const accountDropdown = (
     <AccountDropdown
       web3Modal={web3Modal}
@@ -215,6 +268,7 @@ function App(props) {
 
   return (
     <div className="App">
+      <CeramicAuthProvider>
       <EthContextProvider 
         currentAddress={currentAddress} 
         contractsIo={contractsIo}
@@ -233,6 +287,9 @@ function App(props) {
             <SiteHeader account={accountDropdown}/>
             <ThemeSwitch web3Modal={web3Modal}/>
             <Layout.Content style={{ margin: '24px 16px', padding: 24, minHeight: 280 }}>
+              {/* <Button onClick={authenticate}>
+                CLICK HERE TO AUTHENTICATE
+              </Button> */}
 
 
               {faucetHint}
@@ -366,6 +423,7 @@ function App(props) {
       </div> */}
       </ThemeContextProvider>
       </EthContextProvider>
+      </CeramicAuthProvider>
     </div>
   );
 }

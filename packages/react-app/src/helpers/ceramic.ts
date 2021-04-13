@@ -1,13 +1,14 @@
 import CeramicClient from '@ceramicnetwork/http-client';
-import { ThreeIdConnect, EthereumAuthProvider } from '3id-connect';
+import { EthereumAuthProvider, ThreeIdConnect } from '3id-connect'
 import { DIDProvider } from '@ceramicnetwork/common';
 import { IDX } from '@ceramicstudio/idx';
+import { AccountID, AccountIDParams } from 'caip';
 import type { DID } from 'dids'
+import type { CeramicApi } from '@ceramicnetwork/common'
 
 // localhost 7007 ceramic daemon
-// const ceramicUrl = `http://${process.env.REACT_APP_CERAMIC_ADDRESS}`;
-const CERAMIC_URL = `http://localhost:7007`;
-
+// const CERAMIC_URL = `http://${process.env.REACT_APP_CERAMIC_ADDRESS}`;
+const CERAMIC_URL = `http://67.187.100.116:7007`;
 declare global {
   interface Window {
     did?: DID
@@ -17,30 +18,36 @@ declare global {
 }
 
 
-export const initiateCeramicWithIDX = async () => {
+export const initiateCeramicWithIDX = async (): Promise<CeramicClient> => {
   // const accounts = await ethereum.send('eth_requestAccounts');
   const addresses = await window.ethereum.enable();
 
 
-  const ceramic = new CeramicClient(CERAMIC_URL);
   const threeIdConnect = new ThreeIdConnect();
+  console.log(window.ethereum)
   const authProvider = new EthereumAuthProvider(window.ethereum, addresses[0]);
 
   await threeIdConnect.connect(authProvider);
   const didProvider = await threeIdConnect.getDidProvider() as DIDProvider;
 
+  console.log(didProvider);
+
+  const ceramic = new CeramicClient(CERAMIC_URL);
   await ceramic.setDIDProvider(didProvider);
+
+  console.log(ceramic);
 
   initiateIDX(ceramic);
 
   window.ceramic = ceramic;
+  //@ts-ignore
   window.did = ceramic.did;
   console.log(ceramic.did);
 
   return ceramic;
 }
 
-export const initiateIDX = (ceramic: CeramicClient) => {
+export const initiateIDX = (ceramic: CeramicClient): IDX => {
   // setup idx
   const aliases = {}
   // TODO see https://developers.idx.xyz/build/aliases/
@@ -52,3 +59,18 @@ export const initiateIDX = (ceramic: CeramicClient) => {
   return idx;
 }
 // did:3:kjzl6cwe1jw149vfa25gi287p09py9zii2pki0ch55a559iz2vy6fo2uehy8rki 
+
+export const ethAddressToDID = async (address: string): Promise<string> => {
+  const account = {
+    chainId: 'eip155:1',
+    address: address.toLowerCase()
+  } as AccountIDParams;
+
+  const caip10Doc = await window.ceramic?.createDocument('caip10-link', {
+    metadata: {
+      family: 'caip10-link',
+      controllers: [AccountID.format(account)]
+    }
+  });
+  return caip10Doc?.content;
+}
