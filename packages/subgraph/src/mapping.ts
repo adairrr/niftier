@@ -45,7 +45,8 @@ import {
   Approval,
 	TokenRelationship,
   TokenTypeRelationship,
-  TokenType
+  TokenType,
+  TokenRegistry
 } from "../generated/schema"
   
 import {
@@ -88,8 +89,8 @@ export function handleSetPurpose(event: SetPurpose): void {
 }
 
 // helper method to fetch a token stored in a token registry
-// function fetchToken(registry: TokenRegistry, id: BigInt): Token {
-function fetchToken(id: BigInt): Token {
+function fetchToken(registry: TokenRegistry, id: BigInt): Token {
+// function fetchToken(id: BigInt): Token {
   // let tokenId = registry.id.concat('-').concat(id.toHex());
   let tokenId = id.toHex();
   let token = Token.load(tokenId);
@@ -99,7 +100,7 @@ function fetchToken(id: BigInt): Token {
 
   if (tokenType == null) {
     debug("Token type is null, errored token id? id: ".concat(tokenId));
-    // this is a terrible way of doing this
+    // TODO this is a terrible way of doing this
     tokenType = new TokenType("0x0");
     tokenType.name = "ERRORED TOKEN TYPE";
   }
@@ -107,7 +108,7 @@ function fetchToken(id: BigInt): Token {
   // doesn't exist yet
   if (token == null) {
     token = new Token(tokenId)
-    // token.registry = registry.id;
+    token.registry = registry.id;
     token.identifier = id;
     token.totalSupply = constants.BIGINT_ZERO as BigInt;
     token.tokenType = tokenType.id;
@@ -143,13 +144,13 @@ function fetchOrCreateRelationship(parentToken: Token, childToken: Token): Token
 }
   
 export function handleMint(event: MintEvent): void {
-  // let registry = new TokenRegistry(event.address.toHex());
+  let registry = new TokenRegistry(event.address.toHex());
   let operator = new Account(event.params.operator.toHex());
   let to = new Account(event.params.to.toHex());
   let creator = new Account(event.params.creator.toHex());
   
   // save the types
-  // registry.save();
+  registry.save();
   operator.save();
   to.save();
   creator.save();
@@ -157,7 +158,7 @@ export function handleMint(event: MintEvent): void {
   registerMint(
     event,
     "",
-    // registry,
+    registry,
     operator,
     to,
     event.params.tokenId,
@@ -167,13 +168,13 @@ export function handleMint(event: MintEvent): void {
 }
   
 export function handleMintBatch(event: MintBatchEvent): void {
-	// let registry = new TokenRegistry(event.address.toHex());
+	let registry = new TokenRegistry(event.address.toHex());
   let operator = new Account(event.params.operator.toHex());
   let to = new Account(event.params.to.toHex());
   let creator = new Account(event.params.creator.toHex());
 	  
 	// save the types
-	// registry.save();
+	registry.save();
   operator.save();
   to.save();
   creator.save();
@@ -186,7 +187,7 @@ export function handleMintBatch(event: MintBatchEvent): void {
 	  registerMint(
 		event,
 		"",
-		// registry,
+		registry,
     operator,
 		to,
 		tokenIds[i],
@@ -199,7 +200,7 @@ export function handleMintBatch(event: MintBatchEvent): void {
 export function registerMint(
 	event: ethereum.Event,
   suffix: string,
-  // registry: TokenRegistry,
+  registry: TokenRegistry,
   operator: Account,
   to: Account,
   tokenId: BigInt,
@@ -208,7 +209,7 @@ export function registerMint(
 ): void {
   // this will need to deal with the from and to being the contract and those balances should always be zero afterwards
   // let token = fetchToken(registry, tokenId);
-  let token = fetchToken(tokenId);
+  let token = fetchToken(registry, tokenId);
   let transfer = new Transfer(events.id(event).concat(suffix));
   transfer.transaction = transactions.log(event).id;
   transfer.timestamp = event.block.timestamp;
@@ -236,40 +237,44 @@ export function registerMint(
 }
 
 export function handleURI(event: URIEvent): void {
-  let token = fetchToken(event.params.id);
+  let registry = new TokenRegistry(event.address.toHex());
+  let token = fetchToken(registry, event.params.id);
   token.uri = event.params.value;
+  registry.save();
   token.save();
 }
 
 export function handleUriUpdated(event: UriUpdatedEvent): void {
-  let token = fetchToken(event.params.tokenId);
+  let registry = new TokenRegistry(event.address.toHex());
+  let token = fetchToken(registry, event.params.tokenId);
   token.uri = event.params.tokenUri;
+  registry.save();
   token.save();
 }
 
 
 export function handleAssociateChildToken(event: AssociateChildTokenEvent): void {
-  // let registry = new TokenRegistry(event.address.toHex());
+  let registry = new TokenRegistry(event.address.toHex());
   // let parentToken = fetchToken(registry, event.params.toTokenId);
   // let childToken = fetchToken(registry, event.params.childTokenId);
-  let parentToken = fetchToken(event.params.toTokenId);
-  let childToken = fetchToken(event.params.childTokenId);
+  let parentToken = fetchToken(registry, event.params.toTokenId);
+  let childToken = fetchToken(registry, event.params.childTokenId);
 
   let relationship = fetchOrCreateRelationship(parentToken, childToken);
 
   // save the types
-  // registry.save();
+  registry.save();
   parentToken.save();
   childToken.save();
   relationship.save();
 }
 
 export function handleDisassociateChildToken(event: DisassociateChildTokenEvent): void {
-  // let registry = new TokenRegistry(event.address.toHex());
+  let registry = new TokenRegistry(event.address.toHex());
   // let exParentToken = fetchToken(registry, event.params.fromTokenId);
   // let childToken = fetchToken(registry, event.params.childTokenId);
-  let exParentToken = fetchToken(event.params.fromTokenId);
-  let childToken = fetchToken(event.params.childTokenId);
+  let exParentToken = fetchToken(registry, event.params.fromTokenId);
+  let childToken = fetchToken(registry, event.params.childTokenId);
 
   let exRelationship = TokenRelationship.load(exParentToken.id.concat('-').concat(childToken.id));
 
@@ -281,7 +286,7 @@ export function handleDisassociateChildToken(event: DisassociateChildTokenEvent)
   store.remove('TokenRelationship', exRelationship.id);
 
   // save the types
-  // registry.save();
+  registry.save();
   exParentToken.save();
   childToken.save();
 }
@@ -291,11 +296,11 @@ export function handleDisassociateChildToken(event: DisassociateChildTokenEvent)
  * TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value);
  */
 export function handleTransferSingle(event: TransferSingleEvent): void {  
-  // let registry = new TokenRegistry(event.address.toHex());
+  let registry = new TokenRegistry(event.address.toHex());
   let operator = new Account(event.params.operator.toHex());
   let from = new Account(event.params.from.toHex());
   let to = new Account(event.params.to.toHex());
-  // registry.save();
+  registry.save();
   operator.save();
   from.save();
   to.save();
@@ -303,7 +308,7 @@ export function handleTransferSingle(event: TransferSingleEvent): void {
   registerTransfer(
     event,
     "",
-    // registry,
+    registry,
     operator,
     from,
     to,
@@ -317,22 +322,22 @@ export function handleTransferSingle(event: TransferSingleEvent): void {
  * TransferBatch(address indexed operator, address indexed from, address indexed to, uint256[] ids, uint256[] values);
  */
 export function handleTransferBatch(event: TransferBatchEvent): void {
-  // let registry = new TokenRegistry(event.address.toHex());
+  let registry = new TokenRegistry(event.address.toHex());
   let operator = new Account(event.params.operator.toHex());
   let from = new Account(event.params.from.toHex());
   let to = new Account(event.params.to.toHex());
-  // registry.save();
+  registry.save();
   operator.save();
   from.save();
   to.save();
 
-  let ids    = event.params.ids;
+  let ids = event.params.ids;
   let values = event.params.values;
   for (let i = 0; i < ids.length; ++i) {
     registerTransfer(
       event,
       "-".concat(i.toString()),
-      // registry,
+      registry,
       operator,
       from,
       to,
@@ -345,7 +350,7 @@ export function handleTransferBatch(event: TransferBatchEvent): void {
 function registerTransfer(
   event: ethereum.Event,
   suffix: string,
-  // registry: TokenRegistry,
+  registry: TokenRegistry,
   operator: Account,
   from: Account,
   to: Account,
@@ -359,7 +364,7 @@ function registerTransfer(
     && to.id != constants.ADDRESS_ZERO           // TODO burn once implemented
 	) {
     // let token = fetchToken(registry, id);
-    let token = fetchToken(id);
+    let token = fetchToken(registry, id);
     let transfer = new Transfer(events.id(event).concat(suffix)); // concat index if batched
     transfer.transaction = transactions.log(event).id;
     transfer.timestamp = event.block.timestamp;

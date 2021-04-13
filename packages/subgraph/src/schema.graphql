@@ -56,9 +56,14 @@ type TokenTypeRelationship @entity {
 	child:                        TokenType!
 }
 
+type TokenRegistry @entity {
+	id:                           ID!
+	tokens:                       [Token!]! @derivedFrom(field: "registry")
+}
+
 type Token @entity {
 	id:                           ID!
-	# registry:                     TokenRegistry!
+	registry:                     TokenRegistry!
 	identifier:                   BigInt!
 	uri:                          String
 	totalSupply:                  BigInt!
