@@ -1,11 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { TokenModelType } from '../subgraph_models/TokenModel';
-import { Avatar, Card } from 'antd';
+import { Avatar, Card, Image } from 'antd';
 import { useQuery } from '../subgraph_models';
 import { Link } from 'react-router-dom';
-import Icon from '@ant-design/icons';
-
+import * as AntIcon from '@ant-design/icons';
+import './less/TokenCard.less';
 const { Meta } = Card;
 
 type TokenCardProps = {
@@ -16,17 +16,38 @@ const TokenCard: React.FC<TokenCardProps> = ({ token }) => {
 
   const imageRef = useRef();
 
+  const baseClassName = 'TokenCard';
+
   // const { setQuery, loading, error } = useQuery(token.)
   
   return (
+    <div className={baseClassName}>
+      <Image
+        className={`${baseClassName}-preview`}
+        src={token.preview}
+        // TODO tiny blurry thumbnail (https://tinyurl.com/ct4ryh2b)
+      />
 
-    <Card
-      // style={{ width: 240 }}
-      loading={token.loadingMetadata}
-      cover={<img alt="Token Preview" src={token.preview} />}
-    >
-      <Meta title={token.name} description={token.description} />
-    </Card>
+      <div className={`${baseClassName}-token-info`}>
+        {/* <Link to={`/tokens/${token.id}`}>
+          <Avatar
+            className="user-avatar"
+            src={photo.user.profile_image.large}
+          />
+          <p className="username">{photo.user.name}</p>
+        </Link> */}
+        <Link to={`/token/${token.id}`}>
+          <AntIcon.InfoCircleOutlined className="icon-circle" />
+        </Link>
+      </div>
+      {/* <Card
+        // style={{ width: 240 }}
+        // loading={token.loadingMetadata}
+        cover={<img alt="Token Preview" src={token.preview} />}
+      >
+        <Meta title={token.name} description={token.description} />
+      </Card> */}
+    </div>
   );
 }
 

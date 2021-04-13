@@ -16,6 +16,7 @@ import { observer } from 'mobx-react-lite';
 import { TokenModelType, AccountModelType, BalanceModelType } from '../subgraph_models';
 import './UserTokens.less';
 import Gallery from 'react-photo-gallery';
+import StackGrid from "react-stack-grid";
 import { Tabs } from 'antd';
 
 const { TabPane } = Tabs;
@@ -80,7 +81,7 @@ const UserTokens = ({}) => {
 
         <Tabs defaultActiveKey="1" centered>
           <TabPane tab="Artpieces" key="1">
-            <List
+            {/* <List
               grid={{
                 gutter: 50,
                 xs: 1,
@@ -96,7 +97,18 @@ const UserTokens = ({}) => {
               renderItem={(balance: BalanceModelType) => 
                 <TokenCard token={balance.token}/>
               }
-            />
+            /> */}
+            <StackGrid
+              columnWidth={180}
+              gutterWidth={10}
+              component="div"
+              itemComponent="div"
+              monitorImagesLoaded
+            >
+              {store.sortedBalances.slice().map((balance: BalanceModelType) => {
+                return <TokenCard token={balance.token} key={balance.id}/>;
+              })}
+            </StackGrid>
           </TabPane>
           <TabPane tab="Layers" key="2">
             Content of Tab Pane 2

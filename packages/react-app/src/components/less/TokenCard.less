@@ -1,0 +1,39 @@
+@import '~antd/es/style/themes/dark.less';
+
+.TokenCard {
+  &-preview {
+
+  }
+  &-token-info {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    bottom: 18px;
+    align-items: center;
+    position: absolute;
+
+    .user-avatar {
+      margin-left: 6px;
+    }
+
+    .username {
+      font-weight: 600;
+      color: #ffffff;
+      display: inline-block;
+      margin-left: 6px;
+    }
+
+    .icon-circle {
+      font-size: 22px;
+      color: #b4b4b4fb !important;
+      margin-right: 12px;
+      border-radius: 24px;
+      padding: 6px;
+    }
+    
+    .icon-circle:hover {
+      background: #000000;
+      transition: all 0.2s ease;
+    }
+  }
+}
