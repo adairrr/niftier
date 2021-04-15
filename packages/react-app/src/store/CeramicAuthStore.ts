@@ -22,12 +22,14 @@ const CERAMIC_URL = `http://${process.env.REACT_APP_CERAMIC_ADDRESS}`;
 
 export class CeramicAuthStore {
   /* properties */
+  threeIdConnect: ThreeIdConnect;
   isAuthorized: boolean = false;
   userDid: string = null;
   ceramicDid: DID = null;
   ceramic: CeramicClient;
   idx: IDX;
-  threeIdConnect: ThreeIdConnect ;
+  didProvider: DIDProvider;
+
   
   constructor(threeIdConnect: ThreeIdConnect) {
     // TODO check local storage for previous did?
@@ -47,6 +49,9 @@ export class CeramicAuthStore {
   login() {
     console.log("Logging into the ceramic client and attempting to authenticate");
     this.initCeramic();
+    this.initThreeIdDidProvider();
+    this.authenticateDid();
+    this.initIDX();
   }
 
   logout() {
@@ -63,55 +68,64 @@ export class CeramicAuthStore {
 
   *initCeramic() {
     try {
-      console.log("Within initCeramic");
-      yield window.ethereum.enable();
+      console.log('Attempting to initialize ceramic');
+      // create the ceramic client
+      const ceramic = new CeramicClient(CERAMIC_URL);
+      this.ceramic = ceramic;
+
+      // debug
+      window.ceramic = ceramic;
+      
+      // create  the idx client
+      this.initIDX();
+    } catch (error) {
+      console.log({ error });
+    }
+  }
+
+  *initThreeIdDidProvider() {
+    try {
       const addresses = yield window.ethereum.request({ method: 'eth_requestAccounts' });
 
       // This will prompt the user with a 3ID Connect permissions window.
       const authProvider = new EthereumAuthProvider(window.ethereum, addresses[0]);
       yield this.threeIdConnect.connect(authProvider);
-
-      console.log("authProvider", authProvider);
-
-      // create the ceramic client
-      const ceramic = new CeramicClient(CERAMIC_URL);
-      console.log("ceramic", ceramic);
-      window.ceramic = ceramic;
       
-      // create  the idx client
-      this.initIDX();
-
       const didProvider = this.threeIdConnect.getDidProvider() as DIDProvider;
+
+      yield this.ceramic.setDIDProvider(didProvider);
+      this.didProvider = didProvider;
+
+      // debug
       window.didProvider = didProvider;
-      //@ts-ignore
-      window.didResolver = ThreeIdResolver.getResolver(ceramic);
 
-      //@ts-ignore
-      // const conf = yield ceramic.setDIDProvider(didProvider);
+      return didProvider;
+    } catch (error) {
+      console.log('initThreeIdDidProvider error: ', { error });
+    }
+  }
 
-      // console.log("conf,", conf);
-
+  *authenticateDid() {
+    if (!this.ceramic) throw new Error('Ceramic must be initialized first')
+    try {
       const did = new DID({
-        provider: didProvider,
+        provider: this.didProvider,
         //@ts-ignore
         resolver: ThreeIdResolver.getResolver(ceramic)
       });
 
       // console.log("did", did);
-      // window.did = did;
+      window.did = did;
+      window.didResolver = ThreeIdResolver.getResolver(this.ceramic);
 
       console.log('about to authenticate did');
     
       yield did.authenticate();
-      // console.log("did.id", did.id);
+      
+      console.log("did.id", did.id);
 
-      console.log("ceramic,", ceramic);
-
-      this.ceramic = ceramic;
-      //@ts-ignore
-      this.ceramicDid = ceramic.did;
     } catch (error) {
-      console.log({ error });
+      console.log('authenticateDid error: ', { error });
     }
   }
 
@@ -122,8 +136,10 @@ export class CeramicAuthStore {
       // TODO see https://developers.idx.xyz/build/aliases/
       //https://developers.idx.xyz/guides/definitions/creating/
       // @ts-ignore
-      const idx = new IDX({ ceramic, aliases });
+      const idx = new IDX({ ceramic: this.ceramic, aliases });
       this.idx = idx;
+
+      // debug
       window.idx = idx;
     } catch (error) {
       console.log({ error });
@@ -132,5 +148,6 @@ export class CeramicAuthStore {
 }
 
 export default CeramicAuthStore;
+// we want a global connect
 const threeID = new ThreeIdConnect();
 export const CeramicAuthInstance = new CeramicAuthStore(threeID);

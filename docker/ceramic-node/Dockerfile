@@ -1,17 +1,21 @@
 FROM node:slim
 
 # update npm
-RUN npm install -g npm@7.6.3
+RUN npm install -g npm@7.9.0
 
 # install python
 # TODO should this be python3?
 RUN apt-get update || : && apt-get install python3 -y
 RUN apt-get install build-essential -y --no-install-recommends
 
+WORKDIR /usr/app
+
+# avoid 'node-pre-gyp not found'
+RUN npm install -g node-pre-gyp
+
 # install ceramic cli as root
 RUN npm install -g @ceramicnetwork/cli@latest
 
-WORKDIR /usr/app
 
 # RUN audit fix
 RUN npm i --package-lock-only

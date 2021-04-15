@@ -1,17 +1,13 @@
-import React, { useState, useContext, FunctionComponent } from 'react';
+import React, { FunctionComponent } from 'react';
 import * as AntIcon from "@ant-design/icons";
 import { Avatar, Menu, Spin } from 'antd';
-// import styles from './accountDropdown.less';
 import HeaderDropdown from './HeaderDropdown';
 import Web3Modal from 'web3modal';
 import { useAddressContext } from '../../contexts';
-import Blockies from "react-blockies";
 import Address from '../Address';
-import { initiateCeramicWithIDX } from '../../helpers/ceramic';
 import { useCeramicContext } from '../../contexts/CeramicAuthProvider';
 import { observer } from 'mobx-react-lite';
-import { CeramicAuthStore } from '../../store';
-import { EthereumAuthProvider, ThreeIdConnect } from '3id-connect';
+
 
 const styles = require('./accountDropdown.less');
 
@@ -42,10 +38,7 @@ const AccountDropdown: FunctionComponent<AccountDropdownProps> = ({ web3Modal, l
         break;
       case 'connect':
         await loadWeb3Modal();
-        // const newAuth = new CeramicAuthStore(new ThreeIdConnect());
-        // console.log(ceramicAuth);
-        // newAuth.login();
-        // await initiateCeramicWithIDX();
+        ceramicAuth.login();
         break;
       case 'settings':
 
