@@ -127,7 +127,7 @@ const Mint: FunctionComponent<MintProps> = ({ }) => {
       </div>
       <div style={{display: 'flex', alignItems: 'center'}}>
         
-        <div style={{border:"1px solid #cccccc", padding:16, width:400, margin:"auto",marginTop:64}}>
+        <div >
           {/* <PinataDropzone onSuccessfulUpload={handleSuccessfulUpload}/> */}
           <DraggableDropzone onSuccessfulUpload={handleSuccessfulUpload}/>
           <Input

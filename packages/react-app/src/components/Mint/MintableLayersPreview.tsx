@@ -48,7 +48,7 @@ const MintableLayersPreview: React.FC<MintableLayersPreviewProps> = ({ artpiece,
   }
 
   return (
-    <div style={{border:"1px solid #cccccc", padding:16, width:800, margin:"auto",marginTop:64}}>
+    <div style={{ padding:16, margin:"auto",marginTop:64 }}>
       <LayerTabs layerList={layerList} />{/* TODO this should be pulled up for SRP */}
       <Divider/>
       <KonvaStage width={550} height={617} ref={stageRef}>

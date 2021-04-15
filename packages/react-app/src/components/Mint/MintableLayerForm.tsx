@@ -25,7 +25,7 @@ const MintableLayerForm: React.FC<MintableLayerFormProps> = ({ layer }) => {
   }
 
   const onFormValuesChange = (changedValues, allValues) => {
-    console.log(changedValues);
+    // console.log(changedValues);
     if (changedValues.name) layer.setName(changedValues.name);
     if (changedValues.description) layer.setDescription(changedValues.description);
     if (changedValues.recipient && changedValues.recipient.address) layer.setRecipientAddress(changedValues.recipient.address);

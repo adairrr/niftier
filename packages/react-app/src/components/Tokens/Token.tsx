@@ -3,19 +3,22 @@ import React, { useState, useEffect, useRef, Component, useContext } from 'react
 import { Canvas, MeshProps, useFrame } from 'react-three-fiber';
 import type { Mesh } from 'three'
 import { Button, List, Card, Image, Row, Col, Typography } from 'antd';
-import { Address, AddressInput, TokenId } from '../components';
+import { Address, AddressInput, TokenId } from '..';
 import { useQuery, gql } from '@apollo/client';
 import { RouteComponentProps } from 'react-router';
 import { useParams } from 'react-router-dom';
-import { TOKEN_QUERY } from '../apollo/queries';
-import { PINATA_IPFS_PREFIX } from '../constants';
-import { fetchTokenMetadata, getFromIPFS } from '../hooks';
-import { TokenMetadata } from '../hooks/FetchTokenMetadata';
-import { useAddressContext } from '../contexts';
+import { TOKEN_QUERY } from '../../apollo/queries';
+import { PINATA_IPFS_PREFIX } from '../../constants';
+import { fetchTokenMetadata, getFromIPFS } from '../../hooks';
+import { TokenMetadata } from '../../hooks/FetchTokenMetadata';
+import { useAddressContext } from '../../contexts';
+import { TokenModelType, TokenRelationshipModelType } from '../../subgraph_models';
+import { useQuery as useMstQuery } from '../../subgraph_models/reactUtils';
 const { Meta } = Card;
 const { Paragraph, Title } = Typography;
 // import Title from 'antd/lib/typography/Title';
 // import { FallbackImage } from '../images';
+
 
 type TokenProps = {
   tokenId: string
@@ -59,10 +62,38 @@ const Token = ({...props}: TokenProps) => {
 
   const componentIsMounted = useRef(true);
 
-  const [ parentToken, setParentToken ] = useState();
+  const [ parentToken, setParentToken ] = useState<TokenModelType>();
   const [ parentTokenMeta, setParentTokenMeta ] = useState<TokenMetadata>(undefined);
-  const [ childTokens, setChildTokens ] = useState();
+  const [ childTokens, setChildTokens ] = useState<TokenModelType[]>();
   const [ childTokensMeta, setChildTokensMeta ] = useState<TokenMetadata[]>();
+
+  const { 
+    setQuery, 
+    data: mstData, 
+    store, 
+    error: mstError, 
+    loading: mstLoading
+   } = useMstQuery<{token: TokenModelType}>((store) => {
+     return store.loadToken(tokenId);
+   });
+
+   console.log(mstError, mstLoading, mstData);
+   console.log(mstData?.token);
+   console.log(mstData?.token?.children);
+   const children = mstData?.token?.children;
+   if (children && children.length > 0) {
+    console.log(children[0].child);
+   }
+
+   useEffect(() => {
+     const token = mstData?.token;
+     if (token) {
+       setParentToken(token);
+       if (token.children && token.children.length > 0) {
+         setChildTokens(token.children.slice().map(childRelation => childRelation.child));
+       }
+     }
+   }, [mstData]);
 
 
   const { loading, error, data } = useQuery<TokenQueryData>(TOKEN_QUERY, {
@@ -127,9 +158,10 @@ const Token = ({...props}: TokenProps) => {
 
   console.log(data);
 
-  if (loading) return (<span>'Loading...'</span>);
-  if (error) return (<span>`Error! ${error.message}`</span>);
-  if (data.token == null) return (<span>Token: ${tokenId} was not found in the database.</span>)
+  // TODO put this in a separate fc
+  if (loading || mstLoading || !mstData) return (<span>'Loading...'</span>);
+  if (error || mstError) return (<span>`Error! ${error? error.message : mstError.message}`</span>);
+  if (data.token == null || mstData?.token == null) return (<span>Token: ${tokenId} was not found in the database.</span>)
   // if (!userTokens) return (<span>WAIT</span>);
 
   // title
@@ -147,13 +179,13 @@ const Token = ({...props}: TokenProps) => {
             <Col span={6} order={1}>
               <Card>
                 <Image 
-                  src={parentTokenMeta.image}
+                  src={parentToken.preview}
                   // fallback={FallbackImage}
                 />
               </Card>
             </Col>
             <Col span={10} order={2}>
-              <Card title={(<><Title level={2}>{parentTokenMeta.name}</Title></>)}>
+              <Card title={(<><Title level={2}>{parentToken.name}</Title></>)}>
                 <span style={{fontSize:16, marginRight:80}}>
                   <TokenId 
                     id={tokenId}
@@ -161,10 +193,10 @@ const Token = ({...props}: TokenProps) => {
                   />
                 </span>
                 <Paragraph>
-                  <blockquote>{parentTokenMeta.description}</blockquote>
+                  <blockquote>{parentToken.description}</blockquote>
                 </Paragraph>
               </Card>
-              {childTokensMeta && 
+              {childTokens && 
                 <List
                   grid={{gutter: 10,
                     xs: 1,
@@ -176,8 +208,8 @@ const Token = ({...props}: TokenProps) => {
                   }}
                   bordered
                   header='Children'
-                  dataSource={childTokensMeta}
-                  renderItem={(childMetadata) => (
+                  dataSource={childTokens}
+                  renderItem={(childToken) => (
                     <List.Item>
                       <Card 
                         hoverable 
@@ -185,13 +217,13 @@ const Token = ({...props}: TokenProps) => {
                         cover={
                           <img
                             alt="example"
-                            src={childMetadata.image}
+                            src={childToken.preview}
                           />
                         }
                       >
                         <Meta
-                          title={childMetadata.name}
-                          description={<TokenId id={childMetadata.id}/>}
+                          title={childToken.name}
+                          description={<TokenId id={childToken.id}/>}
                         />
                       </Card>
                         {/* <div><img src={childMetadata.image} style={{maxWidth:150}} /></div> */}

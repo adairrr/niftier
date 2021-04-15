@@ -1,24 +1,25 @@
-import React, { createContext, ReactElement, useCallback, useEffect, useState } from 'react';
+import React, { ReactElement, useCallback, useEffect, useState } from 'react';
 import { BrowserRouter, Switch, Route } from 'react-router-dom';
 import 'antd/dist/antd.css';
 import {  JsonRpcProvider, Web3Provider } from '@ethersproject/providers';
 import './App.css';
-import { Row, Col, Button, Layout, Switch as SwitchD } from 'antd';
+import { Layout } from 'antd';
 import { useUserAddress } from 'eth-hooks';
 import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useEventListener, useBalance, useExternalContractLoader } from './hooks';
 import { Account, Faucet, Ramp, Contract, GasGauge, ThemeSwitch } from './components';
 import { Transactor } from './helpers';
 import { formatEther, parseEther } from '@ethersproject/units';
-import { Hints, ExampleUI, Subgraph, Transfers, Mint, UserTokens, Token } from './views'
+import { Hints, ExampleUI, Subgraph, Transfers, Mint, UserTokens } from './views'
+import { Token } from './components/Tokens';
 import { INFURA_ID, DAI_ADDRESS, DAI_ABI, NETWORK, NETWORKS } from './constants';
 //import Hints from './Hints';
 import { RouterMenu } from './RouterMenu';
-import WalletConnect, { logoutOfWeb3Modal, web3Modal } from './components/WalletConnect';
+import { logoutOfWeb3Modal, web3Modal } from './components/WalletConnect';
 import CeramicDocs from './views/CeramicDocs';
 import Landing from './components/Landing';
 import Footer from './components/Landing/Footer1';
 import './components/Landing/less/antMotionStyle.less';
-import { AddressContext, CeramicAuthProvider, ContractIOContext } from './contexts';
+import { CeramicAuthProvider } from './contexts';
 import { ThemeContextProvider } from './contexts/ThemeContext';
 import { SiteHeader, SiteSider } from './components/Layout';
 
@@ -28,10 +29,8 @@ import {
 import AccountDropdown from './components/Header/AccountDropdown';
 import { NotFound404Page } from './views/exception';
 import EthContextProvider from './contexts/EthContextProvider';
-import { CeramicAuthStore } from './store';
 import { EthereumAuthProvider, ThreeIdConnect } from '3id-connect';
-import { DID, DIDProvider } from 'dids'
-import ThreeIdResolver from "@ceramicnetwork/3id-did-resolver";
+import { DIDProvider } from 'dids'
 
 
 /// 📡 What chain are your contracts deployed to?
@@ -153,8 +152,6 @@ function App(props) {
     if (DEBUG) console.log("User is connecting to web3");
     try {
       const provider = await web3Modal.connect();
-      const addresses = await provider.request({ method: 'eth_requestAccounts' });
-      console.log(addresses);
 
       if (DEBUG) console.log("User has connected to web3")
       console.log(provider)

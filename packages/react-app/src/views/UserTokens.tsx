@@ -1,14 +1,9 @@
 /* eslint-disable jsx-a11y/accessible-emoji */
 
-import React, { useState, useEffect, useRef, useContext } from 'react';
+import React, { useState, useEffect, useRef, useContext, useMemo } from 'react';
 import { Button, List, Card, Empty } from 'antd';
 import { Address, AddressInput, EmptyWithDescription, TokenCard, TokenId } from '../components';
-import { useQuery, gql } from '@apollo/client';
-import { BigNumber, utils } from 'ethers';
-import { JsonRpcProvider } from '@ethersproject/providers';
-import { PINATA_IPFS_PREFIX } from '../constants';
-import { ACCOUNT_BALANCE_QUERY } from '../apollo/queries'
-import { getFromIPFS } from '../hooks';
+
 import { useAddressContext, useContractIOContext } from '../contexts';
 import { useQuery as useMstQuery } from '../subgraph_models/reactUtils';
 import useProviderContext from '../contexts/ProviderContext';
@@ -40,12 +35,12 @@ const UserTokens = ({}) => {
 
   const { setQuery, data: mstData, store, error: mstError, loading: mstLoading } = useMstQuery<{balances: BalanceModelType[]}>();
 
-  useEffect(() => {
+  useMemo(() => { // TODO this should probably be useMemo
     if (currentAddress) setQuery((store) => store.loadInitialBalances(currentAddress.toLowerCase()));
   }, [currentAddress]);
 
   useEffect(() => {
-    if (mstData && mstData.balances) {
+    if (mstData?.balances) {
       setUserBalances(mstData.balances);
       mstData.balances.map(balance => balance.token)
     }
@@ -67,11 +62,11 @@ const UserTokens = ({}) => {
 
   if (mstLoading || !mstData) return (<span>'Loading...'</span>);
   if (mstError) return (<span>`Error! ${mstError.message}`</span>);
-  if (mstData.balances == null) return (
+  if (mstData?.balances == null || mstData.balances.length === 0) return (
     <EmptyWithDescription description='No tokens!'>
       <Button type='primary'>Create some</Button>
     </EmptyWithDescription>
-  )
+  );
   if (!userBalances) return (<span>WAIT</span>);
   // if (userTokens.length == 0) return 'Waiting';
   // if (data.account == null) return `No balance found for ${address}`;
@@ -81,23 +76,6 @@ const UserTokens = ({}) => {
 
         <Tabs defaultActiveKey="1" centered>
           <TabPane tab="Artpieces" key="1">
-            {/* <List
-              grid={{
-                gutter: 50,
-                xs: 1,
-                sm: 2,
-                md: 4,
-                lg: 4,
-                xl: 4,
-                xxl: 6,
-              }}
-              bordered
-              loading={mstLoading}
-              dataSource={userBalances}
-              renderItem={(balance: BalanceModelType) => 
-                <TokenCard token={balance.token}/>
-              }
-            /> */}
             <StackGrid
               columnWidth={180}
               gutterWidth={10}
@@ -120,30 +98,6 @@ const UserTokens = ({}) => {
         {/* <Gallery photos={} */}
       
       {/* <div style={{ width:640, margin: 'auto', marginTop:32, paddingBottom:32 }}> */}
-      {/* <InfiniteScroll
-        dataLength={userBalances.length}
-        next={loadMoreBalances}
-        hasMore={true}
-        loader={<h4>Loading...</h4>}
-        endMessage={
-          <p style={{ textAlign: 'center' }}>
-            <b>Yay! You have seen it all</b>
-          </p>
-        }
-      >
-        <Masonry
-          className='token-gallery'
-          options={masonryOptions}
-          disableImagesLoaded={false}
-          updateOnEachImageLoad={false}
-        >
-          {store.sortedBalances.slice().map((balance: BalanceModelType) => (
-            <TokenCard token={balance.token} key={balance.id}/>
-          ))}
-        </Masonry>
-
-      </InfiniteScroll>
-      </div> */}
         
         {/* <List
           bordered

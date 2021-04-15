@@ -1,9 +1,10 @@
 import { Instance, types } from "mobx-state-tree"
-import { AccountModelType, BalanceModel } from ".";
-import { RootStoreBase, BalanceFilter } from './RootStore.base';
+import { AccountModelType, BalanceModel, selectFromToken, TokenModelType } from ".";
+import { RootStoreBase, BalanceFilter, TokenFilter } from './RootStore.base';
 import { Query } from 'mst-gql';
 import { selectFromAccount } from './AccountModel.base';
 import { selectFromBalance } from './BalanceModel.base';
+import { selectFromTokenRelationship } from './TokenRelationshipModel.base';
 
 export interface RootStoreType extends Instance<typeof RootStore.Type> {}
 
@@ -13,6 +14,20 @@ export const BALANCE_FRAGMENT = selectFromBalance()
   .toString();
   
 
+export const CHILD_SELECTOR = selectFromTokenRelationship()
+  .id
+  .child(child => child.id)
+  .child(child => child.uri)
+  .parent(parent => parent.id)
+  .parent(parent => parent.uri);
+
+export const TOKEN_FRAGMENT = selectFromToken()
+  .id
+  .uri
+  .children(CHILD_SELECTOR)
+  .tokenType(tokenType => tokenType.name)
+  .toString();
+  
 
 export const RootStore = RootStoreBase
 .props({
@@ -70,5 +85,13 @@ export const RootStore = RootStoreBase
   },
   loadMoreBalances(accountId: string) {
     return self.loadBalances(accountId, self.sortedBalances.length, 16);
+  }
+}))
+.actions(self => ({
+  loadToken(tokenId: string): Query<{token: TokenModelType}> {
+    return self.queryToken(
+      { id: tokenId },
+      TOKEN_FRAGMENT
+    );
   }
 }))
