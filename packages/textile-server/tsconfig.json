@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "outDir": "dist",
+    "strict": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true
+  },
+  "include": ["./**/*.ts","./**/*.graphql", "./scripts/create-database.ts"],
+  "exclude": ["node_modules"]
+}

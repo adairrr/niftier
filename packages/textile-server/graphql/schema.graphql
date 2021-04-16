@@ -1,0 +1,24 @@
+type User {
+  _id: String!
+  name: String
+  wallet: String
+}
+
+input UserCreateInput {
+  name: String
+  wallet: String
+}
+
+type Query {
+  users: [User]
+}
+
+type Mutation {
+  createUser(user: UserCreateInput!): String
+  deleteUser(id: String!): Boolean
+}
+
+type Subscription {
+  userAdded: User
+  userDeleted: String
+}

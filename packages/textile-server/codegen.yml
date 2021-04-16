@@ -1,0 +1,17 @@
+schema: ./graphql/schema.graphql
+generates:
+  ./generated/resolvers-types.ts:
+    config:
+      useIndexSignature: true
+    plugins:
+      - typescript
+      - typescript-resolvers
+      - typescript-operations
+  # ../react-ap/generated/generated-types.ts:
+  #   documents: 'src/**/*.graphql'
+  #   config:
+  #     withHooks: true
+  #   plugins:
+  #     - typescript
+  #     - typescript-operations
+  #     - typescript-react-apollo

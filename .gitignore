@@ -24,6 +24,9 @@ packages/subgraph/config/config.json
 packages/subgraph/config/config.ts
 tenderly.yaml
 
+# build files
+packages/textile-server/dist
+
 # dependencies
 /node_modules
 /.pnp
