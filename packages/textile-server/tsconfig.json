@@ -5,7 +5,8 @@
     "outDir": "dist",
     "strict": true,
     "esModuleInterop": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "noImplicitAny": false
   },
   "include": ["./**/*.ts","./**/*.graphql", "./scripts/create-database.ts"],
   "exclude": ["node_modules"]

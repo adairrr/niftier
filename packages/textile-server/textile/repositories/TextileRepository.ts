@@ -2,15 +2,18 @@ import { PubSub } from 'apollo-server'
 import { ThreadID } from '@textile/hub'
 import { v4 as uuid } from 'uuid'
 import Textile from '../textile'
+
 interface TextileCollection {
   _id: string
   __typename?: string
 }
+
 export default abstract class TextileRepository<T extends TextileCollection> {
   protected readonly collectionName: string
   protected readonly textile: Textile
   protected readonly threadId: ThreadID
   protected readonly pubSub: PubSub
+  
   constructor(name: string, textile: Textile, threadID: ThreadID, pubSub: PubSub) {
     this.collectionName = name
     this.textile = textile

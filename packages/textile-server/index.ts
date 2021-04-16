@@ -3,10 +3,10 @@ import resolvers from './graphql/resolvers';
 import { ApolloServer } from 'apollo-server';
 import { schema } from './graphql/schemaLoader';
 
-// import dotenv from 'dotenv'
+import dotenv from 'dotenv'
 import Textile from './textile/textile';
 
-// dotenv.config()
+dotenv.config()
 
 Textile.Instance().then(async (t) => {
   const server = new ApolloServer({
@@ -22,4 +22,4 @@ Textile.Instance().then(async (t) => {
     console.log(`🚀 Server ready at ${url}`)
     console.log(`🚀 Server ready at ${subscriptionsUrl}`)
   });
-});
+}).catch(error => console.log(error));

@@ -43,13 +43,13 @@ export type Subscription = {
 export type User = {
   __typename?: 'User';
   _id: Scalars['String'];
-  name?: Maybe<Scalars['String']>;
-  wallet?: Maybe<Scalars['String']>;
+  address?: Maybe<Scalars['String']>;
+  did?: Maybe<Scalars['String']>;
 };
 
 export type UserCreateInput = {
-  name?: Maybe<Scalars['String']>;
-  wallet?: Maybe<Scalars['String']>;
+  address?: Maybe<Scalars['String']>;
+  did?: Maybe<Scalars['String']>;
 };
 
 export type WithIndex<TObject> = TObject & Record<string, any>;
@@ -167,8 +167,8 @@ export type SubscriptionResolvers<ContextType = any, ParentType extends Resolver
 
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
   _id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  wallet?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  address?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  did?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

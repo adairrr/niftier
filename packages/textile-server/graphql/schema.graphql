@@ -1,12 +1,12 @@
 type User {
   _id: String!
-  name: String
-  wallet: String
+  address: String
+  did: String
 }
 
 input UserCreateInput {
-  name: String
-  wallet: String
+  address: String
+  did: String
 }
 
 type Query {

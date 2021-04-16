@@ -26,7 +26,10 @@ export default class Textile {
       await client.newDB(ThreadID.fromRandom(), threadName)
       thread = await client.getThread(threadName)
     }
-    return ThreadID.fromString(thread.id)
+    // print out the links
+    const threadId = ThreadID.fromString(thread.id);
+    console.log(await client.getDBInfo(threadId));
+    return threadId;
   }
 
   static async Instance(create = false) {

@@ -7,11 +7,11 @@
   "license": "MIT",
   "scripts": {
     "generate": "yarn generate:graphql && yarn generate:textile",
-    "generate:graphql": "graphql-codegen",
-    "generate:textile": "ts-node -r dotenv/config ./scripts/createDatabase.ts",
+    "generate:graphql": "npx graphql-codegen",
+    "generate:textile": "ts-node -r dotenv/config --files ./scripts/createDatabase.ts",
     "start": "node dist/index.js",
-    "dev": "ts-node -r dotenv/config ./index.ts",
-    "build": " yarn generate:textile && yarn clean && tsc && yarn copy-schema",
+    "dev": "ts-node -r dotenv/config --files  ./index.ts",
+    "build": " yarn generate && yarn clean && tsc && yarn copy-schema",
     "clean": "rm -rf ./dist",
     "copy-schema": "cp ./graphql/schema.graphql ./dist/graphql/schema.graphql"
   },
@@ -29,6 +29,7 @@
     "@graphql-codegen/typescript": "^1.21.0",
     "@graphql-codegen/typescript-operations": "^1.17.14",
     "@graphql-codegen/typescript-resolvers": "^1.18.2",
+    "@types/json-schema": "^7.0.7",
     "@types/lodash": "^4.14.168",
     "@types/node": "^14.14.31",
     "@types/uuid": "^8.3.0",

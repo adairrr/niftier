@@ -1,0 +1,15 @@
+version: '3.9'
+services:
+  graphql_textile:
+    build: .
+    tty: true
+    environment:
+      - PORT=4000
+    ports:
+      - '4000:4000'
+    restart: unless-stopped
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '15m'
+        max-file: '3'
