@@ -15,23 +15,11 @@ export { selectFromToken, tokenModelPrimitives, TokenModelSelector } from "./Tok
  */
 export const TokenModel = TokenModelBase
 .props({
-  preview: types.optional(
-    types.string,
-    ''
-  ),
-  name: types.optional(
-    types.string,
-    ''
-  ),
-  description: types.optional(
-    types.string,
-    ''
-  ),
+  preview: types.optional(types.string, ''),
+  name: types.optional(types.string, ''),
+  description: types.optional(types.string, ''),
   // start with true and set to false once finished
-  loadingMetadata: types.optional(
-    types.boolean,
-    true
-  )
+  loadingMetadata: types.optional(types.boolean, true)
 })
 .actions(self => ({
   fetchMetadataFlow: flow(function* fetchMetadataFlow() {

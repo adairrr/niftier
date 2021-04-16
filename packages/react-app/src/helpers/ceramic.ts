@@ -3,7 +3,7 @@ import { EthereumAuthProvider, ThreeIdConnect } from '3id-connect'
 import { DIDProvider } from '@ceramicnetwork/common';
 import { IDX } from '@ceramicstudio/idx';
 import { AccountID, AccountIDParams } from 'caip';
-import type { DID } from 'dids'
+import { DID } from 'dids'
 import type { CeramicApi } from '@ceramicnetwork/common'
 
 // localhost 7007 ceramic daemon
@@ -11,7 +11,7 @@ import type { CeramicApi } from '@ceramicnetwork/common'
 const CERAMIC_URL = `http://67.187.100.116:7007`;
 declare global {
   interface Window {
-    did?: DID
+    // did?: DID
     idx?: IDX
     ceramic?: CeramicClient
   }

@@ -10,6 +10,7 @@ import { Account, Faucet, Ramp, Contract, GasGauge, ThemeSwitch } from './compon
 import { Transactor } from './helpers';
 import { formatEther, parseEther } from '@ethersproject/units';
 import { Hints, ExampleUI, Subgraph, Transfers, Mint, UserTokens } from './views'
+import { UserProfile } from './views/profile';
 import { Token } from './components/Tokens';
 import { INFURA_ID, DAI_ADDRESS, DAI_ABI, NETWORK, NETWORKS } from './constants';
 //import Hints from './Hints';
@@ -19,7 +20,7 @@ import CeramicDocs from './views/CeramicDocs';
 import Landing from './components/Landing';
 import Footer from './components/Landing/Footer1';
 import './components/Landing/less/antMotionStyle.less';
-import { CeramicAuthProvider } from './contexts';
+import { CeramicAuthProvider, useCeramicContext } from './contexts';
 import { ThemeContextProvider } from './contexts/ThemeContext';
 import { SiteHeader, SiteSider } from './components/Layout';
 
@@ -62,8 +63,6 @@ const blockExplorer = targetNetwork.blockExplorer;
 function App(props) {
 
   const [ injectedProvider, setInjectedProvider ] = useState<Web3Provider>();
-  const [ authProvider, setAuthProvider ] = useState<EthereumAuthProvider>();
-  const [ didProvider, setDidProvider ] = useState<DIDProvider>();
 
   /* 💵 This hook will get the price of ETH from 🦄 Uniswap: */
   const price = useExchangePrice(targetNetwork, mainnetProvider);
@@ -148,6 +147,8 @@ function App(props) {
   console.log("🏷 Resolved austingriffith.eth as:",addressFromENS)
   */
 
+  const ceramicAuth = useCeramicContext();
+
   const loadWeb3Modal = useCallback(async () => {
     if (DEBUG) console.log("User is connecting to web3");
     try {
@@ -156,15 +157,8 @@ function App(props) {
       if (DEBUG) console.log("User has connected to web3")
       console.log(provider)
       setInjectedProvider(new Web3Provider(provider));
-      // const ethAuthProv = new EthereumAuthProvider(provider, addresses[0]);
-      // setAuthProvider(ethAuthProv);
-      // console.log(ethAuthProv);
-      // console.log(threeID);
-      // await threeID.connect(ethAuthProv);
-
-      // const didProv = threeID.getDidProvider();
-      // console.log("GOT HERE:", didProv);
-      // setDidProvider(didProv as DIDProvider);
+      // console.log('got here');
+      // ceramicAuth.login();
     } catch (e) { 
       // catches 'Modal closed by user'
       if (DEBUG) console.log(e);
@@ -222,39 +216,6 @@ function App(props) {
     </div>
   );
 
-/*
-  const authenticate = async (): Promise<string> => {
-
-    const ceramicPromise = createCeramic();
-
-
-    const [ceramic] = await Promise.all([ceramicPromise]);
-    console.log('ceramic', ceramic)
-    console.log('provider', didProvider)
-
-
-    const did = new DID({
-      provider: didProvider,
-      //@ts-ignore
-      resolver: ThreeIdResolver.getResolver(ceramic),
-    });
-    console.log(did);
-    const promise = did.authenticate();
-
-    // const promise = ceramic.setDIDProvider(didProvider);
-    console.log("Got promise", promise);
-    console.log("now awaiting promise");
-    const resp = await promise;
-    console.log("Got respones", resp);
-
-    const idx = createIDX(ceramic);
-    console.log('idx', idx);
-    
-    console.log(ceramic.did);
-    // window.did = ceramic.did;
-    return idx.id;
-  }
-*/
   const accountDropdown = (
     <AccountDropdown
       web3Modal={web3Modal}
@@ -355,6 +316,13 @@ function App(props) {
                   render={({match}) => (
                     <Token 
                       tokenId={match['tokenId']}
+                    />
+                )}/>
+                <Route 
+                  exact path='/user/:userAddress' 
+                  render={({match}) => (
+                    <UserProfile 
+                      address={match['userAddress']}
                     />
                 )}/>
                 <Route path='/ceramic'>

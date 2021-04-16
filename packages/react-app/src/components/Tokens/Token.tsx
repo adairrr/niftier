@@ -1,7 +1,4 @@
-import ReactDOM from 'react-dom'
-import React, { useState, useEffect, useRef, Component, useContext } from 'react';
-import { Canvas, MeshProps, useFrame } from 'react-three-fiber';
-import type { Mesh } from 'three'
+import React, { useState, useEffect, useRef } from 'react';
 import { Button, List, Card, Image, Row, Col, Typography } from 'antd';
 import { Address, AddressInput, TokenId } from '..';
 import { useQuery, gql } from '@apollo/client';
@@ -63,9 +60,7 @@ const Token = ({...props}: TokenProps) => {
   const componentIsMounted = useRef(true);
 
   const [ parentToken, setParentToken ] = useState<TokenModelType>();
-  const [ parentTokenMeta, setParentTokenMeta ] = useState<TokenMetadata>(undefined);
   const [ childTokens, setChildTokens ] = useState<TokenModelType[]>();
-  const [ childTokensMeta, setChildTokensMeta ] = useState<TokenMetadata[]>();
 
   const { 
     setQuery, 
@@ -95,12 +90,6 @@ const Token = ({...props}: TokenProps) => {
      }
    }, [mstData]);
 
-
-  const { loading, error, data } = useQuery<TokenQueryData>(TOKEN_QUERY, {
-    variables: { tokenId: tokenId },
-    pollInterval: 2000 // poll every 2 seconds
-  });
-
   useEffect(() => {
     // each useEffect can return a cleanup function
     return () => {
@@ -123,45 +112,10 @@ const Token = ({...props}: TokenProps) => {
   //   }
   // }
 
-  useEffect(() => {
-    const fetchTokenData = async () => {
-      console.log(data);
-
-      if (data && data.token) {
-        const parentMetadata = await fetchTokenMetadata(data.token.id, data.token.uri, currentAddress);
-
-        if (data.token.children.length > 0) {
-          let childTokenMetadatas = [];
-          data.token.children.forEach(async (childToken: ChildToken) => {
-            const child = childToken.child;
-            console.log(child);
-            const childMetadata = await fetchTokenMetadata(child.id, child.uri, currentAddress);
-            childTokenMetadatas.push(childMetadata);
-          });
-
-          if (componentIsMounted.current) {
-            setChildTokensMeta(childTokenMetadatas);
-            console.log("child token metas")
-            console.log(childTokenMetadatas);
-          }
-        }
-
-        if (componentIsMounted.current) {
-          setParentTokenMeta(parentMetadata);
-        }
-      }
-    }
-    if (!loading && data && data.token) {
-      fetchTokenData();
-    }
-  }, [data]);
-
-  console.log(data);
-
   // TODO put this in a separate fc
-  if (loading || mstLoading || !mstData) return (<span>'Loading...'</span>);
-  if (error || mstError) return (<span>`Error! ${error? error.message : mstError.message}`</span>);
-  if (data.token == null || mstData?.token == null) return (<span>Token: ${tokenId} was not found in the database.</span>)
+  if (mstLoading || !mstData) return (<span>'Loading...'</span>);
+  if (mstError) return (<span>`Error! ${mstError.message}`</span>);
+  if (mstData?.token == null) return (<span>Token: ${tokenId} was not found in the database.</span>)
   // if (!userTokens) return (<span>WAIT</span>);
 
   // title
@@ -173,7 +127,7 @@ const Token = ({...props}: TokenProps) => {
 
   return (
     <div>
-      {parentTokenMeta && 
+      {parentToken && 
         <div>
           <Row justify="center">
             <Col span={6} order={1}>

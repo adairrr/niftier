@@ -7,6 +7,7 @@ import { useAddressContext } from '../../contexts';
 import Address from '../Address';
 import { useCeramicContext } from '../../contexts/CeramicAuthProvider';
 import { observer } from 'mobx-react-lite';
+import { useHistory } from 'react-router-dom';
 
 
 const styles = require('./accountDropdown.less');
@@ -20,6 +21,7 @@ const AccountDropdown: FunctionComponent<AccountDropdownProps> = ({ web3Modal, l
 
   const currentAddress = useAddressContext();
   const ceramicAuth = useCeramicContext();
+  const history = useHistory();
 
   const onMenuClick = async (event: {
     key: React.Key;
@@ -44,7 +46,7 @@ const AccountDropdown: FunctionComponent<AccountDropdownProps> = ({ web3Modal, l
 
         break;
       case 'profile':
-
+        history.push(`/user/${currentAddress}`);
         break;
       default:
         break;
