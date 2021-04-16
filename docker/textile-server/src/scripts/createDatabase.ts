@@ -5,7 +5,7 @@ import { fromIntrospectionQuery } from 'graphql-2-json-schema'
 import { JSONSchema4 } from 'json-schema'
 import { graphQlSchema } from '../graphql/schemaLoader'
 import { isArray } from 'lodash'
-import dotenv from 'dotenv'
+import * as dotenv from "dotenv";
 
 const createJsonSchemaFromGraphQl = () => {
   const result = graphqlSync(graphQlSchema, getIntrospectionQuery())
@@ -136,8 +136,10 @@ const getReferencedEntity = (entity: JSONSchema4) => {
       entity.properties.return.items &&
       entity.properties.return.items &&
       !isArray(entity.properties.return.items) &&
+      //@ts-ignore
       entity.properties.return.items.$ref
     )
+      //@ts-ignore
       return { ref: entity.properties.return.items.$ref, array: true }
   }
   throw 'Now Reference found'

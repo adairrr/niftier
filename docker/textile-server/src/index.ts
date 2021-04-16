@@ -3,7 +3,7 @@ import resolvers from './graphql/resolvers';
 import { ApolloServer } from 'apollo-server';
 import { schema } from './graphql/schemaLoader';
 
-import dotenv from 'dotenv'
+import * as dotenv from "dotenv";
 import Textile from './textile/textile';
 
 dotenv.config()

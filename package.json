@@ -53,7 +53,9 @@
     "ceramic-remove-node": "cd docker/ceramic-node && docker-compose down",
     "theme": "yarn workspace @scaffold-eth/react-app theme",
     "watch-theme": "yarn workspace @scaffold-eth/react-app watch",
-    "generate-mst-gql": "yarn workspace @scaffold-eth/react-app generate-mst-gql"
+    "generate-mst-gql": "yarn workspace @scaffold-eth/react-app generate-mst-gql",
+    "textile-run-server": "cd docker/textile-server && docker-compose up",
+    "textile-remove-server": "cd docker/textile-server && docker-compose down"
   },
   "workspaces": {
     "packages": [

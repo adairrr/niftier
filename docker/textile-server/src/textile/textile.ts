@@ -1,5 +1,8 @@
 import { PubSub } from 'apollo-server'
 import { Client, CollectionConfig, PrivateKey, ThreadID } from '@textile/hub'
+import * as dotenv from "dotenv";
+
+dotenv.config()
 
 export default class Textile {
   private static instance: Textile

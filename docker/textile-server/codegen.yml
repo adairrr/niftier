@@ -1,6 +1,6 @@
-schema: ./graphql/schema.graphql
+schema: ./src/graphql/schema.graphql
 generates:
-  ./generated/resolvers-types.ts:
+  ./src/generated/resolvers-types.ts:
     config:
       useIndexSignature: true
     plugins:

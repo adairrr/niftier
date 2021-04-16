@@ -1,5 +1,5 @@
 import { Client, CollectionConfig, PrivateKey, ThreadID } from '@textile/hub'
-import dotenv from 'dotenv';
+import * as dotenv from "dotenv";
 
 dotenv.config()
 
