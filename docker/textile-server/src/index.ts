@@ -18,7 +18,7 @@ Textile.Instance().then(async (t) => {
     tracing: true
   });
 
-  server.listen({ port: /*process.env.PORT || */4000 }).then(({ url, subscriptionsUrl }) => {
+  server.listen({ port: process.env.TEXTILE_SERVER_PORT }).then(({ url, subscriptionsUrl }) => {
     console.log(`🚀 Server ready at ${url}`)
     console.log(`🚀 Server ready at ${subscriptionsUrl}`)
   });

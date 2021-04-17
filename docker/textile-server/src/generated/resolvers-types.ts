@@ -15,7 +15,8 @@ export type Scalars = {
 
 export type Mutation = {
   __typename?: 'Mutation';
-  createUser?: Maybe<Scalars['String']>;
+  createUser?: Maybe<UserCreateUpdatePayload>;
+  updateUser?: Maybe<UserCreateUpdatePayload>;
   deleteUser?: Maybe<Scalars['Boolean']>;
 };
 
@@ -25,8 +26,13 @@ export type MutationCreateUserArgs = {
 };
 
 
+export type MutationUpdateUserArgs = {
+  user: UserUpdateInput;
+};
+
+
 export type MutationDeleteUserArgs = {
-  id: Scalars['String'];
+  _id: Scalars['String'];
 };
 
 export type Query = {
@@ -48,6 +54,17 @@ export type User = {
 };
 
 export type UserCreateInput = {
+  address: Scalars['String'];
+  did?: Maybe<Scalars['String']>;
+};
+
+export type UserCreateUpdatePayload = {
+  __typename?: 'UserCreateUpdatePayload';
+  user?: Maybe<User>;
+};
+
+export type UserUpdateInput = {
+  _id: Scalars['String'];
   address?: Maybe<Scalars['String']>;
   did?: Maybe<Scalars['String']>;
 };
@@ -132,28 +149,33 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = ResolversObject<{
   Mutation: ResolverTypeWrapper<{}>;
-  String: ResolverTypeWrapper<Scalars['String']>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
+  String: ResolverTypeWrapper<Scalars['String']>;
   Query: ResolverTypeWrapper<{}>;
   Subscription: ResolverTypeWrapper<{}>;
   User: ResolverTypeWrapper<User>;
   UserCreateInput: UserCreateInput;
+  UserCreateUpdatePayload: ResolverTypeWrapper<UserCreateUpdatePayload>;
+  UserUpdateInput: UserUpdateInput;
 }>;
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = ResolversObject<{
   Mutation: {};
-  String: Scalars['String'];
   Boolean: Scalars['Boolean'];
+  String: Scalars['String'];
   Query: {};
   Subscription: {};
   User: User;
   UserCreateInput: UserCreateInput;
+  UserCreateUpdatePayload: UserCreateUpdatePayload;
+  UserUpdateInput: UserUpdateInput;
 }>;
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
-  createUser?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationCreateUserArgs, 'user'>>;
-  deleteUser?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteUserArgs, 'id'>>;
+  createUser?: Resolver<Maybe<ResolversTypes['UserCreateUpdatePayload']>, ParentType, ContextType, RequireFields<MutationCreateUserArgs, 'user'>>;
+  updateUser?: Resolver<Maybe<ResolversTypes['UserCreateUpdatePayload']>, ParentType, ContextType, RequireFields<MutationUpdateUserArgs, 'user'>>;
+  deleteUser?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteUserArgs, '_id'>>;
 }>;
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
@@ -172,11 +194,17 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type UserCreateUpdatePayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserCreateUpdatePayload'] = ResolversParentTypes['UserCreateUpdatePayload']> = ResolversObject<{
+  user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type Resolvers<ContextType = any> = ResolversObject<{
   Mutation?: MutationResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   Subscription?: SubscriptionResolvers<ContextType>;
   User?: UserResolvers<ContextType>;
+  UserCreateUpdatePayload?: UserCreateUpdatePayloadResolvers<ContextType>;
 }>;
 
 

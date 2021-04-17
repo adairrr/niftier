@@ -5,8 +5,18 @@ type User {
 }
 
 input UserCreateInput {
+  address: String! # mandate address
+  did: String
+}
+
+input UserUpdateInput {
+  _id: String!
   address: String
   did: String
+}
+
+type UserCreateUpdatePayload {
+  user: User # nullable in case of error
 }
 
 type Query {
@@ -14,8 +24,9 @@ type Query {
 }
 
 type Mutation {
-  createUser(user: UserCreateInput!): String
-  deleteUser(id: String!): Boolean
+  createUser(user: UserCreateInput!): UserCreateUpdatePayload
+  updateUser(user: UserUpdateInput!): UserCreateUpdatePayload
+  deleteUser(_id: String!): Boolean
 }
 
 type Subscription {

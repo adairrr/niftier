@@ -26,6 +26,7 @@ const createCollections = async (
     //Remove Hacks
     if (key === 'Subscription') continue 
     if (key.includes("Input")) continue 
+    if (key.includes("Payload")) continue 
     const entity = definitions[key] as JSONSchema4
     await textile.newCollection({ name: key, schema: entity })
   }

@@ -3,19 +3,20 @@ import { ResolverContext } from './resolverContext'
 
 const resolvers: Resolvers<ResolverContext> = {
   Query: {
-    users: async (_p, _a, c) => await c.User.all()
+    users: async (_p, _a, cx) => await cx.User.all()
   },
   Mutation: {
-    createUser: async (_p, a, c) => await c.User.create(a.user),
-    deleteUser: async (_p, args, c) => c.User.deleteById(args.id),
+    createUser: async (_p, args, cx) => await cx.User.create(args.user),
+    deleteUser: async (_p, args, cx) => cx.User.deleteById(args._id),
+    updateUser: async (_p, args, cx ) => cx.User.update(args.user),
   },
   Subscription: {
     userAdded: {
-      subscribe: (_p, _a, c) => c.User.subscribeCreate,
+      subscribe: (_p, _a, cx) => cx.User.subscribeCreate,
       resolve: (v: User) => v
     },
     userDeleted: {
-      subscribe: (_p, _a, c) => c.User.subscribeDelete,
+      subscribe: (_p, _a, cx) => cx.User.subscribeDelete,
       resolve: (v: string) => v
     },
   },
