@@ -27,15 +27,9 @@ const UserTokens = ({}) => {
 
   const [ userBalances, setUserBalances ] = useState<BalanceModelType[]>([]);
 
-  
-  // const { loading, error, data } = useQuery(ACCOUNT_BALANCE_QUERY, {
-  //   variables: { accountId: currentAddress.toLowerCase() },
-  //   pollInterval: 2000 // poll every 2 seconds
-  // });
-
   const { setQuery, data: mstData, store, error: mstError, loading: mstLoading } = useMstQuery<{balances: BalanceModelType[]}>();
 
-  useMemo(() => { // TODO this should probably be useMemo
+  useMemo(() => { // TODO does this work properly as useMemo?
     if (currentAddress) setQuery((store) => store.loadInitialBalances(currentAddress.toLowerCase()));
   }, [currentAddress]);
 

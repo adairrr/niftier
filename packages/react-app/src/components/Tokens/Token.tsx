@@ -46,10 +46,6 @@ interface TokenData extends BaseTokenData {
   parents: ParentToken[];
 }
 
-interface TokenQueryData {
-  token: TokenData;
-}
-
 // TODO what is it with react dom routing? I have no idea what these props would be... match doesn't work
 const Token = ({...props}: TokenProps) => {
 

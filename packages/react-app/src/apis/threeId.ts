@@ -61,3 +61,4 @@ export async function authenticateDid(
     console.log('authenticateDid error: ', { error });
   }
 }
+
