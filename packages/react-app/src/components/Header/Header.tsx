@@ -1,4 +1,4 @@
-export {}
+export {};
 // import React, { Component } from 'react';
 // import { Layout, Row, Col, Button } from 'antd';
 // import './header.scss';

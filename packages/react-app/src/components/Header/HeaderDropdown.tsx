@@ -5,7 +5,6 @@ import classNames from 'classnames';
 // import styles from './headerDropdown.less';
 const styles = require('./headerDropdown.less');
 
-
 export type HeaderDropdownProps = {
   overlayClassName?: string;
   overlay: React.ReactNode | (() => React.ReactNode) | any;

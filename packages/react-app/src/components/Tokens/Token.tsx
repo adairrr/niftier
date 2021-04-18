@@ -16,14 +16,13 @@ const { Paragraph, Title } = Typography;
 // import Title from 'antd/lib/typography/Title';
 // import { FallbackImage } from '../images';
 
-
 type TokenProps = {
-  tokenId: string
-}
+  tokenId: string;
+};
 
 type TokenParams = {
-  tokenId: string
-}
+  tokenId: string;
+};
 
 interface BaseTokenData {
   id: string;
@@ -41,50 +40,45 @@ interface ParentToken {
 interface TokenData extends BaseTokenData {
   tokenType: {
     name: string;
-  }
+  };
   children: ChildToken[];
   parents: ParentToken[];
 }
 
 // TODO what is it with react dom routing? I have no idea what these props would be... match doesn't work
-const Token = ({...props}: TokenProps) => {
-
+const Token = ({ ...props }: TokenProps) => {
   const currentAddress = useAddressContext();
 
-  const {tokenId} = useParams<TokenParams>(); // gotten from the route...
+  const { tokenId } = useParams<TokenParams>(); // gotten from the route...
 
   const componentIsMounted = useRef(true);
 
-  const [ parentToken, setParentToken ] = useState<TokenModelType>();
-  const [ childTokens, setChildTokens ] = useState<TokenModelType[]>();
+  const [parentToken, setParentToken] = useState<TokenModelType>();
+  const [childTokens, setChildTokens] = useState<TokenModelType[]>();
 
-  const { 
-    setQuery, 
-    data: mstData, 
-    store, 
-    error: mstError, 
-    loading: mstLoading
-   } = useMstQuery<{token: TokenModelType}>((store) => {
-     return store.loadToken(tokenId);
-   });
+  const { setQuery, data: mstData, store, error: mstError, loading: mstLoading } = useMstQuery<{
+    token: TokenModelType;
+  }>(store => {
+    return store.loadToken(tokenId);
+  });
 
-   console.log(mstError, mstLoading, mstData);
-   console.log(mstData?.token);
-   console.log(mstData?.token?.children);
-   const children = mstData?.token?.children;
-   if (children && children.length > 0) {
+  console.log(mstError, mstLoading, mstData);
+  console.log(mstData?.token);
+  console.log(mstData?.token?.children);
+  const children = mstData?.token?.children;
+  if (children && children.length > 0) {
     console.log(children[0].child);
-   }
+  }
 
-   useEffect(() => {
-     const token = mstData?.token;
-     if (token) {
-       setParentToken(token);
-       if (token.children && token.children.length > 0) {
-         setChildTokens(token.children.slice().map(childRelation => childRelation.child));
-       }
-     }
-   }, [mstData]);
+  useEffect(() => {
+    const token = mstData?.token;
+    if (token) {
+      setParentToken(token);
+      if (token.children && token.children.length > 0) {
+        setChildTokens(token.children.slice().map(childRelation => childRelation.child));
+      }
+    }
+  }, [mstData]);
 
   useEffect(() => {
     // each useEffect can return a cleanup function
@@ -109,86 +103,68 @@ const Token = ({...props}: TokenProps) => {
   // }
 
   // TODO put this in a separate fc
-  if (mstLoading || !mstData) return (<span>'Loading...'</span>);
-  if (mstError) return (<span>`Error! ${mstError.message}`</span>);
-  if (mstData?.token == null) return (<span>Token: ${tokenId} was not found in the database.</span>)
+  if (mstLoading || !mstData) return <span>'Loading...'</span>;
+  if (mstError) return <span>`Error! ${mstError.message}`</span>;
+  if (mstData?.token == null) return <span>Token: ${tokenId} was not found in the database.</span>;
   // if (!userTokens) return (<span>WAIT</span>);
 
   // title
   // description
   // picture
   // layers if artpiece
-  // 
+  //
   // if (parentTokenMeta === undefined) return( <div>No data</div>);
 
   return (
     <div>
-      {parentToken && 
+      {parentToken && (
         <div>
           <Row justify="center">
             <Col span={6} order={1}>
               <Card>
-                <Image 
+                <Image
                   src={parentToken.preview}
                   // fallback={FallbackImage}
                 />
               </Card>
             </Col>
             <Col span={10} order={2}>
-              <Card title={(<><Title level={2}>{parentToken.name}</Title></>)}>
-                <span style={{fontSize:16, marginRight:80}}>
-                  <TokenId 
-                    id={tokenId}
-                    fontSize={16}
-                  />
+              <Card
+                title={
+                  <>
+                    <Title level={2}>{parentToken.name}</Title>
+                  </>
+                }
+              >
+                <span style={{ fontSize: 16, marginRight: 80 }}>
+                  <TokenId id={tokenId} fontSize={16} />
                 </span>
                 <Paragraph>
                   <blockquote>{parentToken.description}</blockquote>
                 </Paragraph>
               </Card>
-              {childTokens && 
+              {childTokens && (
                 <List
-                  grid={{gutter: 10,
-                    xs: 1,
-                    sm: 1,
-                    md: 2,
-                    lg: 2,
-                    xl: 3,
-                    xxl: 3,
-                  }}
+                  grid={{ gutter: 10, xs: 1, sm: 1, md: 2, lg: 2, xl: 3, xxl: 3 }}
                   bordered
-                  header='Children'
+                  header="Children"
                   dataSource={childTokens}
-                  renderItem={(childToken) => (
+                  renderItem={childToken => (
                     <List.Item>
-                      <Card 
-                        hoverable 
-                        size={'small'}
-                        cover={
-                          <img
-                            alt="example"
-                            src={childToken.preview}
-                          />
-                        }
-                      >
-                        <Meta
-                          title={childToken.name}
-                          description={<TokenId id={childToken.id}/>}
-                        />
+                      <Card hoverable size={'small'} cover={<img alt="example" src={childToken.preview} />}>
+                        <Meta title={childToken.name} description={<TokenId id={childToken.id} />} />
                       </Card>
-                        {/* <div><img src={childMetadata.image} style={{maxWidth:150}} /></div> */}
+                      {/* <div><img src={childMetadata.image} style={{maxWidth:150}} /></div> */}
                     </List.Item>
                   )}
                 />
-              }
+              )}
             </Col>
           </Row>
-          
-          
-          </div>}
-      
+        </div>
+      )}
     </div>
-  )
-}
+  );
+};
 
 export default Token;

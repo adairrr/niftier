@@ -1,13 +1,11 @@
 /* eslint-disable jsx-a11y/accessible-emoji */
 
-import React, { useState } from "react";
-import "antd/dist/antd.css";
-import { Select } from "antd";
+import React, { useState } from 'react';
+import 'antd/dist/antd.css';
+import { Select } from 'antd';
 import { useQuery, gql } from '@apollo/client';
 
-
 const { Option } = Select;
-
 
 const TOKEN_TYPES = gql`
   query TokenTypes {
@@ -33,58 +31,55 @@ const TOKEN_TYPES = gql`
 `;
 
 interface AuthorizedChild {
-  id: string,
+  id: string;
   child: {
-    id: string,
-    name: string
-  }
+    id: string;
+    name: string;
+  };
 }
 
 interface AuthorizedParent {
-  id: string,
+  id: string;
   parent: {
-    id: string,
-    name: string
-  }
-} 
+    id: string;
+    name: string;
+  };
+}
 
 export interface TokenType {
-  id: string,
-  name: string,
-  authorizedChildren: AuthorizedChild[],
-  authorizedParents: AuthorizedParent[]
+  id: string;
+  name: string;
+  authorizedChildren: AuthorizedChild[];
+  authorizedParents: AuthorizedParent[];
 }
 
 interface TokenTypeData {
-  tokenTypes: TokenType[]
+  tokenTypes: TokenType[];
 }
 
 type TokenTypeSelectorProps = {
   selectChild?: boolean;
   onSelectedParent: (parent: TokenType) => void;
-}
-
+};
 
 const TokenTypeSelector = ({ selectChild = false, onSelectedParent }: TokenTypeSelectorProps) => {
-
   const { loading, error, data } = useQuery<TokenTypeData>(TOKEN_TYPES);
-  
+
   const [parentTokenTypeName, setParentTokenTypeName] = useState<string>(null);
   const [childTokenTypes, setChildTokenTypes] = useState<AuthorizedChild[]>(null);
   const [childTokenTypeName, setChildTokenTypeName] = useState<string>(null);
 
-
-  const handleParentTypeChange = (parentTypeIndex) => {
+  const handleParentTypeChange = parentTypeIndex => {
     console.log(parentTypeIndex);
     setParentTokenTypeName(data.tokenTypes[parentTypeIndex].name);
     setChildTokenTypes(data.tokenTypes[parentTypeIndex].authorizedChildren);
-    console.log(`Type selected: ${data.tokenTypes[parentTypeIndex]}`)
-    console.log(data.tokenTypes[parentTypeIndex])
-    console.log(`index selected: ${parentTypeIndex}`)
+    console.log(`Type selected: ${data.tokenTypes[parentTypeIndex]}`);
+    console.log(data.tokenTypes[parentTypeIndex]);
+    console.log(`index selected: ${parentTypeIndex}`);
     onSelectedParent(data.tokenTypes[parentTypeIndex]);
   };
 
-  const onChildTypeChange = (childTypeIndex) => {
+  const onChildTypeChange = childTypeIndex => {
     setChildTokenTypeName(childTokenTypes[childTypeIndex].child.name);
   };
 
@@ -93,37 +88,44 @@ const TokenTypeSelector = ({ selectChild = false, onSelectedParent }: TokenTypeS
 
   return (
     <>
-      <div >
-        <Select 
+      <div>
+        <Select
           showSearch
           placeholder="Select a Type"
-          style={{ width: 180 }} 
+          style={{ width: 180 }}
           onChange={handleParentTypeChange}
-          filterOption={(input, option) => data.tokenTypes[option.value].name.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+          filterOption={(input, option) =>
+            data.tokenTypes[option.value].name.toLowerCase().indexOf(input.toLowerCase()) >= 0
+          }
         >
           {data.tokenTypes.map((tokenType: TokenType, index: number) => (
-            <Option key={index} value={index}>{tokenType.name}</Option>
+            <Option key={index} value={index}>
+              {tokenType.name}
+            </Option>
           ))}
           {/* {console.log(`Children of ${parentTokenTypeName} are ${childTokenTypes}`)} */}
         </Select>
-        {selectChild && childTokenTypes && childTokenTypes.length !== 0 &&
-          <Select 
+        {selectChild && childTokenTypes && childTokenTypes.length !== 0 && (
+          <Select
             showSearch
             placeholder="Select a Child Type"
-            style={{ width: 180 }} 
-            value={childTokenTypes[0].child.name} 
+            style={{ width: 180 }}
+            value={childTokenTypes[0].child.name}
             onChange={onChildTypeChange}
             filterOption={(input, option) => option.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-          >// TODO FIK THE CHILDREN FILTER
+          >
+            // TODO FIK THE CHILDREN FILTER
             {childTokenTypes.map((childTokenType: AuthorizedChild, index: number) => (
-              <Option key={index} value={index}>{childTokenType.child.name}</Option>
+              <Option key={index} value={index}>
+                {childTokenType.child.name}
+              </Option>
             ))}
             {console.log(`ChildType name: ${childTokenTypeName}`)}
           </Select>
-        }
+        )}
       </div>
     </>
   );
-}
+};
 
 export default TokenTypeSelector;

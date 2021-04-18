@@ -11,32 +11,32 @@ import { observer } from 'mobx-react-lite';
 import { TokenModelType, AccountModelType, BalanceModelType } from '../subgraph_models';
 import './UserTokens.less';
 import Gallery from 'react-photo-gallery';
-import StackGrid from "react-stack-grid";
+import StackGrid from 'react-stack-grid';
 import { Tabs } from 'antd';
 
 const { TabPane } = Tabs;
 
-
-
 const UserTokens = ({}) => {
-
   const currentAddress = useAddressContext();
   const { tx, reader, writer } = useContractIOContext();
 
   const componentIsMounted = useRef(true);
 
-  const [ userBalances, setUserBalances ] = useState<BalanceModelType[]>([]);
+  const [userBalances, setUserBalances] = useState<BalanceModelType[]>([]);
 
-  const { setQuery, data: mstData, store, error: mstError, loading: mstLoading } = useMstQuery<{balances: BalanceModelType[]}>();
+  const { setQuery, data: mstData, store, error: mstError, loading: mstLoading } = useMstQuery<{
+    balances: BalanceModelType[];
+  }>();
 
-  useMemo(() => { // TODO does this work properly as useMemo?
-    if (currentAddress) setQuery((store) => store.loadInitialBalances(currentAddress.toLowerCase()));
+  useMemo(() => {
+    // TODO does this work properly as useMemo?
+    if (currentAddress) setQuery(store => store.loadInitialBalances(currentAddress.toLowerCase()));
   }, [currentAddress]);
 
   useEffect(() => {
     if (mstData?.balances) {
       setUserBalances(mstData.balances);
-      mstData.balances.map(balance => balance.token)
+      mstData.balances.map(balance => balance.token);
     }
   }, [mstData]);
 
@@ -51,49 +51,42 @@ const UserTokens = ({}) => {
 
   const loadMoreBalances = () => {
     if (currentAddress) setQuery(store.loadMoreBalances(currentAddress.toLowerCase()));
-  }
+  };
 
-
-  if (mstLoading || !mstData) return (<span>'Loading...'</span>);
-  if (mstError) return (<span>`Error! ${mstError.message}`</span>);
-  if (mstData?.balances == null || mstData.balances.length === 0) return (
-    <EmptyWithDescription description='No tokens!'>
-      <Button type='primary'>Create some</Button>
-    </EmptyWithDescription>
-  );
-  if (!userBalances) return (<span>WAIT</span>);
+  if (mstLoading || !mstData) return <span>'Loading...'</span>;
+  if (mstError) return <span>`Error! ${mstError.message}`</span>;
+  if (mstData?.balances == null || mstData.balances.length === 0)
+    return (
+      <EmptyWithDescription description="No tokens!">
+        <Button type="primary">Create some</Button>
+      </EmptyWithDescription>
+    );
+  if (!userBalances) return <span>WAIT</span>;
   // if (userTokens.length == 0) return 'Waiting';
   // if (data.account == null) return `No balance found for ${address}`;
-  
-  return (
-      <div className='UserTokens'>
 
-        <Tabs defaultActiveKey="1" centered>
-          <TabPane tab="Artpieces" key="1">
-            <StackGrid
-              columnWidth={180}
-              gutterWidth={10}
-              component="div"
-              itemComponent="div"
-              monitorImagesLoaded
-            >
-              {store.sortedBalances.slice().map((balance: BalanceModelType) => {
-                return <TokenCard token={balance.token} key={balance.id}/>;
-              })}
-            </StackGrid>
-          </TabPane>
-          <TabPane tab="Layers" key="2">
-            Content of Tab Pane 2
-          </TabPane>
-          <TabPane tab="Controllers" key="3">
-            Content of Tab Pane 3
-          </TabPane>
-        </Tabs>
-        {/* <Gallery photos={} */}
-      
+  return (
+    <div className="UserTokens">
+      <Tabs defaultActiveKey="1" centered>
+        <TabPane tab="Artpieces" key="1">
+          <StackGrid columnWidth={180} gutterWidth={10} component="div" itemComponent="div" monitorImagesLoaded>
+            {store.sortedBalances.slice().map((balance: BalanceModelType) => {
+              return <TokenCard token={balance.token} key={balance.id} />;
+            })}
+          </StackGrid>
+        </TabPane>
+        <TabPane tab="Layers" key="2">
+          Content of Tab Pane 2
+        </TabPane>
+        <TabPane tab="Controllers" key="3">
+          Content of Tab Pane 3
+        </TabPane>
+      </Tabs>
+      {/* <Gallery photos={} */}
+
       {/* <div style={{ width:640, margin: 'auto', marginTop:32, paddingBottom:32 }}> */}
-        
-        {/* <List
+
+      {/* <List
           bordered
           loading={fetching}
           dataSource={userTokens}
@@ -158,6 +151,6 @@ const UserTokens = ({}) => {
       {/* </div> */}
     </div>
   );
-}
+};
 
 export default observer(UserTokens);

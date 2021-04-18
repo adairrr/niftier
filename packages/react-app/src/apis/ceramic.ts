@@ -3,7 +3,7 @@ import { AccountID, AccountIDParams } from 'caip';
 
 declare global {
   interface Window {
-    ceramic?: CeramicClient
+    ceramic?: CeramicClient;
   }
 }
 
@@ -20,15 +20,15 @@ export function createCeramic(ceramicUrl?: string): CeramicClient {
 export const ethAddressToDID = async (ceramic: CeramicClient, address: string): Promise<string> => {
   const account = {
     chainId: 'eip155:1',
-    address: address.toLowerCase()
+    address: address.toLowerCase(),
   } as AccountIDParams;
 
   const caip10Doc = await ceramic?.createDocument('caip10-link', {
     metadata: {
       family: 'caip10-link',
-      controllers: [AccountID.format(account)]
-    }
+      controllers: [AccountID.format(account)],
+    },
   });
   console.log(caip10Doc);
   return caip10Doc?.content;
-}
+};

@@ -1,14 +1,14 @@
-import fetch from 'isomorphic-fetch'
+import fetch from 'isomorphic-fetch';
 // import pinataSDK from '@pinata/sdk'; // The pinata sdk is broken
-import { FileWithPath } from "file-selector";
+import { FileWithPath } from 'file-selector';
 import { RcFile } from 'antd/lib/upload';
 import axios, { AxiosResponse } from 'axios';
 import { UploadRequestOption as RcCustomRequestOptions } from 'rc-upload/lib/interface';
 
 const pinataHeaders = {
-  'pinata_api_key': process.env.REACT_APP_PINATA_API_KEY,
-  'pinata_secret_api_key': process.env.REACT_APP_PINATA_API_SECRET,
-}
+  pinata_api_key: process.env.REACT_APP_PINATA_API_KEY,
+  pinata_secret_api_key: process.env.REACT_APP_PINATA_API_SECRET,
+};
 
 export interface PinataResponse {
   IpfsHash: string;
@@ -20,20 +20,20 @@ export const pinFileToIPFSUrl = `${process.env.REACT_APP_PINATA_API_URL}/pinning
 
 // file is probably RCFile?
 export function getFileFormDataWithMetadata(file: any, fileName?: string) {
-  let data = new FormData()
-  data.append('file', file)
+  let data = new FormData();
+  data.append('file', file);
 
   const metadata = JSON.stringify({
     name: fileName ? fileName : file.uid,
     keyvalues: {},
-  })
+  });
 
-  data.append('pinataMetadata', metadata)
+  data.append('pinataMetadata', metadata);
 
   // pinataOptions are optional
   const pinataOptions = JSON.stringify({
     cidVersion: 0,
-  })
+  });
 
   data.append('pinataOptions', pinataOptions);
 
@@ -41,23 +41,24 @@ export function getFileFormDataWithMetadata(file: any, fileName?: string) {
 }
 
 export function uploadFileCustomRequest(customRequest: RcCustomRequestOptions) {
-
   const data = getFileFormDataWithMetadata(customRequest.file, customRequest.filename);
 
-  return axios
-    .post(pinFileToIPFSUrl, data, {
-      //@ts-ignore
-      maxBodyLength: 'Infinity', //this is needed to prevent axios from erroring out with large files
-      headers: {
+  return (
+    axios
+      .post(pinFileToIPFSUrl, data, {
+        //@ts-ignore
+        maxBodyLength: 'Infinity', //this is needed to prevent axios from erroring out with large files
+        headers: {
           //@ts-ignore
           'Content-Type': `multipart/form-data; boundary=${data._boundary}`,
           pinata_api_key: process.env.REACT_APP_PINATA_API_KEY,
-          pinata_secret_api_key: process.env.REACT_APP_PINATA_API_SECRET
-      }
-    })
-    //@ts-ignore
-    .then(customRequest.onSuccess)
-    .catch(customRequest.onError);
+          pinata_secret_api_key: process.env.REACT_APP_PINATA_API_SECRET,
+        },
+      })
+      //@ts-ignore
+      .then(customRequest.onSuccess)
+      .catch(customRequest.onError)
+  );
 }
 
 export async function uploadFile(file: File): Promise<PinataResponse> {
@@ -66,45 +67,46 @@ export async function uploadFile(file: File): Promise<PinataResponse> {
   let response: AxiosResponse<any>;
   let error = false;
 
-  await axios.post(pinFileToIPFSUrl, data, {
+  await axios
+    .post(pinFileToIPFSUrl, data, {
       //@ts-ignore
       maxBodyLength: 'Infinity', //this is needed to prevent axios from erroring out with large files
       headers: {
-          //@ts-ignore
-          'Content-Type': `multipart/form-data; boundary=${data._boundary}`,
-          pinata_api_key: process.env.REACT_APP_PINATA_API_KEY,
-          pinata_secret_api_key: process.env.REACT_APP_PINATA_API_SECRET
-      }
+        //@ts-ignore
+        'Content-Type': `multipart/form-data; boundary=${data._boundary}`,
+        pinata_api_key: process.env.REACT_APP_PINATA_API_KEY,
+        pinata_secret_api_key: process.env.REACT_APP_PINATA_API_SECRET,
+      },
     })
-    .then((resp) => {
+    .then(resp => {
       // console.log("Response from uploadFile", resp);
       response = resp;
     })
-    .catch((error) => {
+    .catch(error => {
       error = true;
       console.log(error);
     });
-    
-    return !error ? response.data as PinataResponse : null;
+
+  return !error ? (response.data as PinataResponse) : null;
 }
 
 export async function uploadFileWithPath(file: FileWithPath) {
-  let data = new FormData()
-  data.append('file', file)
+  let data = new FormData();
+  data.append('file', file);
 
   const metadata = JSON.stringify({
     name: file.path,
     keyvalues: {},
-  })
+  });
 
-  data.append('pinataMetadata', metadata)
+  data.append('pinataMetadata', metadata);
 
   // pinataOptions are optional
   const pinataOptions = JSON.stringify({
     cidVersion: 0,
-  })
+  });
 
-  data.append('pinataOptions', pinataOptions)
+  data.append('pinataOptions', pinataOptions);
 
   return fetch(pinFileToIPFSUrl, {
     headers: pinataHeaders,
@@ -116,15 +118,15 @@ export async function uploadFileWithPath(file: FileWithPath) {
 
 export function unpinFile(hashToUnpin: string) {
   const unpinUrl = `${process.env.REACT_APP_PINATA_API_URL}/pinning/unpin/${hashToUnpin}`;
-  
+
   return fetch(unpinUrl, {
     headers: pinataHeaders,
-    method: 'DELETE'
+    method: 'DELETE',
   });
 }
 
 export async function uploadJson(jsonBody: string) {
-  const pinJSONToIpfsUrl = `${process.env.REACT_APP_PINATA_API_URL}/pinning/pinJSONToIPFS`
+  const pinJSONToIpfsUrl = `${process.env.REACT_APP_PINATA_API_URL}/pinning/pinJSONToIPFS`;
 
   const jsonHeaders = pinataHeaders;
   jsonHeaders['Content-Type'] = 'application/json';

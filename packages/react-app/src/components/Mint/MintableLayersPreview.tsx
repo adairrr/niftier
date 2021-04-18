@@ -13,18 +13,17 @@ interface MintableLayersPreviewProps {
 }
 
 const MintableLayersPreview: React.FC<MintableLayersPreviewProps> = ({ artpiece, layerList }) => {
-
   const stageRef = useRef(null);
 
-  const [ artpieceImage, setArtpieceImage ] = useState(null);
+  const [artpieceImage, setArtpieceImage] = useState(null);
 
   const getImage = (imageSrc: string): HTMLImageElement => {
     if (!imageSrc) return undefined;
-    console.log("gettingImage");
+    console.log('gettingImage');
     let img = new Image(550, 617);
     img.src = imageSrc;
     return img;
-  }
+  };
 
   const exportPreviewFile = async () => {
     const uri = stageRef.current.toDataURL();
@@ -41,28 +40,36 @@ const MintableLayersPreview: React.FC<MintableLayersPreviewProps> = ({ artpiece,
 
     if (uploadResp) {
       artpiece.setMediaUri(uploadResp.IpfsHash);
-      message.success("Successfully uploaded layered artpiece to Pinata");
+      message.success('Successfully uploaded layered artpiece to Pinata');
     } else {
-      message.error("Got an error!");
+      message.error('Got an error!');
     }
-  }
+  };
 
   return (
-    <div style={{ padding:16, margin:"auto",marginTop:64 }}>
-      <LayerTabs layerList={layerList} />{/* TODO this should be pulled up for SRP */}
-      <Divider/>
+    <div style={{ padding: 16, margin: 'auto', marginTop: 64 }}>
+      <LayerTabs layerList={layerList} />
+      {/* TODO this should be pulled up for SRP */}
+      <Divider />
       <KonvaStage width={550} height={617} ref={stageRef}>
         <KonvaLayer>
-          {layerList.layers.slice().reverse().map((layer) => (
-            layer.mediaPrevew && <KonvaImage image={getImage(layer.mediaPrevew)} key={layer.id}/>
-          ))}
-        </KonvaLayer> 
+          {layerList.layers
+            .slice()
+            .reverse()
+            .map(layer => layer.mediaPrevew && <KonvaImage image={getImage(layer.mediaPrevew)} key={layer.id} />)}
+        </KonvaLayer>
       </KonvaStage>
-      <Button style={{margin:8}} /*loading={uploading}*/ size="large" shape="round" type="primary" onClick={onClickUploadArtpiece}>
+      <Button
+        style={{ margin: 8 }}
+        /*loading={uploading}*/ size="large"
+        shape="round"
+        type="primary"
+        onClick={onClickUploadArtpiece}
+      >
         Upload Artpiece to IPFS
       </Button>
     </div>
   );
-}
+};
 
 export default observer(MintableLayersPreview);

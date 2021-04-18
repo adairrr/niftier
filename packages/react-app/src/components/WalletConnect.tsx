@@ -21,13 +21,13 @@ export const web3Modal = new Web3Modal({
       },
     },
   },
-  theme: 'dark'
+  theme: 'dark',
 });
 
 // TODO this doesn't work -_-
 export const updateWeb3ModalTheme = async (theme: string) => {
   await web3Modal.updateTheme(theme);
-}
+};
 
 export const logoutOfWeb3Modal = async () => {
   web3Modal.clearCachedProvider();
@@ -36,11 +36,12 @@ export const logoutOfWeb3Modal = async () => {
   }, 1);
 };
 
- window.ethereum && window.ethereum.on('chainChanged', chainId => {
-  setTimeout(() => {
-    window.location.reload();
-  }, 1);
-})
+window.ethereum &&
+  window.ethereum.on('chainChanged', chainId => {
+    setTimeout(() => {
+      window.location.reload();
+    }, 1);
+  });
 
 interface WalletConnectProps {
   localChainId: number;
@@ -48,40 +49,37 @@ interface WalletConnectProps {
 }
 
 const WalletConnect = ({ localChainId, selectedChainId }: WalletConnectProps) => {
-
-  const [ networkDisplay, setNetworkDisplay ] = useState<ReactElement>();
+  const [networkDisplay, setNetworkDisplay] = useState<ReactElement>();
 
   useEffect(() => {
     let display: ReactElement;
-    if (localChainId && selectedChainId && localChainId != selectedChainId ) {
+    if (localChainId && selectedChainId && localChainId != selectedChainId) {
       display = (
-        <div style={{zIndex:2, position:'absolute', right:0,top:60,padding:16}}>
+        <div style={{ zIndex: 2, position: 'absolute', right: 0, top: 60, padding: 16 }}>
           <Alert
-            message={"⚠️ Wrong Network"}
-            description={(
+            message={'⚠️ Wrong Network'}
+            description={
               <div>
-                You have <b>{NETWORK(selectedChainId).name}</b> selected and you need to be on <b>{NETWORK(localChainId).name}</b>.
+                You have <b>{NETWORK(selectedChainId).name}</b> selected and you need to be on{' '}
+                <b>{NETWORK(localChainId).name}</b>.
               </div>
-            )}
+            }
             type="error"
             closable={false}
           />
         </div>
-      )
+      );
     } else {
       display = (
-        <div style={{zIndex:-1, position:'absolute', right:154, top:28, padding:16, color:targetNetwork.color}}>
+        <div style={{ zIndex: -1, position: 'absolute', right: 154, top: 28, padding: 16, color: targetNetwork.color }}>
           {targetNetwork.name}
         </div>
-      )
+      );
     }
     setNetworkDisplay(display);
   }, [localChainId, selectedChainId]);
 
-  
-
-  return(<>{networkDisplay}</>);
-}
-
+  return <>{networkDisplay}</>;
+};
 
 export default WalletConnect;

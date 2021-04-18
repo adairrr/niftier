@@ -9,7 +9,7 @@ export const ACCOUNT_BALANCE_QUERY = gql`
           id
           uri
         }
-      value
+        value
       }
     }
   }
@@ -33,7 +33,7 @@ export const TRANSFERS_QUERY = gql`
 `;
 
 export const TOKEN_QUERY = gql`
-  query GetToken($tokenId:ID!) {
+  query GetToken($tokenId: ID!) {
     token(id: $tokenId) {
       id
       uri
@@ -48,7 +48,6 @@ export const TOKEN_QUERY = gql`
           id
           uri
         }
-        
       }
       tokenType {
         name

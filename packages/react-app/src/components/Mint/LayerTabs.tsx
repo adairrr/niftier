@@ -14,7 +14,7 @@ type LayerMetadata = {
   preview: string;
   key?: string;
   isDeleted?: boolean;
-}
+};
 
 export interface OrderedLayerMD {
   layers?: LayerMetadata[];
@@ -25,36 +25,34 @@ interface LayerTabsProps {
 }
 
 const LayerTabs: React.FC<LayerTabsProps> = ({ layerList }) => {
-
   console.log(layerList);
 
-  const [ newTabIndex, setNewTabIndex ] = useState(2);
+  const [newTabIndex, setNewTabIndex] = useState(2);
 
-  const [ activeTabKey, setActiveTabKey ] = useState(layerList.layers[0] ? layerList.layers[0].id : undefined);
+  const [activeTabKey, setActiveTabKey] = useState(layerList.layers[0] ? layerList.layers[0].id : undefined);
   console.log(activeTabKey);
-  const [ showTabImages, setShowTabImages ] = useState(false);
+  const [showTabImages, setShowTabImages] = useState(false);
 
   const onTabChange = (activeKey: string) => setActiveTabKey(activeKey);
 
   // effect to trigger layers change when the layer tabs are set
-//   useEffect(() => {
-//     // TODO is this necessary or will it force a new render?
-//     localStorage.setItem('layerTabs', JSON.stringify(layerTabs));
-//   }, [layerTabs]);
-
+  //   useEffect(() => {
+  //     // TODO is this necessary or will it force a new render?
+  //     localStorage.setItem('layerTabs', JSON.stringify(layerTabs));
+  //   }, [layerTabs]);
 
   const onTabAction = (targetTabKey: string, tabAction: 'add' | 'remove') => {
-    console.log("In LayerTabs", tabAction);
+    console.log('In LayerTabs', tabAction);
     if (tabAction === 'add') onAddTab();
-  }
+  };
 
   const onAddTab = () => {
     setNewTabIndex(newTabIndex + 1);
-    const newLayer = layerList.addLayer(`Layer ${layerList.layerCount + 1}`)
+    const newLayer = layerList.addLayer(`Layer ${layerList.layerCount + 1}`);
 
     // add a slot for the new media
     setActiveTabKey(newLayer.id);
-  }
+  };
 
   const onCloseTab = async (targetTabKey: string) => {
     // unpin file first
@@ -62,19 +60,19 @@ const LayerTabs: React.FC<LayerTabsProps> = ({ layerList }) => {
     if (layerToUnpin && layerToUnpin.mediaUri) {
       const unpinResp = await unpinFile(layerToUnpin.mediaUri);
       if (!unpinResp.ok) {
-        console.log(`File was not successfully unpinned; error: ${unpinResp}`)
+        console.log(`File was not successfully unpinned; error: ${unpinResp}`);
       }
     }
 
     const newActiveLayerId = layerList.removeLayer(activeTabKey, targetTabKey);
     setActiveTabKey(newActiveLayerId);
-    
+
     // delete the stored form data from the cache
     // localStorage.removeItem(CACHED_FORM_PREFIX.concat(targetTabKey));
-  }
+  };
 
   const onTabOrderChange = (changedValue: DraggableTabOrder) => {
-    console.log("Hello?")
+    console.log('Hello?');
     console.log(changedValue);
 
     layerList.reorderLayers(changedValue);
@@ -105,7 +103,7 @@ const LayerTabs: React.FC<LayerTabsProps> = ({ layerList }) => {
 
   return (
     <DraggableTabs
-      tabPosition='right'
+      tabPosition="right"
       type="editable-card"
       activeKey={activeTabKey}
       onEdit={onTabAction}
@@ -115,17 +113,17 @@ const LayerTabs: React.FC<LayerTabsProps> = ({ layerList }) => {
       tabBarExtraContent={{ left: tabViewButton }}
     >
       {layerList.layers.map(layer => (
-        <TabPane 
-          key={layer.id} 
-          style={{alignItems: 'flex-end'}}
+        <TabPane
+          key={layer.id}
+          style={{ alignItems: 'flex-end' }}
           closeIcon={tabCloseConfirm(() => onCloseTab(layer.id))}
-          tab={showTabImages && layer.mediaPrevew ? <Avatar shape='square' src={layer.mediaPrevew} /> : layer.name} 
+          tab={showTabImages && layer.mediaPrevew ? <Avatar shape="square" src={layer.mediaPrevew} /> : layer.name}
         >
-          <MintableLayerForm layer={layer}/> 
+          <MintableLayerForm layer={layer} />
         </TabPane>
       ))}
     </DraggableTabs>
   );
-}
+};
 
 export default observer(LayerTabs);

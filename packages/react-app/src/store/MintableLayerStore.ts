@@ -15,11 +15,21 @@ export default class MintableLayerStore {
   mediaPrevew: string = undefined;
 
   /* setters */
-  setName(name: string) { this.name = name };
-  setDescription(description: string) { this.description = description };
-  setRecipientAddress(recipientAddress: string) { this.recipientAddress = recipientAddress };
-  setMediaUri(mediaUri: string) { this.mediaUri = mediaUri };
-  setMediaPrevew(mediaPrevew: string) { this.mediaPrevew = mediaPrevew };
+  setName(name: string) {
+    this.name = name;
+  }
+  setDescription(description: string) {
+    this.description = description;
+  }
+  setRecipientAddress(recipientAddress: string) {
+    this.recipientAddress = recipientAddress;
+  }
+  setMediaUri(mediaUri: string) {
+    this.mediaUri = mediaUri;
+  }
+  setMediaPrevew(mediaPrevew: string) {
+    this.mediaPrevew = mediaPrevew;
+  }
 
   /* computed functions */
   get toMetadataJSON() {
@@ -37,7 +47,7 @@ export default class MintableLayerStore {
     try {
       const uploadResp = await uploadJson(JSON.stringify(this.toMetadataJSON));
       const uploadData: PinataResponse = await uploadResp.json();
-      
+
       runInAction(() => {
         this.metadataUri = uploadData.IpfsHash;
       });
@@ -48,9 +58,8 @@ export default class MintableLayerStore {
   }
 
   deleteFromCache() {
-		localStorage.removeItem(this.id);
+    localStorage.removeItem(this.id);
   }
-
 
   constructor(layerName: string, autosave?: boolean) {
     makeAutoObservable(this, { deleteFromCache: false });
@@ -58,7 +67,6 @@ export default class MintableLayerStore {
     // if (autosave) autoSave(this, this.id);
   }
 }
-
 
 export class MintableLayerListStore {
   /* properties */
@@ -84,7 +92,6 @@ export class MintableLayerListStore {
     }
   }
 
-
   /* action functions */
   addLayer(name: string) {
     const newLayer = new MintableLayerStore(name);
@@ -92,7 +99,7 @@ export class MintableLayerListStore {
     return newLayer;
   }
 
-  getLayerWithId(layerId: string){
+  getLayerWithId(layerId: string) {
     return this.layers.find(layer => layer.id === layerId);
   }
 

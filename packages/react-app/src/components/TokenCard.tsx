@@ -10,16 +10,15 @@ const { Meta } = Card;
 
 type TokenCardProps = {
   token: TokenModelType;
-}
+};
 
 const TokenCard: React.FC<TokenCardProps> = ({ token }) => {
-
   const imageRef = useRef();
 
   const baseClassName = 'TokenCard';
 
   // const { setQuery, loading, error } = useQuery(token.)
-  
+
   return (
     <div className={baseClassName}>
       <Image
@@ -49,7 +48,7 @@ const TokenCard: React.FC<TokenCardProps> = ({ token }) => {
       </Card> */}
     </div>
   );
-}
+};
 
 export default observer(TokenCard);
 

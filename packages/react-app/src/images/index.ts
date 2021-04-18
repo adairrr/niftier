@@ -1,1 +1,1 @@
-export { default as FallbackImage } from './fallback-image.png'
+export { default as FallbackImage } from './fallback-image.png';

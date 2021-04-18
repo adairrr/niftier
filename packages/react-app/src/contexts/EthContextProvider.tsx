@@ -10,16 +10,20 @@ interface EthContextProviderProps {
   contractsIo: ContractIOContextProps;
   providers: ProviderContextProps;
   blockExplorer: string;
-  children: any
+  children: any;
 }
 
-const EthContextProvider = ({ currentAddress, contractsIo, providers, blockExplorer, children }: EthContextProviderProps) => (
+const EthContextProvider = ({
+  currentAddress,
+  contractsIo,
+  providers,
+  blockExplorer,
+  children,
+}: EthContextProviderProps) => (
   <AddressContext.Provider value={currentAddress}>
     <ContractIOContext.Provider value={contractsIo}>
       <ProviderContext.Provider value={providers}>
-        <BlockExplorerContext.Provider value={blockExplorer}>
-          {children}
-        </BlockExplorerContext.Provider>
+        <BlockExplorerContext.Provider value={blockExplorer}>{children}</BlockExplorerContext.Provider>
       </ProviderContext.Provider>
     </ContractIOContext.Provider>
   </AddressContext.Provider>

@@ -1,19 +1,19 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState } from 'react';
 
 export type UsePromiseResponse<T> = {
-  loading: boolean
-  data?: T
-  error?: Error
-}
+  loading: boolean;
+  data?: T;
+  error?: Error;
+};
 // https://github.com/bitmatica/blogmatica-mst-apollo/blob/5f498588ee97458bdd87b0fa4b97cfa85795ab70/src/utilities/promises.ts
 const usePromise = <T>(task: () => PromiseLike<T>): UsePromiseResponse<T> => {
   const [state, setState] = useState<UsePromiseResponse<T>>({
     loading: false,
-  })
-  const [initialized, setInitialized] = useState(false)
+  });
+  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
-    let cancelled = false
+    let cancelled = false;
     if (!initialized) {
       task().then(
         (data: T) => {
@@ -21,24 +21,24 @@ const usePromise = <T>(task: () => PromiseLike<T>): UsePromiseResponse<T> => {
             setState({
               data,
               loading: false,
-            })
+            });
         },
         (error: Error) => {
           !cancelled &&
             setState({
               error,
               loading: false,
-            })
+            });
         },
-      )
-      setInitialized(true)
+      );
+      setInitialized(true);
     }
     return (): void => {
-      cancelled = true
-    }
-  }, [task, setState, initialized, setInitialized])
+      cancelled = true;
+    };
+  }, [task, setState, initialized, setInitialized]);
 
   return state;
-}
+};
 
 export default usePromise;

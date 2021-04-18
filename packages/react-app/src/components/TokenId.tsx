@@ -1,9 +1,8 @@
-import React, { Component } from "react";
-import Blockies from "react-blockies";
-import { Typography, Skeleton } from "antd";
-import { Link } from "react-router-dom";
+import React, { Component } from 'react';
+import Blockies from 'react-blockies';
+import { Typography, Skeleton } from 'antd';
+import { Link } from 'react-router-dom';
 const { Text } = Typography;
-
 
 /*
   ~ What it does? ~
@@ -22,22 +21,21 @@ const { Text } = Typography;
 */
 
 type TokenIdProps = {
-  id: string,
-  fontSize: number,
-  minimized: boolean,
-  size: string,
-  onChange?: () => void
-}
+  id: string;
+  fontSize: number;
+  minimized: boolean;
+  size: string;
+  onChange?: () => void;
+};
 class TokenId extends Component<TokenIdProps> {
-
   static defaultProps = {
     fontSize: 16,
     minimized: false,
-    size: 'short'
-  }
+    size: 'short',
+  };
 
   public render() {
-    let tokenId = this.props.id;  
+    let tokenId = this.props.id;
 
     if (!tokenId) {
       return (
@@ -49,11 +47,11 @@ class TokenId extends Component<TokenIdProps> {
 
     let displayId = tokenId.substr(0, 6);
 
-    displayId = this.props.size === 'long' ? tokenId : [displayId, tokenId.substr(-4)].join("...");
+    displayId = this.props.size === 'long' ? tokenId : [displayId, tokenId.substr(-4)].join('...');
 
     if (this.props.minimized) {
       return (
-        <span style={{ verticalAlign: "middle" }}>
+        <span style={{ verticalAlign: 'middle' }}>
           <a /*style={{ color: "#222222" }}*/>
             <Blockies seed={tokenId.toLowerCase()} size={8} scale={2} />
           </a>
@@ -65,9 +63,7 @@ class TokenId extends Component<TokenIdProps> {
     if (this.props.onChange) {
       text = (
         <Text editable={{ onChange: this.props.onChange }} copyable>
-          <a /*style={{ color: "#222222" }}*/>
-            {displayId}
-          </a>
+          <a /*style={{ color: "#222222" }}*/>{displayId}</a>
         </Text>
       );
     } else {
@@ -82,13 +78,17 @@ class TokenId extends Component<TokenIdProps> {
 
     return (
       <span>
-        <span style={{ verticalAlign: "middle" }}>
+        <span style={{ verticalAlign: 'middle' }}>
           <Blockies seed={tokenId.toLowerCase()} size={8} scale={this.props.fontSize ? this.props.fontSize / 7 : 4} />
         </span>
-        <span style={{ verticalAlign: "middle", paddingLeft: 5, fontSize: this.props.fontSize ? this.props.fontSize : 28 }}>{text}</span>
+        <span
+          style={{ verticalAlign: 'middle', paddingLeft: 5, fontSize: this.props.fontSize ? this.props.fontSize : 28 }}
+        >
+          {text}
+        </span>
       </span>
     );
-  }  
+  }
 }
 
 export default TokenId;

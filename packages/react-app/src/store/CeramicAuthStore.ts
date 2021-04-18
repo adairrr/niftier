@@ -4,8 +4,8 @@ import { EthereumAuthProvider, ThreeIdConnect } from '3id-connect';
 import { DIDProvider } from '@ceramicnetwork/common';
 import CeramicClient from '@ceramicnetwork/http-client';
 import { IDX } from '@ceramicstudio/idx';
-import { DID } from 'dids'
-import ThreeIdResolver from '@ceramicnetwork/3id-did-resolver'
+import { DID } from 'dids';
+import ThreeIdResolver from '@ceramicnetwork/3id-did-resolver';
 import { authenticateDid, createCeramic, createIDX, createThreeIdDidProvider } from '../apis';
 import { getUserBasicProfile, setUserBasicProfile } from '../apis/idx';
 import { BasicProfile } from '@ceramicstudio/idx-constants';
@@ -21,12 +21,11 @@ export class CeramicAuthStore {
   didProvider: DIDProvider;
   did: DID;
 
-  
   constructor(threeIdConnect: ThreeIdConnect) {
     // TODO check local storage for previous did?
-    console.log("Just got to the constructor for CeramicAuthStore");
+    console.log('Just got to the constructor for CeramicAuthStore');
     makeAutoObservable(this, {
-      login: flow
+      login: flow,
     });
     this.threeIdConnect = threeIdConnect;
     this.ceramic = createCeramic();
@@ -40,13 +39,9 @@ export class CeramicAuthStore {
 
   /* action functions */
   *login() {
-    console.log("Logging into the ceramic client and attempting to authenticate");
-    
-    this.didProvider = yield createThreeIdDidProvider(
-      window.ethereum, 
-      this.threeIdConnect, 
-      this.ceramic
-    );
+    console.log('Logging into the ceramic client and attempting to authenticate');
+
+    this.didProvider = yield createThreeIdDidProvider(window.ethereum, this.threeIdConnect, this.ceramic);
     this.did = yield authenticateDid(this.didProvider, this.ceramic);
     this.userDid = this.did.id;
   }
@@ -66,14 +61,12 @@ export class CeramicAuthStore {
   *getUserProfile() {
     const prof = yield getUserBasicProfile(this.idx, this.userDid);
     console.log(prof);
-
   }
 
   *setUserProfile(userProfile: BasicProfile) {
     const docId = yield setUserBasicProfile(this.idx, userProfile);
     console.log(docId);
   }
-
 }
 
 export default CeramicAuthStore;

@@ -1,50 +1,40 @@
-import React, { createContext, useContext, useMemo } from 'react'
+import React, { createContext, useContext, useMemo } from 'react';
 import { useLocalStorage } from 'react-use';
 
 // const theme = window.localStorage.getItem('theme');
 
 // lets use dark mode by default!
 interface ThemeContext {
-	theme: string;
-	setTheme: any; // React.Dispatch<React.SetStateAction<string>>;
-	toggleTheme: () => void;
+  theme: string;
+  setTheme: any; // React.Dispatch<React.SetStateAction<string>>;
+  toggleTheme: () => void;
 }
 
 const ThemeContext = createContext<ThemeContext>({
-	theme:
-		window && window.matchMedia('(prefers-color-scheme: dark)').matches
-			? 'dark'
-			: 'light',
-	setTheme: () => null,
-	toggleTheme: () => null
+  theme: window && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
+  setTheme: () => null,
+  toggleTheme: () => null,
 });
 
 ThemeContext.displayName = 'ThemeContext';
 
 export const useThemeContext = () => useContext(ThemeContext);
 
-export const ThemeContextProvider = ({ children }: { children: React.ReactNode; }) => {
+export const ThemeContextProvider = ({ children }: { children: React.ReactNode }) => {
+  const preferDark = window && window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-	const preferDark = window && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const [theme, setTheme] = useLocalStorage('theme', preferDark ? 'dark' : 'light');
 
-	const [ theme, setTheme, ] = useLocalStorage(
-		'theme',
-		preferDark ? 'dark' : 'light'
-	);
+  const contextValue = useMemo(
+    () => ({
+      theme,
+      setTheme,
+      toggleTheme: () => setTheme(theme === 'light' ? 'dark' : theme),
+    }),
+    [theme, setTheme],
+  );
 
-	const contextValue = useMemo(() => ({
-			theme,
-			setTheme,
-			toggleTheme: () => setTheme(theme === 'light' ? 'dark' : theme)
-		}),
-		[theme, setTheme]
-	);
-
-	return (
-		<ThemeContext.Provider value={contextValue}>
-			{children}
-		</ThemeContext.Provider>
-	);
+  return <ThemeContext.Provider value={contextValue}>{children}</ThemeContext.Provider>;
 };
 
 export default useThemeContext;

@@ -13,11 +13,21 @@ export default class ArtpieceStore {
   mediaPrevew: string = undefined;
 
   /* setters */
-  setName(name: string) { this.name = name };
-  setDescription(description: string) { this.description = description };
-  setRecipientAddress(recipientAddress: string) { this.recipientAddress = recipientAddress };
-  setMediaUri(mediaUri: string) { this.mediaUri = mediaUri };
-  setMediaPrevew(mediaPrevew: string) { this.mediaPrevew = mediaPrevew };
+  setName(name: string) {
+    this.name = name;
+  }
+  setDescription(description: string) {
+    this.description = description;
+  }
+  setRecipientAddress(recipientAddress: string) {
+    this.recipientAddress = recipientAddress;
+  }
+  setMediaUri(mediaUri: string) {
+    this.mediaUri = mediaUri;
+  }
+  setMediaPrevew(mediaPrevew: string) {
+    this.mediaPrevew = mediaPrevew;
+  }
 
   get toMetadataJSON() {
     const metadataJSON = {};
@@ -32,7 +42,7 @@ export default class ArtpieceStore {
     try {
       const uploadResp = await uploadJson(JSON.stringify(this.toMetadataJSON));
       const uploadData: PinataResponse = await uploadResp.json();
-      
+
       runInAction(() => {
         this.metadataUri = uploadData.IpfsHash;
       });

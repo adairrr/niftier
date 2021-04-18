@@ -7,14 +7,12 @@ import useContractIOContext from '../../contexts/ContractIOContext';
 import { utils } from 'ethers';
 import { PinataResponse, uploadJson } from '../../helpers/pinata';
 
-
 interface ArtpieceLayerMinterProps {
   artpiece: ArtpieceStore;
   layerList: MintableLayerListStore;
 }
 
 const ArtpieceLayerMinter: React.FC<ArtpieceLayerMinterProps> = ({ artpiece, layerList }) => {
-
   // TODO should account for recipient address eventually
   const currentAddress = useAddressContext();
   const { tx, reader, writer } = useContractIOContext();
@@ -25,7 +23,7 @@ const ArtpieceLayerMinter: React.FC<ArtpieceLayerMinterProps> = ({ artpiece, lay
     let error = false;
     if (!artpiece || !artpiece.mediaUri) {
       error = true;
-      message.warning("Need to upload the artpiece preview befare minting.")
+      message.warning('Need to upload the artpiece preview befare minting.');
     }
     layerList.layers.forEach(layer => {
       if (!layer.mediaUri) {
@@ -35,44 +33,52 @@ const ArtpieceLayerMinter: React.FC<ArtpieceLayerMinterProps> = ({ artpiece, lay
     });
 
     if (!error) {
-      // composableorchestrator 
+      // composableorchestrator
       // TODO should come from graphql mobx thing
-      const parentTokenTypeName = utils.formatBytes32String("ARTPIECE_TYPE");
-      const childTokenTypeName = utils.formatBytes32String("LAYER_TYPE");
+      const parentTokenTypeName = utils.formatBytes32String('ARTPIECE_TYPE');
+      const childTokenTypeName = utils.formatBytes32String('LAYER_TYPE');
       const parentTokenUri = await artpiece.pinMetadata();
       const childTokenUris = await layerList.pinAndGetLayerUris();
       // just using amounts of one right now
       // @ts-ignore
       const childTokenAmounts = childTokenUris.slice().fill(1);
 
-      console.log("passed to ComposableOrchestrator", parentTokenTypeName,
-        parentTokenUri,
-        childTokenTypeName,
-        childTokenUris,
-        childTokenAmounts,
-        currentAddress
-      );
-
-      tx( writer.ComposableOrchestrator.mintChildrenAndParent(
+      console.log(
+        'passed to ComposableOrchestrator',
         parentTokenTypeName,
         parentTokenUri,
         childTokenTypeName,
         childTokenUris,
         childTokenAmounts,
-        currentAddress
-      ));
-    }
-  }
+        currentAddress,
+      );
 
+      tx(
+        writer.ComposableOrchestrator.mintChildrenAndParent(
+          parentTokenTypeName,
+          parentTokenUri,
+          childTokenTypeName,
+          childTokenUris,
+          childTokenAmounts,
+          currentAddress,
+        ),
+      );
+    }
+  };
 
   return (
     <div className={baseClassName}>
-
-      <Button style={{margin:8}} /*loading={uploading}*/ size="large" shape="round" type="primary" onClick={onClickMintArtpieceAndLayers}>
-        Mint 
+      <Button
+        style={{ margin: 8 }}
+        /*loading={uploading}*/ size="large"
+        shape="round"
+        type="primary"
+        onClick={onClickMintArtpieceAndLayers}
+      >
+        Mint
       </Button>
     </div>
   );
-}
+};
 
 export default observer(ArtpieceLayerMinter);
