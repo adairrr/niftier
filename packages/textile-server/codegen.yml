@@ -7,7 +7,7 @@ generates:
       - typescript
       - typescript-resolvers
       - typescript-operations
-  # ../react-ap/generated/generated-types.ts:
+  # ../react-app/generated/generated-types.ts:
   #   documents: 'src/**/*.graphql'
   #   config:
   #     withHooks: true

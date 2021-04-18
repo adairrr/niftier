@@ -25,8 +25,8 @@ packages/subgraph/config/config.ts
 tenderly.yaml
 
 # build files
-docker/textile-server/dist
-docker/textile-server/yarn-offline-mirror
+packages/textile-server/dist
+packages/textile-server/yarn-offline-mirror
 
 # dependencies
 /node_modules
