@@ -4,7 +4,7 @@ import { ResolverContext } from './resolverContext'
 const resolvers: Resolvers<ResolverContext> = {
   Query: {
     accountData: async (_p, args, cx) => await cx.AccountData.getAccountDataById(args.id),
-    // accountDatasByIds: async (_p, args, cx) => await cx.AccountData.getAccountDataById(args.id),
+    accountDatasByIds: async (_p, args, cx) => await cx.AccountData.getAccountDatasByIds(args.ids),
     accountDatas: async (_p, args, cx) => await cx.AccountData.all(),
   },
   Mutation: {

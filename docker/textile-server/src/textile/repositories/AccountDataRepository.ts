@@ -14,7 +14,7 @@ export class AccountDataRepository extends TextileRepository<AccountData> {
   //   return this.pubSub.asyncIterator(trigger)
   // }
   async getAccountDataById(id: string | null | undefined): Promise<AccountData | null> {
-    return await this.getByAttribute('id', id)
+    return await this.getByField('id', id)
       .then((queryResult) => {
         if (queryResult.length < 1) {
           return null;
@@ -27,10 +27,13 @@ export class AccountDataRepository extends TextileRepository<AccountData> {
       .catch(() => null);
   }
 
+  async getAccountDatasByIds(ids: string[]): Promise<AccountData[]> {
+    return await this.getManyByField('id', ids);
+  }
+
   async updateAccountData(accountData: Omit<AccountData, '_id' | '__typename'>): Promise<TPayload<AccountData>> {
     
     const queryResult = await this.getAccountDataById(accountData.id);
-
     if (!queryResult) return this.emptyTPayload;
     
     const accountDataWithId = Object.assign(accountData, { _id: queryResult._id });

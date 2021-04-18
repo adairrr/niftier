@@ -47,9 +47,9 @@ export default abstract class TextileRepository<T extends TextileCollection> {
     return await this.client.find<T>(this.threadId, this.collectionName, {})
   }
 
-  async getByAttribute(attrib: string, attribValue: string | null | undefined): Promise<T[]> {
-    if (!attribValue) return [];
-    const attribQuery = new Where(attrib).eq(attribValue);
+  async getByField(field: string, value: string | null | undefined): Promise<T[]> {
+    if (!value) return [];
+    const attribQuery = new Where(field).eq(value);
 
     return await this.client.find<T>(this.threadId, this.collectionName, attribQuery)
       .then((queryResult) => queryResult)
@@ -64,14 +64,24 @@ export default abstract class TextileRepository<T extends TextileCollection> {
       : null
   }
 
-  async getMany(_ids: string[]): Promise<T[] | null> {
-    return _ids
-      ? await this.client.find<T>(this.threadId, this.collectionName, {
-          ors: _ids.map((id) => {
-            return { ands: [{ fieldPath: '_id', value: { string: id } }] }
-          })
-        })
-      : null
+  async getManyByField(field: string, values: string[]): Promise<T[]> {
+    if (values.length < 1) return [];
+    // const query = {
+    //   ands: [ { fieldPath: field, operation: 0, value: { string: values[0] } }],
+    //   ors: values.slice(1).map((val) => {
+    //     return { ands: [{ fieldPath: field, operation: 0, value: { string: val } }] }
+    //   }),
+    // }
+    let query = new Where(field).eq(values[0]);
+    values.slice(1).forEach(val => {
+      query = query.or(new Where(field).eq(val))
+    });
+
+    return await this.client.find<T>(this.threadId, this.collectionName, query);
+  }
+
+  async getManyByTextileIds(_ids: string[]): Promise<T[]> {
+    return this.getManyByField('_id', _ids);
   }
 
   async deleteByTextileId(_id: string): Promise<boolean> {
