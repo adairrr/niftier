@@ -1,31 +1,97 @@
 import waitOn from 'wait-on';
-import { ApolloServer } from 'apollo-server';
 import { introspectSchema } from '@graphql-tools/wrap';
 import { stitchSchemas } from '@graphql-tools/stitch';
+import { delegateToSchema } from '@graphql-tools/delegate';
 import { makeRemoteExecutor, startServer } from './utils';
 import * as dotenv from 'dotenv';
+import getRemoteSchema from './utils/getRemoteSchema';
 
 dotenv.config();
 
 async function makeGatewaySchema() {
   // build executor functions for communicating with remote services
 
-  const subgraphExec = makeRemoteExecutor(<string>process.env.SUBGRAPH_URL);
-  const textileExec = makeRemoteExecutor(<string>process.env.TEXTILE_URL);
+  // const subgraphExec = makeRemoteExecutor(<string>process.env.SUBGRAPH_URL, { log: true });
+  // const textileExec = makeRemoteExecutor(<string>process.env.TEXTILE_URL, { log: true });
+  // const subgraphSchema = await introspectSchema(subgraphExec);
+  // const textileSchema = await introspectSchema(textileExec);
 
+  const subgraphSchema = await getRemoteSchema(<string>process.env.SUBGRAPH_URL, { log: true });
+  const textileSchema = await getRemoteSchema(<string>process.env.TEXTILE_URL, { log: true });
+  
   return stitchSchemas({
+    // subschemas: [
+    //   {
+    //     schema: subgraphSchema,
+    //     executor: subgraphExec,
+    //     batch: true,
+    //     // merge: {
+    //     //   Account: {
+    //     //     fieldName: 'account',
+    //     //     selectionSet: '{ id }',
+    //     //     // delegates to `account(id: $id)`
+    //     //     args: ({ id }) => ({ id }),
+    //     //   }
+    //     // }
+    //   },
+    //   {
+    //     schema: textileSchema,
+    //     executor: textileExec,
+    //     batch: true,
+    //     // merge: {
+    //     //   Account: {
+    //     //     fieldName: 'account',
+    //     //     selectionSet: '{ id }',
+    //     //     // delegates to `account(id: $id)`
+    //     //     args: ({ id }) => ({ id }),
+    //     //   }
+    //     // }
+    //   },
+    // ],
     subschemas: [
-      {
-        schema: await introspectSchema(subgraphExec),
-        executor: subgraphExec,
-        batch: true,
+      subgraphSchema,
+      textileSchema
+    ],
+    typeDefs: `
+      extend type Account {
+        data: AccountData
+      }
+      extend type AccountData {
+        account: Account
+      }
+    `,
+    resolvers: {
+      Account: {
+        data: {
+          selectionSet: `{ id }`,
+          resolve(account, args, context, info) {
+            return delegateToSchema({
+              schema: textileSchema,
+              operation: 'query',
+              fieldName: 'accountData',
+              args: { id: account.id },
+              context,
+              info,
+            });
+          }
+        }
       },
-      {
-        schema: await introspectSchema(textileExec),
-        executor: textileExec,
-        batch: true,
-      },
-    ]
+      AccountData: {
+        account: {
+          selectionSet: `{ id }`,
+          resolve(accountData, args, context, info) {
+            return delegateToSchema({
+              schema: subgraphSchema,
+              operation: 'query',
+              fieldName: 'account',
+              args: { id: accountData.id },
+              context,
+              info,
+            });
+          }
+        }
+      }
+    }
   });
 }
 
