@@ -1,27 +1,39 @@
 module.exports = {
+  extends: [
+    'airbnb-typescript',
+    'airbnb/hooks',
+    'plugin:@typescript-eslint/recommended',
+    'plugin:jest/recommended',
+    'plugin:prettier/recommended'
+  ],
+  plugins: ['react', '@typescript-eslint', 'jest'],
   env: {
     browser: true,
+    es6: true,
+    jest: true,
   },
-  extends: ["airbnb", 'plugin:prettier/recommended', 'prettier/react'],
-  plugins: ["babel"],
+  globals: {
+    Atomics: 'readonly',
+    SharedArrayBuffer: 'readonly',
+  },
+  parser: '@typescript-eslint/parser',
+  parserOptions: {
+    ecmaFeatures: {
+      jsx: true,
+    },
+    ecmaVersion: 2018,
+    sourceType: 'module',
+    project: './tsconfig.json',
+  },
   rules: {
-    "prettier/prettier": ["error"],
-    "import/extensions": [
-      "error",
-      "ignorePackages",
+    'linebreak-style': 'off',
+    // "indent": "off",
+    // "@typescript-eslint/indent": ["error"],
+    'prettier/prettier': [
+      'error',
       {
-        "js": "never",
-        "jsx": "never",
-        "ts": "never",
-        "tsx": "never"
-      }
-   ],
-    "import/prefer-default-export": "off",
-    "prefer-destructuring": "off",
-    "prefer-template": "off",
-    "react/prop-types": "off",
-    "react/destructuring-assignment": "off",
-    "no-console": "off",
-    "jsx-a11y/accessible-emoji": ["off"]
+        endOfLine: 'auto',
+      },
+    ],
   },
 };
