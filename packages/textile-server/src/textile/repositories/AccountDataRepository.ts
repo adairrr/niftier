@@ -2,7 +2,7 @@ import { AccountData } from '../../generated/resolvers-types'
 import TextileRepository, { TPayload } from './TextileRepository'
 import { ValidationError } from 'apollo-server';
 
-export class AccountDataRepository extends TextileRepository<AccountData> {
+export default class AccountDataRepository extends TextileRepository<AccountData> {
   // get subscribeVoted() {
   //   const trigger = uuid()
   //   this.client.listen<Vote>(

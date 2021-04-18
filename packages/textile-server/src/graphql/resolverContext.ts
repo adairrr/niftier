@@ -1,4 +1,4 @@
-import { AccountDataRepository } from "../textile/repositories/AccountDataRepository";
+import { AccountDataRepository } from "../textile/repositories";
 import Textile from '../textile/textile';
 
 export class ResolverContext {
