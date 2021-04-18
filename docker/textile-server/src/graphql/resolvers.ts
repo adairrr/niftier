@@ -1,28 +1,30 @@
-import { Resolvers, User } from '../generated/resolvers-types'
+import { Resolvers, AccountData } from '../generated/resolvers-types'
 import { ResolverContext } from './resolverContext'
 
 const resolvers: Resolvers<ResolverContext> = {
   Query: {
-    users: async (_p, _a, cx) => await cx.User.all()
+    accountData: async (_p, args, cx) => await cx.AccountData.getAccountDataById(args.id),
+    // accountDatasByIds: async (_p, args, cx) => await cx.AccountData.getAccountDataById(args.id),
+    accountDatas: async (_p, args, cx) => await cx.AccountData.all(),
   },
   Mutation: {
-    createUser: async (_p, args, cx) => await cx.User.create(args.user),
-    deleteUser: async (_p, args, cx) => cx.User.deleteById(args._id),
-    updateUser: async (_p, args, cx ) => cx.User.update(args.user),
+    createAccountData: async (_p, args, cx) => await cx.AccountData.createAccountData(args.accountData),
+    updateAccountData: async (_p, args, cx ) => cx.AccountData.updateAccountData(args.accountData),
+    deleteAccountData: async (_p, args, cx) => cx.AccountData.deleteByTextileId(args._id),
   },
   Subscription: {
-    userAdded: {
-      subscribe: (_p, _a, cx) => cx.User.subscribeCreate,
-      resolve: (v: User) => v
+    accountDataAdded: {
+      subscribe: (_p, args, cx) => cx.AccountData.subscribeCreate,
+      resolve: (v: AccountData) => v
     },
-    userDeleted: {
-      subscribe: (_p, _a, cx) => cx.User.subscribeDelete,
+    accountDataDeleted: {
+      subscribe: (_p, args, cx) => cx.AccountData.subscribeDelete,
       resolve: (v: string) => v
     },
   },
-  User: {
-    // memes: async (p, _a, c) => (await c.Meme.all()).filter((x) => x.owner?._id === p._id),
-    // votes: async (p, _a, c) => (await c.Vote.all()).filter((x) => x.user._id === p._id)
+  AccountData: {
+    // memes: async (p, args, c) => (await c.Meme.all()).filter((x) => x.owner?._id === p._id),
+    // votes: async (p, args, c) => (await c.Vote.all()).filter((x) => x.accountData._id === p._id)
   }
 }
 export default resolvers;

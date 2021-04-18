@@ -126,7 +126,9 @@ const getReference = (
 const getReferences = (entity: JSONSchema4 | undefined) => {
   const retVal = new Array<ReferencedEntity>()
   if (entity && entity.properties)
-    Object.values(entity.properties).forEach((prop) => prop.type === 'object' && retVal.push(getReferencedEntity(prop)))
+    Object.values(entity.properties).forEach((prop) => (
+      prop.type === 'object' && retVal.push(getReferencedEntity(prop))
+    ))
   return retVal
 }
 

@@ -1,10 +1,10 @@
-import { UserRepository } from "../textile/repositories/UserRepository";
+import { AccountDataRepository } from "../textile/repositories/AccountDataRepository";
 import Textile from '../textile/textile';
 
 export class ResolverContext {
-  readonly User: UserRepository;
+  readonly AccountData: AccountDataRepository;
 
   constructor(t: Textile) {
-    this.User = t.getRepository(UserRepository, 'User');
+    this.AccountData = t.getRepository(AccountDataRepository, 'AccountData');
   }
 }

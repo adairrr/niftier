@@ -4,11 +4,11 @@ import { v4 as uuid } from 'uuid'
 import Textile from '../textile'
 
 interface TextileCollection {
-  _id: string
+  _id: string // textile id
   __typename?: string
 }
 
-interface CreateUpdatePayload<T extends TextileCollection> {
+export interface TPayload<T extends TextileCollection> {
   [collection: string]: T | null;
 }
 
@@ -29,18 +29,37 @@ export default abstract class TextileRepository<T extends TextileCollection> {
     return this.textile.client
   }
 
-  get lowerCollectionName(): string {
-    return this.collectionName.toLowerCase();
+  get camelCollectionName(): string {
+    // https://stackoverflow.com/questions/2970525/converting-any-string-into-camel-case
+    const camelized = this.collectionName.replace(/[-_\s.]+(.)?/g, (_, c) => (
+      c ? c.toUpperCase() : ''
+    ));
+    return camelized.substr(0, 1).toLowerCase() + camelized.substr(1);
   }
 
-  async all() {
+  get emptyTPayload(): TPayload<T> {
+    return {
+      [this.camelCollectionName]: null
+    } as TPayload<T>;
+  }
+
+  async all(): Promise<T[]> {
     return await this.client.find<T>(this.threadId, this.collectionName, {})
   }
 
-  async getById(_id: string | null | undefined): Promise<T | null> {
+  async getByAttribute(attrib: string, attribValue: string | null | undefined): Promise<T[]> {
+    if (!attribValue) return [];
+    const attribQuery = new Where(attrib).eq(attribValue);
+
+    return await this.client.find<T>(this.threadId, this.collectionName, attribQuery)
+      .then((queryResult) => queryResult)
+      .catch(() => []);
+  }
+
+  async getByTextileId(_id: string | null | undefined): Promise<T | null> {
     return _id
       ? (await this.client.has(this.threadId, this.collectionName, [_id]))
-        ? await this.client.findByID(this.threadId, this.collectionName, _id)
+        ? await this.client.findByID<T>(this.threadId, this.collectionName, _id)
         : null
       : null
   }
@@ -55,41 +74,36 @@ export default abstract class TextileRepository<T extends TextileCollection> {
       : null
   }
 
-  async deleteById(_id: string): Promise<boolean> {
-    try {
-      await this.client.delete(this.threadId, this.collectionName, [_id])
-      return true
-    } catch {
-      return false
-    }
+  async deleteByTextileId(_id: string): Promise<boolean> {
+    return await this.client.delete(this.threadId, this.collectionName, [_id])
+      .then(() => true)
+      .catch(() => false);
   }
 
-  async create(t: Omit<T, '_id' | '__typename'>): Promise<CreateUpdatePayload<T>> {
+  async create(t: Omit<T, '_id' | '__typename'>): Promise<TPayload<T>> {
     const createdId = (await this.client.create(this.threadId, this.collectionName, [t]))[0];
 
-    return {
-      [this.lowerCollectionName]: Object.assign(t, { _id: createdId }) as T
-    } as CreateUpdatePayload<T>;
+    const returnData = {
+      [this.camelCollectionName]: Object.assign(t, { _id: createdId }) as T
+    } as TPayload<T>;
+    return returnData;
   }
 
-  async update(t: Omit<T, '__typename'>): Promise<CreateUpdatePayload<T>> {
-    const query = new Where('_id').eq(t._id);
-    const queryResult = await this.client.find<T>(this.threadId, this.collectionName, query);
+  async updateByTextileId(t: Omit<T, '__typename'>): Promise<TPayload<T>> {
+    // TODO at least for accountData, this does an extra query
+    const queryResult = await this.getByTextileId(t._id);
+    // const queryResult = await this.client.findByID<T>(this.threadId, this.collectionName, t._id);
 
     // set the result to null by default
-    const result = {
-      [this.lowerCollectionName]: null
-    } as CreateUpdatePayload<T>;
-
-    if (queryResult.length < 1) return result;
+    const result = this.emptyTPayload;
+    if (!queryResult) return result;
 
     // assign the passed in parameters to the TextileCollection
-    const updatedItem = queryResult[0];
-    Object.assign(updatedItem, t);
+    Object.assign(queryResult, t);
 
-    return await this.client.save(this.threadId, this.collectionName, [updatedItem])
+    return await this.client.save(this.threadId, this.collectionName, [queryResult])
       .then(() => {
-        result[this.lowerCollectionName] = updatedItem;
+        result[this.camelCollectionName] = queryResult;
         return result;
       })
       .catch(() => result);
@@ -110,6 +124,7 @@ export default abstract class TextileRepository<T extends TextileCollection> {
     )
     return this.pubSub.asyncIterator(trigger)
   }
+
   get subscribeCreate() {
     return this.subscribe('CREATE')
   }

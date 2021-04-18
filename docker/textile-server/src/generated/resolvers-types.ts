@@ -13,60 +13,71 @@ export type Scalars = {
   Float: number;
 };
 
+export type AccountData = {
+  __typename?: 'AccountData';
+  _id: Scalars['String'];
+  id: Scalars['String'];
+  did?: Maybe<Scalars['String']>;
+};
+
+export type AccountDataCreateInput = {
+  id: Scalars['String'];
+  did?: Maybe<Scalars['String']>;
+};
+
+export type AccountDataPayload = {
+  __typename?: 'AccountDataPayload';
+  accountData?: Maybe<AccountData>;
+};
+
+export type AccountDataUpdateInput = {
+  id: Scalars['String'];
+  did?: Maybe<Scalars['String']>;
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
-  createUser?: Maybe<UserCreateUpdatePayload>;
-  updateUser?: Maybe<UserCreateUpdatePayload>;
-  deleteUser?: Maybe<Scalars['Boolean']>;
+  createAccountData?: Maybe<AccountDataPayload>;
+  updateAccountData?: Maybe<AccountDataPayload>;
+  deleteAccountData?: Maybe<Scalars['Boolean']>;
 };
 
 
-export type MutationCreateUserArgs = {
-  user: UserCreateInput;
+export type MutationCreateAccountDataArgs = {
+  accountData: AccountDataCreateInput;
 };
 
 
-export type MutationUpdateUserArgs = {
-  user: UserUpdateInput;
+export type MutationUpdateAccountDataArgs = {
+  accountData: AccountDataUpdateInput;
 };
 
 
-export type MutationDeleteUserArgs = {
+export type MutationDeleteAccountDataArgs = {
   _id: Scalars['String'];
 };
 
 export type Query = {
   __typename?: 'Query';
-  users?: Maybe<Array<Maybe<User>>>;
+  accountData?: Maybe<AccountData>;
+  accountDatasByIds: Array<Maybe<AccountData>>;
+  accountDatas?: Maybe<Array<Maybe<AccountData>>>;
+};
+
+
+export type QueryAccountDataArgs = {
+  id: Scalars['String'];
+};
+
+
+export type QueryAccountDatasByIdsArgs = {
+  ids: Array<Scalars['String']>;
 };
 
 export type Subscription = {
   __typename?: 'Subscription';
-  userAdded?: Maybe<User>;
-  userDeleted?: Maybe<Scalars['String']>;
-};
-
-export type User = {
-  __typename?: 'User';
-  _id: Scalars['String'];
-  address?: Maybe<Scalars['String']>;
-  did?: Maybe<Scalars['String']>;
-};
-
-export type UserCreateInput = {
-  address: Scalars['String'];
-  did?: Maybe<Scalars['String']>;
-};
-
-export type UserCreateUpdatePayload = {
-  __typename?: 'UserCreateUpdatePayload';
-  user?: Maybe<User>;
-};
-
-export type UserUpdateInput = {
-  _id: Scalars['String'];
-  address?: Maybe<Scalars['String']>;
-  did?: Maybe<Scalars['String']>;
+  accountDataAdded?: Maybe<AccountData>;
+  accountDataDeleted?: Maybe<Scalars['String']>;
 };
 
 export type WithIndex<TObject> = TObject & Record<string, any>;
@@ -148,63 +159,65 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = ResolversObject<{
+  AccountData: ResolverTypeWrapper<AccountData>;
+  String: ResolverTypeWrapper<Scalars['String']>;
+  AccountDataCreateInput: AccountDataCreateInput;
+  AccountDataPayload: ResolverTypeWrapper<AccountDataPayload>;
+  AccountDataUpdateInput: AccountDataUpdateInput;
   Mutation: ResolverTypeWrapper<{}>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
-  String: ResolverTypeWrapper<Scalars['String']>;
   Query: ResolverTypeWrapper<{}>;
   Subscription: ResolverTypeWrapper<{}>;
-  User: ResolverTypeWrapper<User>;
-  UserCreateInput: UserCreateInput;
-  UserCreateUpdatePayload: ResolverTypeWrapper<UserCreateUpdatePayload>;
-  UserUpdateInput: UserUpdateInput;
 }>;
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = ResolversObject<{
+  AccountData: AccountData;
+  String: Scalars['String'];
+  AccountDataCreateInput: AccountDataCreateInput;
+  AccountDataPayload: AccountDataPayload;
+  AccountDataUpdateInput: AccountDataUpdateInput;
   Mutation: {};
   Boolean: Scalars['Boolean'];
-  String: Scalars['String'];
   Query: {};
   Subscription: {};
-  User: User;
-  UserCreateInput: UserCreateInput;
-  UserCreateUpdatePayload: UserCreateUpdatePayload;
-  UserUpdateInput: UserUpdateInput;
 }>;
 
-export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
-  createUser?: Resolver<Maybe<ResolversTypes['UserCreateUpdatePayload']>, ParentType, ContextType, RequireFields<MutationCreateUserArgs, 'user'>>;
-  updateUser?: Resolver<Maybe<ResolversTypes['UserCreateUpdatePayload']>, ParentType, ContextType, RequireFields<MutationUpdateUserArgs, 'user'>>;
-  deleteUser?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteUserArgs, '_id'>>;
-}>;
-
-export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
-  users?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
-}>;
-
-export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = ResolversObject<{
-  userAdded?: SubscriptionResolver<Maybe<ResolversTypes['User']>, "userAdded", ParentType, ContextType>;
-  userDeleted?: SubscriptionResolver<Maybe<ResolversTypes['String']>, "userDeleted", ParentType, ContextType>;
-}>;
-
-export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
+export type AccountDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['AccountData'] = ResolversParentTypes['AccountData']> = ResolversObject<{
   _id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  address?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   did?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type UserCreateUpdatePayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserCreateUpdatePayload'] = ResolversParentTypes['UserCreateUpdatePayload']> = ResolversObject<{
-  user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+export type AccountDataPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['AccountDataPayload'] = ResolversParentTypes['AccountDataPayload']> = ResolversObject<{
+  accountData?: Resolver<Maybe<ResolversTypes['AccountData']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
+  createAccountData?: Resolver<Maybe<ResolversTypes['AccountDataPayload']>, ParentType, ContextType, RequireFields<MutationCreateAccountDataArgs, 'accountData'>>;
+  updateAccountData?: Resolver<Maybe<ResolversTypes['AccountDataPayload']>, ParentType, ContextType, RequireFields<MutationUpdateAccountDataArgs, 'accountData'>>;
+  deleteAccountData?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteAccountDataArgs, '_id'>>;
+}>;
+
+export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
+  accountData?: Resolver<Maybe<ResolversTypes['AccountData']>, ParentType, ContextType, RequireFields<QueryAccountDataArgs, 'id'>>;
+  accountDatasByIds?: Resolver<Array<Maybe<ResolversTypes['AccountData']>>, ParentType, ContextType, RequireFields<QueryAccountDatasByIdsArgs, 'ids'>>;
+  accountDatas?: Resolver<Maybe<Array<Maybe<ResolversTypes['AccountData']>>>, ParentType, ContextType>;
+}>;
+
+export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = ResolversObject<{
+  accountDataAdded?: SubscriptionResolver<Maybe<ResolversTypes['AccountData']>, "accountDataAdded", ParentType, ContextType>;
+  accountDataDeleted?: SubscriptionResolver<Maybe<ResolversTypes['String']>, "accountDataDeleted", ParentType, ContextType>;
+}>;
+
 export type Resolvers<ContextType = any> = ResolversObject<{
+  AccountData?: AccountDataResolvers<ContextType>;
+  AccountDataPayload?: AccountDataPayloadResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   Subscription?: SubscriptionResolvers<ContextType>;
-  User?: UserResolvers<ContextType>;
-  UserCreateUpdatePayload?: UserCreateUpdatePayloadResolvers<ContextType>;
 }>;
 
 

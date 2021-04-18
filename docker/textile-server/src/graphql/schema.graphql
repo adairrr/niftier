@@ -1,35 +1,36 @@
-type User {
-  _id: String!
-  address: String
+type AccountData {
+  _id: String! # textile ID
+  id: String!
   did: String
 }
 
-input UserCreateInput {
-  address: String! # mandate address
+input AccountDataCreateInput {
+  id: String!
   did: String
 }
 
-input UserUpdateInput {
-  _id: String!
-  address: String
+input AccountDataUpdateInput {
+  id: String!
   did: String
 }
 
-type UserCreateUpdatePayload {
-  user: User # nullable in case of error
+type AccountDataPayload {
+  accountData: AccountData # nullable in case of error
 }
 
 type Query {
-  users: [User]
+  accountData(id: String!): AccountData # search via address
+  accountDatasByIds(ids: [String!]!): [AccountData]!
+  accountDatas: [AccountData]
 }
 
 type Mutation {
-  createUser(user: UserCreateInput!): UserCreateUpdatePayload
-  updateUser(user: UserUpdateInput!): UserCreateUpdatePayload
-  deleteUser(_id: String!): Boolean
+  createAccountData(accountData: AccountDataCreateInput!): AccountDataPayload
+  updateAccountData(accountData: AccountDataUpdateInput!): AccountDataPayload
+  deleteAccountData(_id: String!): Boolean
 }
 
 type Subscription {
-  userAdded: User
-  userDeleted: String
+  accountDataAdded: AccountData
+  accountDataDeleted: String
 }
