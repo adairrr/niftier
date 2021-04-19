@@ -5,40 +5,51 @@ import { PinataResponse, uploadJson } from '../helpers/pinata';
 export default class ArtpieceStore {
   /* properties */
   id: string = Date.now().toString();
+
   name: string = undefined;
+
   description: string = undefined;
+
   recipientAddress: string = undefined;
+
   mediaUri: string = undefined;
+
   metadataUri: string = undefined;
+
   mediaPrevew: string = undefined;
 
   /* setters */
-  setName(name: string) {
+  setName(name: string): void {
     this.name = name;
   }
-  setDescription(description: string) {
+
+  setDescription(description: string): void {
     this.description = description;
   }
-  setRecipientAddress(recipientAddress: string) {
+
+  setRecipientAddress(recipientAddress: string): void {
     this.recipientAddress = recipientAddress;
   }
-  setMediaUri(mediaUri: string) {
+
+  setMediaUri(mediaUri: string): void {
     this.mediaUri = mediaUri;
   }
-  setMediaPrevew(mediaPrevew: string) {
+
+  setMediaPrevew(mediaPrevew: string): void {
     this.mediaPrevew = mediaPrevew;
   }
 
   get toMetadataJSON() {
-    const metadataJSON = {};
-    metadataJSON['name'] = this.name;
-    metadataJSON['description'] = this.description;
-    metadataJSON['image'] = `https://gateway.pinata.cloud/ipfs/${this.mediaUri}`;
+    const metadataJSON = {
+      name: this.name,
+      description: this.description,
+      image: `https://gateway.pinata.cloud/ipfs/${this.mediaUri}`,
+    };
 
     return metadataJSON;
   }
 
-  async pinMetadata() {
+  async pinMetadata(): Promise<string> {
     try {
       const uploadResp = await uploadJson(JSON.stringify(this.toMetadataJSON));
       const uploadData: PinataResponse = await uploadResp.json();
@@ -50,6 +61,7 @@ export default class ArtpieceStore {
     } catch (e) {
       console.log(e);
     }
+    return '';
   }
 
   /* action functions */

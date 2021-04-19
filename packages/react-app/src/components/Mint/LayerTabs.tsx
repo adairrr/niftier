@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Avatar, Button, Popconfirm, Tabs } from 'antd';
-import { DraggableTabs } from '..';
 import { CloseOutlined } from '@ant-design/icons';
+import { observer } from 'mobx-react-lite';
+import { DraggableTabs } from '..';
 import { DraggableTabOrder } from '../DraggableTabs';
 import MintableLayerForm from './MintableLayerForm';
 import { MintableLayerListStore } from '../../store/MintableLayerStore';
-import { observer } from 'mobx-react-lite';
 import { unpinFile } from '../../helpers/pinata';
+
 const { TabPane } = Tabs;
 
 type LayerMetadata = {

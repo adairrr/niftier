@@ -21,7 +21,7 @@ const fetchTokenMetadata = async (tokenId: string, tokenUriHash: string, owner: 
       try {
         const jsonManifest = JSON.parse(jsonManifestBuffer.toString());
         console.log('jsonManifest', jsonManifest);
-        return { id: tokenId, uri: tokenUri, owner: owner, ...jsonManifest };
+        return { id: tokenId, uri: tokenUri, owner, ...jsonManifest };
       } catch (e) {
         console.log(e);
       }
@@ -29,6 +29,7 @@ const fetchTokenMetadata = async (tokenId: string, tokenUriHash: string, owner: 
   } catch (err) {
     console.log(err);
   }
+  return null;
 };
 
 export default fetchTokenMetadata;

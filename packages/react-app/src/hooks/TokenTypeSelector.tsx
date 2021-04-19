@@ -83,7 +83,7 @@ const TokenTypeSelector = ({ selectChild = false, onSelectedParent }: TokenTypeS
     setChildTokenTypeName(childTokenTypes[childTypeIndex].child.name);
   };
 
-  if (loading) return <div>'Loading...'</div>;
+  if (loading) return <div>Loading...</div>;
   if (error) return <div>`Error! ${JSON.stringify(error)}`</div>;
 
   return (

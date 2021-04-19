@@ -2,7 +2,7 @@ import { Menu } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-export function RouterMenu() {
+const RouterMenu: React.FC = () => {
   const [route, setRoute] = useState<string>();
   useEffect(() => {
     setRoute(window.location.pathname);
@@ -90,7 +90,7 @@ export function RouterMenu() {
           Mint
         </Link>
       </Menu.Item>
-      <Menu.Item key="/tokenview">
+      {/* <Menu.Item key="/tokenview">
         <Link
           onClick={() => {
             setRoute('/tokenview');
@@ -99,7 +99,9 @@ export function RouterMenu() {
         >
           view
         </Link>
-      </Menu.Item>
+      </Menu.Item> */}
     </Menu>
   );
-}
+};
+
+export default RouterMenu;

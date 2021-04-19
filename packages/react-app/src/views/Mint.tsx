@@ -11,8 +11,8 @@ import { TokenType } from '../hooks/TokenTypeSelector';
 import { PINATA_IPFS_PREFIX } from '../constants';
 import { DraggableDropzone } from '../components/Files';
 import { useAddressContext, useContractIOContext } from '../contexts';
-import MintableLayerStore from '../store/MintableLayerStore';
-import { MintableLayerListStore } from '../store/MintableLayerStore';
+import MintableLayerStore, { MintableLayerListStore } from '../store/MintableLayerStore';
+
 import { ArtpieceStore } from '../store';
 import { ArtpieceLayerMinter, MintableLayersPreview } from '../components/Mint';
 
@@ -47,9 +47,7 @@ const STARTING_JSON: TokenJson = {
   ],
 };
 
-type MintProps = {};
-
-const Mint: FunctionComponent<MintProps> = ({}) => {
+const Mint: FunctionComponent = () => {
   const currentAddress = useAddressContext();
   const { tx, reader, writer } = useContractIOContext();
 
@@ -75,7 +73,7 @@ const Mint: FunctionComponent<MintProps> = ({}) => {
   };
 
   useEffect(() => {
-    let updatedJson = tokenUri;
+    const updatedJson = tokenUri;
     if (tokenDescription) updatedJson.description = tokenDescription;
     if (tokenName) updatedJson.name = tokenName;
     if (selectedTokenType) {
@@ -84,7 +82,7 @@ const Mint: FunctionComponent<MintProps> = ({}) => {
     if (currentAddress) updatedJson.attributes[1].value = currentAddress;
     if (uploadedImageData) updatedJson.image = PINATA_IPFS_PREFIX.concat(tokenIpfsHash);
     setTokenUri(updatedJson);
-  }, [tokenName, tokenDescription, selectedTokenType, currentAddress, uploadedImageData, tokenIpfsHash]);
+  }, [tokenName, tokenDescription, selectedTokenType, currentAddress, uploadedImageData, tokenIpfsHash, tokenUri]);
 
   const onClickUploadJson = async () => {
     console.log('UPLOADING json...', tokenUri);
@@ -118,7 +116,7 @@ const Mint: FunctionComponent<MintProps> = ({}) => {
     <>
       <MintableLayersPreview layerList={layerList} artpiece={artpiece} />
       <ArtpieceLayerMinter layerList={layerList} artpiece={artpiece} />
-      <div></div>
+      <div />
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <div>
           {/* <PinataDropzone onSuccessfulUpload={handleSuccessfulUpload}/> */}
@@ -141,7 +139,7 @@ const Mint: FunctionComponent<MintProps> = ({}) => {
             <ReactJson
               style={{ padding: 8 }}
               src={tokenUri}
-              theme={'pop'}
+              theme="pop"
               enableClipboard={false}
               displayDataTypes={false}
             />

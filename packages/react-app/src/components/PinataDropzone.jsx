@@ -119,11 +119,10 @@ export default function PinataDropzone({ onSuccessfulUpload }) {
     const uploadData = await uploadResp.json();
 
     console.log(`Upload data : ${uploadData}`);
-    setUploadResponse(uploadData)
+    setUploadResponse(uploadData);
     setUploading(false);
     // call props hook
-    onSuccessfulUpload(uploadData)
-    
+    onSuccessfulUpload(uploadData);
   }
 
   const filesAvailableForUpload = acceptedFiles.length > 0;
@@ -136,10 +135,13 @@ export default function PinataDropzone({ onSuccessfulUpload }) {
     </div>
   ));
 
-  useEffect(() => () => {
-    // Make sure to revoke the data uris to avoid memory leaks
-    acceptedFiles.forEach((file) => URL.revokeObjectURL(file.preview));
-  }, [acceptedFiles]);
+  useEffect(
+    () => () => {
+      // Make sure to revoke the data uris to avoid memory leaks
+      acceptedFiles.forEach(file => URL.revokeObjectURL(file.preview));
+    },
+    [acceptedFiles],
+  );
 
   return (
     <>
@@ -147,11 +149,9 @@ export default function PinataDropzone({ onSuccessfulUpload }) {
       <h1>Upload</h1>
 
       <Fields>
-        <DropzoneContainer
-          {...getRootProps({ isDragActive, isDragAccept, isDragReject })}
-        >
+        <DropzoneContainer {...getRootProps({ isDragActive, isDragAccept, isDragReject })}>
           <input {...getInputProps()} />
-          <p>Drag 'n' drop some files here, or click to select files</p>
+          <p>Drag `$n` drop some files here, or click to select files</p>
         </DropzoneContainer>
         <aside style={thumbsContainer}>{thumbs}</aside>
 

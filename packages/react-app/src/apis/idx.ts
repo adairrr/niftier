@@ -11,10 +11,10 @@ declare global {
 export function createIDX(ceramic: CeramicClient, aliases?: any) {
   const idxAliases = aliases || {};
   // TODO see https://developers.idx.xyz/build/aliases/
-  //https://developers.idx.xyz/guides/definitions/creating/
+  // https://developers.idx.xyz/guides/definitions/creating/
 
   // @ts-ignore
-  const idx = new IDX({ ceramic: ceramic, idxAliases });
+  const idx = new IDX({ ceramic, idxAliases });
 
   // debug
   window.idx = idx;

@@ -8,6 +8,7 @@ import * as AntIcon from '@ant-design/icons';
 import { SiderTheme } from 'antd/lib/layout/Sider';
 import './SiteSider.less';
 import { relative } from 'node:path';
+
 const { SubMenu } = Menu;
 
 const paths = [
@@ -56,14 +57,14 @@ const SiteSider: React.FC<SiteSiderProps> = ({}) => {
   const baseClassName = 'SiteSider';
   const { theme } = useThemeContext();
   const { path } = useRouteMatch();
-  let location = useLocation();
+  const location = useLocation();
 
   const [collapsed, setCollapsed] = useState(false);
   const [isMobileMenu, setIsMobileMenu] = useState(false);
 
   const renderLogoAndTitle = (
     <a>
-      <img src={'https://gw.alipayobjects.com/zos/antfincdn/PmY%24TNNDBI/logo.svg'} alt="logo" />
+      <img src="https://gw.alipayobjects.com/zos/antfincdn/PmY%24TNNDBI/logo.svg" alt="logo" />
       {collapsed ? null : <h1>Imaginifty</h1>}
     </a>
   );

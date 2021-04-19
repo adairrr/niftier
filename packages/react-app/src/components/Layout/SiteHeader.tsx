@@ -18,7 +18,7 @@ const SiteHeader: React.FC<SiteHeaderProps> = ({ account }) => {
           subTitle="Collaborative, programmable art"
           style={{ cursor: 'pointer' }}
           extra={<>{account}</>}
-        ></PageHeader>
+        />
       </Layout.Header>
     </div>
   );

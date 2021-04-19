@@ -3,10 +3,10 @@ import React, { useState, useEffect, useRef, Component } from 'react';
 import { Canvas, MeshProps, useFrame } from 'react-three-fiber';
 import type { Mesh } from 'three';
 import { Button, List, Card } from 'antd';
-import { Address, AddressInput, TokenId } from '../components';
 import { useQuery, gql } from '@apollo/client';
 import { BigNumber, utils } from 'ethers';
 import { JsonRpcProvider } from '@ethersproject/providers';
+import { Address, AddressInput, TokenId } from '../components';
 import { PINATA_IPFS_PREFIX } from '../constants';
 
 type TokenViewProps = {

@@ -20,11 +20,11 @@ export const pinFileToIPFSUrl = `${process.env.REACT_APP_PINATA_API_URL}/pinning
 
 // file is probably RCFile?
 export function getFileFormDataWithMetadata(file: any, fileName?: string) {
-  let data = new FormData();
+  const data = new FormData();
   data.append('file', file);
 
   const metadata = JSON.stringify({
-    name: fileName ? fileName : file.uid,
+    name: fileName || file.uid,
     keyvalues: {},
   });
 
@@ -46,16 +46,16 @@ export function uploadFileCustomRequest(customRequest: RcCustomRequestOptions) {
   return (
     axios
       .post(pinFileToIPFSUrl, data, {
-        //@ts-ignore
-        maxBodyLength: 'Infinity', //this is needed to prevent axios from erroring out with large files
+        // @ts-ignore
+        maxBodyLength: 'Infinity', // this is needed to prevent axios from erroring out with large files
         headers: {
-          //@ts-ignore
+          // @ts-ignore
           'Content-Type': `multipart/form-data; boundary=${data._boundary}`,
           pinata_api_key: process.env.REACT_APP_PINATA_API_KEY,
           pinata_secret_api_key: process.env.REACT_APP_PINATA_API_SECRET,
         },
       })
-      //@ts-ignore
+      // @ts-ignore
       .then(customRequest.onSuccess)
       .catch(customRequest.onError)
   );
@@ -65,14 +65,14 @@ export async function uploadFile(file: File): Promise<PinataResponse> {
   const data = getFileFormDataWithMetadata(file);
 
   let response: AxiosResponse<any>;
-  let error = false;
+  let errored = false;
 
   await axios
     .post(pinFileToIPFSUrl, data, {
-      //@ts-ignore
-      maxBodyLength: 'Infinity', //this is needed to prevent axios from erroring out with large files
+      // @ts-ignore
+      maxBodyLength: 'Infinity', // this is needed to prevent axios from erroring out with large files
       headers: {
-        //@ts-ignore
+        // @ts-ignore
         'Content-Type': `multipart/form-data; boundary=${data._boundary}`,
         pinata_api_key: process.env.REACT_APP_PINATA_API_KEY,
         pinata_secret_api_key: process.env.REACT_APP_PINATA_API_SECRET,
@@ -83,15 +83,15 @@ export async function uploadFile(file: File): Promise<PinataResponse> {
       response = resp;
     })
     .catch(error => {
-      error = true;
+      errored = true;
       console.log(error);
     });
 
-  return !error ? (response.data as PinataResponse) : null;
+  return !errored ? (response.data as PinataResponse) : null;
 }
 
 export async function uploadFileWithPath(file: FileWithPath) {
-  let data = new FormData();
+  const data = new FormData();
   data.append('file', file);
 
   const metadata = JSON.stringify({

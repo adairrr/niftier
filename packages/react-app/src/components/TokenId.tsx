@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import Blockies from 'react-blockies';
 import { Typography, Skeleton } from 'antd';
 import { Link } from 'react-router-dom';
+
 const { Text } = Typography;
 
 /*
@@ -35,7 +36,7 @@ class TokenId extends Component<TokenIdProps> {
   };
 
   public render() {
-    let tokenId = this.props.id;
+    const tokenId = this.props.id;
 
     if (!tokenId) {
       return (
@@ -52,7 +53,7 @@ class TokenId extends Component<TokenIdProps> {
     if (this.props.minimized) {
       return (
         <span style={{ verticalAlign: 'middle' }}>
-          <a /*style={{ color: "#222222" }}*/>
+          <a /* style={{ color: "#222222" }} */>
             <Blockies seed={tokenId.toLowerCase()} size={8} scale={2} />
           </a>
         </span>
@@ -63,7 +64,7 @@ class TokenId extends Component<TokenIdProps> {
     if (this.props.onChange) {
       text = (
         <Text editable={{ onChange: this.props.onChange }} copyable>
-          <a /*style={{ color: "#222222" }}*/>{displayId}</a>
+          <a /* style={{ color: "#222222" }} */>{displayId}</a>
         </Text>
       );
     } else {

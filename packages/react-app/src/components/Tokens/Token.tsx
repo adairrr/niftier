@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button, List, Card, Image, Row, Col, Typography } from 'antd';
-import { Address, AddressInput, TokenId } from '..';
 import { useQuery, gql } from '@apollo/client';
 import { RouteComponentProps } from 'react-router';
 import { useParams } from 'react-router-dom';
+import { Address, AddressInput, TokenId } from '..';
 import { TOKEN_QUERY } from '../../apollo/queries';
 import { PINATA_IPFS_PREFIX } from '../../constants';
 import { fetchTokenMetadata, getFromIPFS } from '../../hooks';
@@ -11,10 +11,10 @@ import { TokenMetadata } from '../../hooks/FetchTokenMetadata';
 import { useAddressContext } from '../../contexts';
 import { TokenModelType, TokenRelationshipModelType } from '../../subgraph_models';
 import { useQuery as useMstQuery } from '../../subgraph_models/reactUtils';
+
 const { Meta } = Card;
 const { Paragraph, Title } = Typography;
 // import Title from 'antd/lib/typography/Title';
-// import { FallbackImage } from '../images';
 
 type TokenProps = {
   tokenId: string;
@@ -46,7 +46,7 @@ interface TokenData extends BaseTokenData {
 }
 
 // TODO what is it with react dom routing? I have no idea what these props would be... match doesn't work
-const Token = ({ ...props }: TokenProps) => {
+const Token = () => {
   const currentAddress = useAddressContext();
 
   const { tokenId } = useParams<TokenParams>(); // gotten from the route...
@@ -103,7 +103,7 @@ const Token = ({ ...props }: TokenProps) => {
   // }
 
   // TODO put this in a separate fc
-  if (mstLoading || !mstData) return <span>'Loading...'</span>;
+  if (mstLoading || !mstData) return <span>Loading...</span>;
   if (mstError) return <span>`Error! ${mstError.message}`</span>;
   if (mstData?.token == null) return <span>Token: ${tokenId} was not found in the database.</span>;
   // if (!userTokens) return (<span>WAIT</span>);
@@ -122,10 +122,7 @@ const Token = ({ ...props }: TokenProps) => {
           <Row justify="center">
             <Col span={6} order={1}>
               <Card>
-                <Image
-                  src={parentToken.preview}
-                  // fallback={FallbackImage}
-                />
+                <Image src={parentToken.preview} />
               </Card>
             </Col>
             <Col span={10} order={2}>
@@ -151,7 +148,7 @@ const Token = ({ ...props }: TokenProps) => {
                   dataSource={childTokens}
                   renderItem={childToken => (
                     <List.Item>
-                      <Card hoverable size={'small'} cover={<img alt="example" src={childToken.preview} />}>
+                      <Card hoverable size="small" cover={<img alt="example" src={childToken.preview} />}>
                         <Meta title={childToken.name} description={<TokenId id={childToken.id} />} />
                       </Card>
                       {/* <div><img src={childMetadata.image} style={{maxWidth:150}} /></div> */}

@@ -1,18 +1,16 @@
-import React, { useState, useRef } from 'react';
+import React, { useRef } from 'react';
 import { observer } from 'mobx-react-lite';
-import { TokenModelType } from '../subgraph_models/TokenModel';
-import { Avatar, Card, Image } from 'antd';
-import { useQuery } from '../subgraph_models';
+import { Image } from 'antd';
 import { Link } from 'react-router-dom';
 import * as AntIcon from '@ant-design/icons';
+import { TokenModelType } from '../subgraph_models/TokenModel';
 import './less/TokenCard.less';
-const { Meta } = Card;
 
 type TokenCardProps = {
   token: TokenModelType;
 };
 
-const TokenCard: React.FC<TokenCardProps> = ({ token }) => {
+const TokenCard: React.FC<TokenCardProps> = ({ token }: TokenCardProps) => {
   const imageRef = useRef();
 
   const baseClassName = 'TokenCard';

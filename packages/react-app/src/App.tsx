@@ -5,6 +5,9 @@ import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers';
 import './App.css';
 import { Layout } from 'antd';
 import { useUserAddress } from 'eth-hooks';
+import { formatEther, parseEther } from '@ethersproject/units';
+import { EthereumAuthProvider, ThreeIdConnect } from '3id-connect';
+import { DIDProvider } from 'dids';
 import {
   useExchangePrice,
   useGasPrice,
@@ -17,13 +20,12 @@ import {
 } from './hooks';
 import { Account, Faucet, Ramp, Contract, GasGauge, ThemeSwitch } from './components';
 import { Transactor } from './helpers';
-import { formatEther, parseEther } from '@ethersproject/units';
 import { Hints, ExampleUI, Subgraph, Transfers, Mint, UserTokens } from './views';
 import { UserProfile } from './views/profile';
 import { Token } from './components/Tokens';
 import { INFURA_ID, DAI_ADDRESS, DAI_ABI, NETWORK, NETWORKS } from './constants';
-//import Hints from './Hints';
-import { RouterMenu } from './RouterMenu';
+// import Hints from './Hints';
+import RouterMenu from './RouterMenu';
 import { logoutOfWeb3Modal, web3Modal } from './components/WalletConnect';
 import CeramicDocs from './views/CeramicDocs';
 import Landing from './components/Landing';
@@ -37,11 +39,9 @@ import { Footer11DataSource } from './components/Landing/data.source';
 import AccountDropdown from './components/Header/AccountDropdown';
 import { NotFound404Page } from './views/exception';
 import EthContextProvider from './contexts/EthContextProvider';
-import { EthereumAuthProvider, ThreeIdConnect } from '3id-connect';
-import { DIDProvider } from 'dids';
 
 /// 📡 What chain are your contracts deployed to?
-const targetNetwork = NETWORKS['localhost']; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
+const targetNetwork = NETWORKS.localhost; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
 
 // 😬 Sorry for all the console logging
 const DEBUG = false;
@@ -50,7 +50,7 @@ const DEBUG = false;
 if (DEBUG) console.log('📡 Connecting to Mainnet Ethereum');
 // const mainnetProvider = getDefaultProvider("mainnet", { infura: INFURA_ID, etherscan: ETHERSCAN_KEY, quorum: 1 });
 // const mainnetProvider = new InfuraProvider("mainnet",INFURA_ID);
-const mainnetProvider = new JsonRpcProvider('https://mainnet.infura.io/v3/' + INFURA_ID);
+const mainnetProvider = new JsonRpcProvider(`https://mainnet.infura.io/v3/${INFURA_ID}`);
 // ( ⚠️ Getting "failed to meet quorum" errors? Check your INFURA_ID)
 
 // 🏠 Your local provider is usually pointed at your local blockchain
@@ -61,7 +61,7 @@ if (DEBUG) console.log('🏠 Connecting to provider:', localProviderUrlFromEnv);
 const localProvider = new JsonRpcProvider(localProviderUrlFromEnv);
 
 // 🔭 block explorer URL
-const blockExplorer = targetNetwork.blockExplorer;
+const { blockExplorer } = targetNetwork;
 
 // const threeID = new ThreeIdConnect();
 
@@ -77,9 +77,9 @@ function App(props) {
   const userProvider = useUserProvider(injectedProvider, localProvider);
 
   const providers = {
-    userProvider: userProvider,
-    localProvider: localProvider,
-    mainnetProvider: mainnetProvider,
+    userProvider,
+    localProvider,
+    mainnetProvider,
   };
 
   const address = useUserAddress(userProvider);
@@ -89,10 +89,10 @@ function App(props) {
   if (DEBUG) console.log('👩‍💼 selected address:', address);
 
   // You can warn the user if you would like them to be on a specific network
-  let localChainId = localProvider && localProvider._network && localProvider._network.chainId;
+  const localChainId = localProvider && localProvider._network && localProvider._network.chainId;
   if (DEBUG) console.log('🏠 localChainId', localChainId);
 
-  let selectedChainId = userProvider && userProvider._network && userProvider._network.chainId;
+  const selectedChainId = userProvider && userProvider._network && userProvider._network.chainId;
   if (DEBUG) console.log('🕵🏻‍♂️ selectedChainId:', selectedChainId);
 
   // For more hooks, check out 🔗eth-hooks at: https://www.npmjs.com/package/eth-hooks
@@ -120,7 +120,7 @@ function App(props) {
   if (DEBUG) console.log('🔐 writeContracts', writeContracts);
 
   const contractsIo = {
-    tx: tx,
+    tx,
     reader: readContracts,
     writer: writeContracts,
   };
@@ -136,11 +136,11 @@ function App(props) {
   // if(DEBUG) console.log("🥇 myMainnetDAIBalance:", myMainnetDAIBalance)
 
   // keep track of a variable from the contract in the local React state:
-  //📟 Listen for broadcast events
+  // 📟 Listen for broadcast events
   const purpose = useContractReader(readContracts, 'YourContract', 'purpose');
   if (DEBUG) console.log('🤗 purpose:', purpose);
 
-  //📟 Listen for broadcast events
+  // 📟 Listen for broadcast events
   const setPurposeEvents = useEventListener(readContracts, 'YourContract', 'SetPurpose', localProvider, 1);
   if (DEBUG) console.log('📟 SetPurpose events:', setPurposeEvents);
 
@@ -205,7 +205,7 @@ function App(props) {
   // }
 
   const account = (
-    <div style={{ /*position: "fixed", */ textAlign: 'right', right: 0, top: 0, padding: 0 }}>
+    <div style={{ /* position: "fixed", */ textAlign: 'right', right: 0, top: 0, padding: 0 }}>
       <Account
         address={currentAddress}
         price={price}
@@ -302,16 +302,8 @@ function App(props) {
                       <Route path="/mint">
                         <Mint />
                       </Route>
-                      <Route
-                        exact
-                        path="/token/:tokenId"
-                        render={({ match }) => <Token tokenId={match['tokenId']} />}
-                      />
-                      <Route
-                        exact
-                        path="/user/:userAddress"
-                        render={({ match }) => <UserProfile address={match['userAddress']} />}
-                      />
+                      <Route exact path="/token/:tokenId" render={() => <Token />} />
+                      <Route exact path="/user/:userAddress" render={() => <UserProfile />} />
                       <Route path="/ceramic">
                         <CeramicDocs />
                       </Route>

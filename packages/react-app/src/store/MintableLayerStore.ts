@@ -7,36 +7,47 @@ import { PinataResponse, unpinFile, uploadJson } from '../helpers/pinata';
 export default class MintableLayerStore {
   /* properties */
   id: string = Date.now().toString();
+
   name: string = undefined;
+
   description: string = undefined;
+
   recipientAddress: string = undefined;
+
   mediaUri: string = undefined;
+
   metadataUri: string = undefined;
+
   mediaPrevew: string = undefined;
 
   /* setters */
   setName(name: string) {
     this.name = name;
   }
+
   setDescription(description: string) {
     this.description = description;
   }
+
   setRecipientAddress(recipientAddress: string) {
     this.recipientAddress = recipientAddress;
   }
+
   setMediaUri(mediaUri: string) {
     this.mediaUri = mediaUri;
   }
+
   setMediaPrevew(mediaPrevew: string) {
     this.mediaPrevew = mediaPrevew;
   }
 
   /* computed functions */
   get toMetadataJSON() {
-    const metadataJSON = {};
-    metadataJSON['name'] = this.name;
-    metadataJSON['description'] = this.description;
-    metadataJSON['image'] = `https://gateway.pinata.cloud/ipfs/${this.mediaUri}`;
+    const metadataJSON = {
+      name: this.name,
+      description: this.description,
+      image: `https://gateway.pinata.cloud/ipfs/${this.mediaUri}`,
+    };
 
     return metadataJSON;
   }
@@ -83,10 +94,10 @@ export class MintableLayerListStore {
 
   async pinAndGetLayerUris() {
     try {
-      const layerUriPromises = this.layers.map(async layer => await layer.pinMetadata());
+      const layerUriPromises = this.layers.map(async layer => layer.pinMetadata());
       const layerUris = Promise.all(layerUriPromises);
       console.log(layerUris);
-      return layerUris;
+      return await layerUris;
     } catch (error) {
       console.log(error);
     }
@@ -129,7 +140,7 @@ export class MintableLayerListStore {
   }
 
   reorderLayers(newLayerOrder: DraggableTabOrder) {
-    let newOrder = newLayerOrder.order;
+    const newOrder = newLayerOrder.order;
 
     // sort the tabs by the order
     const orderedTabs = this.layers.slice().sort((a, b) => {

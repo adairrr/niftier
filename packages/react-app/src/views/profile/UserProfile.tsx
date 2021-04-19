@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Avatar, Button, Input, Layout, Typography } from 'antd';
 import { useParams } from 'react-router-dom';
-import { ethAddressToDID } from '../../apis/ceramic';
-import { useCeramicContext } from '../../contexts';
 import { BasicProfile } from '@ceramicstudio/idx-constants';
 import * as AntIcon from '@ant-design/icons';
+import { ethAddressToDID } from '../../apis/ceramic';
+import { useCeramicContext } from '../../contexts';
 import { AccountModelType } from '../../subgraph_models';
 import { useQuery as useMstQuery } from '../../subgraph_models/reactUtils';
 
@@ -14,11 +14,7 @@ type UserParams = {
   userAddress: string;
 };
 
-type UserProfileProps = {
-  address: string;
-};
-
-const UserProfile: React.FC<UserProfileProps> = ({ address }) => {
+const UserProfile: React.FC = () => {
   const { userAddress } = useParams<UserParams>(); // gotten from the route...
   const [profileInfo, setProfileInfo] = useState<BasicProfile>({});
   const [userAccount, setUserAccount] = useState<AccountModelType>();
@@ -40,7 +36,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ address }) => {
     if (data?.account) {
       data.account.fetchAccountDid(ceramicAuth);
     }
-  }, [data]);
+  }, [ceramicAuth, data]);
 
   const setUserProfile = async () => {
     const test = ceramicAuth.setUserProfile(profileInfo);

@@ -34,6 +34,7 @@ export async function createThreeIdDidProvider(
     return didProvider;
   } catch (error) {
     console.log('createThreeIdDidProvider error: ', { error });
+    return null;
   }
 }
 
@@ -56,5 +57,6 @@ export async function authenticateDid(didProvider: DIDProvider, ceramic: Ceramic
     return did;
   } catch (error) {
     console.log('authenticateDid error: ', { error });
+    return null;
   }
 }

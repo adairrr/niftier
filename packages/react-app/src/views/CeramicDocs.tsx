@@ -1,7 +1,7 @@
 import CeramicClient from '@ceramicnetwork/http-client';
 import React, { useEffect, useState } from 'react';
-import { initiateCeramicWithIDX } from '../helpers/ceramic';
 import { Button } from 'antd';
+import { initiateCeramicWithIDX } from '../helpers/ceramic';
 import { useCeramicContext, useProviderContext } from '../contexts';
 
 export const QueryDoc = (did, client: CeramicClient) => {
@@ -9,7 +9,7 @@ export const QueryDoc = (did, client: CeramicClient) => {
   const [docID, setDocID] = useState(null);
 
   const query = async () => {
-    var doc = await client.loadDocument(btoa(docID));
+    const doc = await client.loadDocument(btoa(docID));
     setDoc(doc);
     console.log(doc);
   };
@@ -20,7 +20,7 @@ export const QueryDoc = (did, client: CeramicClient) => {
 
   return (
     <>
-      <input type="text" onChange={handleChange}></input>
+      <input type="text" onChange={handleChange} />
       <button className="btn btn-primary btn-pill text-info mr-2 mb-2" type="button" onClick={query}>
         query doc
       </button>
@@ -50,7 +50,7 @@ export default function CeramicDocs() {
     console.log(ceramicClient.did);
     console.log('here');
     // console.log(aliases)
-    let content = {
+    const content = {
       content: { created: new Date().toISOString() },
       metadata: {
         // schema: "ceramic://"+aliases.meta,
@@ -59,7 +59,7 @@ export default function CeramicDocs() {
       },
     };
     console.log(`Content: ${JSON.stringify(content)}`);
-    var doc = await ceramicClient.createDocument('tile', content);
+    const doc = await ceramicClient.createDocument('tile', content);
     setDocument(doc);
     console.log('Document: ');
     console.log(doc);

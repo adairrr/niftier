@@ -17,18 +17,20 @@ const usePromise = <T>(task: () => PromiseLike<T>): UsePromiseResponse<T> => {
     if (!initialized) {
       task().then(
         (data: T) => {
-          !cancelled &&
+          if (!cancelled) {
             setState({
               data,
               loading: false,
             });
+          }
         },
         (error: Error) => {
-          !cancelled &&
+          if (!cancelled) {
             setState({
               error,
               loading: false,
             });
+          }
         },
       );
       setInitialized(true);
@@ -36,6 +38,7 @@ const usePromise = <T>(task: () => PromiseLike<T>): UsePromiseResponse<T> => {
     return (): void => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [task, setState, initialized, setInitialized]);
 
   return state;

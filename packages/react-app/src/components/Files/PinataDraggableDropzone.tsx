@@ -4,8 +4,8 @@ import { Upload, message, Modal, Card, Image } from 'antd';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import * as AntIcon from '@ant-design/icons';
-import { uploadFileCustomRequest, pinFileToIPFSUrl, unpinFile, PinataResponse } from '../../helpers/pinata';
 import { UploadFile } from 'antd/lib/upload/interface';
+import { uploadFileCustomRequest, pinFileToIPFSUrl, unpinFile, PinataResponse } from '../../helpers/pinata';
 
 const { Dragger } = Upload;
 

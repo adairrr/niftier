@@ -6,7 +6,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 // Drag & Drop node
 class TabNode extends React.Component {
   render() {
-    //@ts-ignore
+    // @ts-ignore
     const { connectDragSource, connectDropTarget, children } = this.props;
 
     return connectDragSource(connectDropTarget(children));
@@ -75,9 +75,9 @@ class DraggableTabs extends React.Component<DraggableTabsProps, DraggableTabsSta
 
     // add any new children
     React.Children.forEach(children, c => {
-      //@ts-ignore
+      // @ts-ignore
       if (newOrder.indexOf(c.key) === -1) {
-        //@ts-ignore
+        // @ts-ignore
         newOrder.push(c.key);
       }
     });
@@ -133,7 +133,7 @@ class DraggableTabs extends React.Component<DraggableTabsProps, DraggableTabsSta
   renderTabBar = (props, DefaultTabBar) => (
     <DefaultTabBar {...props}>
       {node => (
-        //@ts-ignore
+        // @ts-ignore
         <TabNodeWrapper key={node.key} index={node.key} moveTabNode={this.moveTabNode}>
           {node}
         </TabNodeWrapper>
@@ -142,7 +142,7 @@ class DraggableTabs extends React.Component<DraggableTabsProps, DraggableTabsSta
   );
 
   render() {
-    let { order } = this.state;
+    const { order } = this.state;
     const { children } = this.props;
     // remove onOrderChange prop
     const { onOrderChange, ...props } = this.props;

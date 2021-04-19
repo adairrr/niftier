@@ -22,13 +22,18 @@ module.exports = {
       jsx: true,
     },
     ecmaVersion: 2018,
+    tsconfigRootDir: __dirname,
+    project: 'tsconfig.json',
     sourceType: 'module',
-    project: './tsconfig.json',
   },
   rules: {
     'linebreak-style': 'off',
-    // "indent": "off",
-    // "@typescript-eslint/indent": ["error"],
+    "no-underscore-dangle": "off",
+    "@typescript-eslint/ban-ts-ignore": "off", // TODO off with description
+    "@typescript-eslint/ban-ts-comment": "off",
+    "no-console": "off",
+    "import/prefer-default-export": "off",
+    "no-plusplus": ["error", { "allowForLoopAfterthoughts": true }],
     'prettier/prettier': [
       'error',
       {

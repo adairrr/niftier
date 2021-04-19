@@ -6,19 +6,26 @@ import CeramicClient from '@ceramicnetwork/http-client';
 import { IDX } from '@ceramicstudio/idx';
 import { DID } from 'dids';
 import ThreeIdResolver from '@ceramicnetwork/3id-did-resolver';
+import { BasicProfile } from '@ceramicstudio/idx-constants';
 import { authenticateDid, createCeramic, createIDX, createThreeIdDidProvider } from '../apis';
 import { getUserBasicProfile, setUserBasicProfile } from '../apis/idx';
-import { BasicProfile } from '@ceramicstudio/idx-constants';
 
 export class CeramicAuthStore {
   /* properties */
   threeIdConnect: ThreeIdConnect;
-  isAuthorized: boolean = false;
+
+  isAuthorized = false;
+
   userDid: string = null;
+
   ceramicDid: DID = null;
+
   ceramic: CeramicClient;
+
   idx: IDX;
+
   didProvider: DIDProvider;
+
   did: DID;
 
   constructor(threeIdConnect: ThreeIdConnect) {

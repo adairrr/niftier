@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { Result, Button } from 'antd';
 import React from 'react';
 
-class Unauthorized403Page extends React.Component {
+class Unauthorized403Page extends React.PureComponent {
   render() {
     return (
       <Result

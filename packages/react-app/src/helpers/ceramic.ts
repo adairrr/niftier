@@ -17,6 +17,18 @@ declare global {
   }
 }
 
+export const initiateIDX = (ceramic: CeramicClient): IDX => {
+  // setup idx
+  const aliases = {};
+  // TODO see https://developers.idx.xyz/build/aliases/
+  // https://developers.idx.xyz/guides/definitions/creating/
+  // @ts-ignore
+  const idx = new IDX({ ceramic, aliases });
+  window.idx = idx;
+  console.log(idx);
+  return idx;
+};
+
 export const initiateCeramicWithIDX = async (): Promise<CeramicClient> => {
   // const accounts = await ethereum.send('eth_requestAccounts');
   const addresses = await window.ethereum.enable();
@@ -38,24 +50,13 @@ export const initiateCeramicWithIDX = async (): Promise<CeramicClient> => {
   initiateIDX(ceramic);
 
   window.ceramic = ceramic;
-  //@ts-ignore
+  // @ts-ignore
   window.did = ceramic.did;
   console.log(ceramic.did);
 
   return ceramic;
 };
 
-export const initiateIDX = (ceramic: CeramicClient): IDX => {
-  // setup idx
-  const aliases = {};
-  // TODO see https://developers.idx.xyz/build/aliases/
-  //https://developers.idx.xyz/guides/definitions/creating/
-  // @ts-ignore
-  const idx = new IDX({ ceramic, aliases });
-  window.idx = idx;
-  console.log(idx);
-  return idx;
-};
 // did:3:kjzl6cwe1jw149vfa25gi287p09py9zii2pki0ch55a559iz2vy6fo2uehy8rki
 
 export const ethAddressToDID = async (address: string): Promise<string> => {

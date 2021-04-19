@@ -1,17 +1,17 @@
 import React from 'react';
-import { Address, TokenId } from '../components';
 import { Table } from 'antd';
 import { useQuery } from '@apollo/client';
+import { Address, TokenId } from '../components';
 import { TRANSFERS_QUERY } from '../apollo/queries';
 
 const { Column } = Table;
 
-export default function Transfers({}) {
+const Transfers: React.FC = () => {
   const { loading, error, data } = useQuery(TRANSFERS_QUERY, {
     pollInterval: 2000, // query every 2 seconds
   });
 
-  if (loading) return <div>'Loading...'</div>;
+  if (loading) return <div>Loading...</div>;
   if (error) return <div>`Error! ${error.message}`</div>;
 
   return (
@@ -20,7 +20,7 @@ export default function Transfers({}) {
         <Table
           bordered
           dataSource={data.transfers}
-          rowKey={data => [data.from.id, data.to.id, data.token.id, data.timestamp].join('_')}
+          rowKey={dataIt => [dataIt.from.id, dataIt.to.id, dataIt.token.id, dataIt.timestamp].join('_')}
         >
           <Column title="TokenId" dataIndex="token" render={token => <TokenId id={token.id} fontSize={16} />} />
           <Column
@@ -33,4 +33,6 @@ export default function Transfers({}) {
       </div>
     </div>
   );
-}
+};
+
+export default Transfers;

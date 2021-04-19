@@ -8,10 +8,10 @@ const BASE64_MARKER = ';base64,';
 export const humanFileSize = (size: number) => {
   if (size < 1) return '0 bytes';
   // http://stackoverflow.com/a/20732091
-  let factor = 1000; // Technically it should be 1024, but looks like most apps use 1000...
-  let i = Math.floor(Math.log(size) / Math.log(factor));
-  //@ts-ignore
-  return (size / Math.pow(factor, i)).toFixed(1) * 1 + ' ' + ['B', 'kB', 'MB', 'GB', 'TB'][i];
+  const factor = 1000; // Technically it should be 1024, but looks like most apps use 1000...
+  const i = Math.floor(Math.log(size) / Math.log(factor));
+  // @ts-ignore
+  return `${(size / factor ** i).toFixed(1) * 1} ${['B', 'kB', 'MB', 'GB', 'TB'][i]}`;
 };
 
 // Does the given URL (string) look like a base64-encoded URL?
@@ -27,12 +27,12 @@ export const dataURItoFile = (dataURI: string) => {
 
   // Format of a base64-encoded URL:
   // data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAYAAAAEOCAIAAAAPH1dAAAAK
-  let mime = dataURI.split(BASE64_MARKER)[0].split(':')[1];
-  let filename = 'dataURI-file-' + new Date().getTime() + '.' + mime.split('/')[1];
-  let bytes = atob(dataURI.split(BASE64_MARKER)[1]);
-  let writer = new Uint8Array(new ArrayBuffer(bytes.length));
+  const mime = dataURI.split(BASE64_MARKER)[0].split(':')[1];
+  const filename = `dataURI-file-${new Date().getTime()}.${mime.split('/')[1]}`;
+  const bytes = atob(dataURI.split(BASE64_MARKER)[1]);
+  const writer = new Uint8Array(new ArrayBuffer(bytes.length));
 
-  for (let i = 0; i < bytes.length; i++) {
+  for (let i = 0; i < bytes.length; ++i) {
     writer[i] = bytes.charCodeAt(i);
   }
 

@@ -1,18 +1,18 @@
-/* eslint-disable jsx-a11y/accessible-emoji */
+/* eslint-disable */
 
 import React, { useState } from 'react';
 import 'antd/dist/antd.css';
 import { Button, Typography, Table, Input } from 'antd';
 import { useQuery, gql } from '@apollo/client';
-import { Address } from '../components';
 import GraphiQL from 'graphiql';
 import 'graphiql/graphiql.min.css';
 import fetch from 'isomorphic-fetch';
+import { Address } from '../components';
 
 const highlight = {
   marginLeft: 4,
   marginRight: 8,
-  /*backgroundColor: "#f9f9f9",*/ padding: 4,
+  /* backgroundColor: "#f9f9f9", */ padding: 4,
   borderRadius: 4,
   fontWeight: 'bolder',
 } as const;
@@ -68,7 +68,7 @@ function Subgraph(props) {
   const [newPurpose, setNewPurpose] = useState('loading...');
 
   const deployWarning = (
-    <div style={{ marginTop: 8, padding: 8 }}>{'Warning: 🤔 Have you deployed your subgraph yet?'}</div>
+    <div style={{ marginTop: 8, padding: 8 }}>Warning: 🤔 Have you deployed your subgraph yet?</div>
   );
 
   return (
@@ -86,7 +86,7 @@ function Subgraph(props) {
           The Graph
         </a>{' '}
         with 🏗 scaffold-eth (
-        <a href="https://youtu.be/T5ylzOTkn-Q" target="_blank">
+        <a href="https://youtu.be/T5ylzOTkn-Q" target="_blank" rel="noreferrer">
           learn more
         </a>
         ):
@@ -174,7 +174,7 @@ function Subgraph(props) {
         </div>
 
         {data ? (
-          <Table dataSource={data.purposes} columns={purposeColumns} rowKey={'id'} />
+          <Table dataSource={data.purposes} columns={purposeColumns} rowKey="id" />
         ) : (
           <Typography>{loading ? 'Loading...' : deployWarning}</Typography>
         )}
@@ -182,7 +182,7 @@ function Subgraph(props) {
 
       <div style={{ width: 1200, margin: 'auto', paddingBottom: 64 }}>
         <div style={{ height: 800, border: '1px solid #888888', textAlign: 'left' }}>
-          <GraphiQL fetcher={graphQLFetcher} docExplorerOpen={true} query={EXAMPLE_GRAPHQL} />
+          <GraphiQL fetcher={graphQLFetcher} docExplorerOpen query={EXAMPLE_GRAPHQL} />
         </div>
       </div>
 

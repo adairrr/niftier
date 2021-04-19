@@ -1,10 +1,10 @@
 import React, { useContext, useRef, useState } from 'react';
-import { ArtpieceStore, MintableLayerListStore } from '../../store';
 import { observer } from 'mobx-react-lite';
 import { Button, message } from 'antd';
+import { utils } from 'ethers';
+import { ArtpieceStore, MintableLayerListStore } from '../../store';
 import { useAddressContext } from '../../contexts';
 import useContractIOContext from '../../contexts/ContractIOContext';
-import { utils } from 'ethers';
 import { PinataResponse, uploadJson } from '../../helpers/pinata';
 
 interface ArtpieceLayerMinterProps {
@@ -70,7 +70,7 @@ const ArtpieceLayerMinter: React.FC<ArtpieceLayerMinterProps> = ({ artpiece, lay
     <div className={baseClassName}>
       <Button
         style={{ margin: 8 }}
-        /*loading={uploading}*/ size="large"
+        /* loading={uploading} */ size="large"
         shape="round"
         type="primary"
         onClick={onClickMintArtpieceAndLayers}

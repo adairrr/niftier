@@ -1,10 +1,10 @@
-/* eslint-disable jsx-a11y/accessible-emoji */
+/* eslint-disable */
 
 import React, { useState } from 'react';
 import { Button, List, Divider, Input, Card, DatePicker, Slider, Switch, Progress, Spin } from 'antd';
 import { SyncOutlined } from '@ant-design/icons';
-import { Address, Balance } from '../components';
 import { parseEther, formatEther } from '@ethersproject/units';
+import { Address, Balance } from '../components';
 import { useContractIOContext, useProviderContext } from '../contexts';
 
 export default function ExampleUI({ purpose, setPurposeEvents, address, yourLocalBalance, price }) {
@@ -44,7 +44,7 @@ export default function ExampleUI({ purpose, setPurposeEvents, address, yourLoca
         <Divider />
         ENS Address Example:
         <Address
-          address={'0x34aA3F359A9D614239015126635CE7732c18fDF3'} /* this will show as austingriffith.eth */
+          address="0x34aA3F359A9D614239015126635CE7732c18fDF3" /* this will show as austingriffith.eth */
           fontSize={16}
         />
         <Divider />
@@ -132,7 +132,7 @@ export default function ExampleUI({ purpose, setPurposeEvents, address, yourLoca
           dataSource={setPurposeEvents}
           renderItem={(item: any) => {
             return (
-              <List.Item key={item.blockNumber + '_' + item.sender + '_' + item.purpose}>
+              <List.Item key={`${item.blockNumber}_${item.sender}_${item.purpose}`}>
                 <Address address={item[0]} fontSize={16} />
                 {item[1]}
               </List.Item>

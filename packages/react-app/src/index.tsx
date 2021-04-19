@@ -2,9 +2,9 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { ApolloClient, ApolloProvider, InMemoryCache } from '@apollo/client';
 import './index.css';
-import App from './App';
 import { ThemeSwitcherProvider } from 'react-css-theme-switcher';
 import { createHttpClient } from 'mst-gql';
+import App from './App';
 import { RootStore, StoreContext } from './subgraph_models';
 
 const themes = {
@@ -14,7 +14,7 @@ const themes = {
 
 const prevTheme = window.localStorage.getItem('theme');
 
-let subgraphUri = `http://${process.env.REACT_APP_GRAPHQL_ADDRESS}/subgraphs/name/nft-minter/composable-contract`;
+const subgraphUri = `http://${process.env.REACT_APP_GRAPHQL_ADDRESS}/subgraphs/name/nft-minter/composable-contract`;
 
 const client = new ApolloClient({
   uri: subgraphUri,
@@ -30,7 +30,7 @@ const rootStore = RootStore.create(
 ReactDOM.render(
   <StoreContext.Provider value={rootStore}>
     <ApolloProvider client={client}>
-      <ThemeSwitcherProvider themeMap={themes} defaultTheme={prevTheme ? prevTheme : 'light'}>
+      <ThemeSwitcherProvider themeMap={themes} defaultTheme={prevTheme || 'light'}>
         <App subgraphUri={subgraphUri} />
       </ThemeSwitcherProvider>
     </ApolloProvider>

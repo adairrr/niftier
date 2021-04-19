@@ -1,14 +1,15 @@
 import React, { FunctionComponent } from 'react';
 import * as AntIcon from '@ant-design/icons';
 import { Avatar, Menu, Spin } from 'antd';
-import HeaderDropdown from './HeaderDropdown';
 import Web3Modal from 'web3modal';
+import { observer } from 'mobx-react-lite';
+import { useHistory } from 'react-router-dom';
+import HeaderDropdown from './HeaderDropdown';
 import { useAddressContext } from '../../contexts';
 import Address from '../Address';
 import { useCeramicContext } from '../../contexts/CeramicAuthProvider';
-import { observer } from 'mobx-react-lite';
-import { useHistory } from 'react-router-dom';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const styles = require('./accountDropdown.less');
 
 type AccountDropdownProps = {
@@ -16,7 +17,11 @@ type AccountDropdownProps = {
   loadWeb3Modal: () => Promise<void>;
   logoutOfWeb3Modal: () => Promise<void>;
 };
-const AccountDropdown: FunctionComponent<AccountDropdownProps> = ({ web3Modal, loadWeb3Modal, logoutOfWeb3Modal }) => {
+const AccountDropdown: FunctionComponent<AccountDropdownProps> = ({
+  web3Modal,
+  loadWeb3Modal,
+  logoutOfWeb3Modal,
+}: AccountDropdownProps) => {
   const currentAddress = useAddressContext();
   const ceramicAuth = useCeramicContext();
   const history = useHistory();

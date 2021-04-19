@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { useMemo, useState } from "react";
 import { Card } from "antd";
 import { useContractLoader, useContractExistsAtAddress } from "../../hooks";

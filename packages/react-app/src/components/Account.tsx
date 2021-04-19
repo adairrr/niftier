@@ -1,9 +1,10 @@
 import React, { useContext } from 'react';
 import { Button } from 'antd';
+import Web3Modal from 'web3modal';
 import Address from './Address';
 import Balance from './Balance';
 import Wallet from './Wallet';
-import { useAddressContext, useProviderContext } from '../contexts';
+import { useProviderContext } from '../contexts';
 
 /*
   ~ What it does? ~
@@ -35,8 +36,24 @@ import { useAddressContext, useProviderContext } from '../contexts';
               (ex. by default "https://etherscan.io/" or for xdai "https://blockscout.com/poa/xdai/")
 */
 
-export default function Account({ address, price, minimized, web3Modal, loadWeb3Modal, logoutOfWeb3Modal }) {
-  const { localProvider, userProvider, mainnetProvider } = useProviderContext();
+interface AccountProps {
+  address: string;
+  price: number;
+  web3Modal: Web3Modal;
+  loadWeb3Modal: () => Promise<void>;
+  logoutOfWeb3Modal: () => Promise<void>;
+  minimized: boolean;
+}
+
+const Account: React.FC<AccountProps> = ({
+  address,
+  price,
+  web3Modal,
+  loadWeb3Modal,
+  logoutOfWeb3Modal,
+  minimized = false,
+}: AccountProps) => {
+  const { localProvider, userProvider } = useProviderContext();
 
   const modalButtons = [];
   if (web3Modal) {
@@ -59,7 +76,7 @@ export default function Account({ address, price, minimized, web3Modal, loadWeb3
           style={{ verticalAlign: 'top', marginLeft: 8, marginTop: 4 }}
           shape="round"
           size="large"
-          /*type={minimized ? "default" : "primary"}     too many people just defaulting to MM and having a bad time*/
+          /* type={minimized ? "default" : "primary"}     too many people just defaulting to MM and having a bad time */
           onClick={loadWeb3Modal}
         >
           connect
@@ -84,4 +101,6 @@ export default function Account({ address, price, minimized, web3Modal, loadWeb3
       {modalButtons}
     </div>
   );
-}
+};
+
+export default Account;

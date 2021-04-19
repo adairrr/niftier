@@ -1,9 +1,9 @@
 import React, { useContext, useRef, useState } from 'react';
-import { ArtpieceStore, MintableLayerListStore } from '../../store';
 import { observer } from 'mobx-react-lite';
 import { Button, Divider, message } from 'antd';
-import LayerTabs from './LayerTabs';
 import { Stage as KonvaStage, Layer as KonvaLayer, Image as KonvaImage, Layer } from 'react-konva';
+import LayerTabs from './LayerTabs';
+import { ArtpieceStore, MintableLayerListStore } from '../../store';
 import { uploadFile } from '../../helpers/pinata';
 import { dataURItoFile } from '../../helpers/dataUriFile';
 
@@ -20,7 +20,7 @@ const MintableLayersPreview: React.FC<MintableLayersPreviewProps> = ({ artpiece,
   const getImage = (imageSrc: string): HTMLImageElement => {
     if (!imageSrc) return undefined;
     console.log('gettingImage');
-    let img = new Image(550, 617);
+    const img = new Image(550, 617);
     img.src = imageSrc;
     return img;
   };
@@ -61,7 +61,7 @@ const MintableLayersPreview: React.FC<MintableLayersPreviewProps> = ({ artpiece,
       </KonvaStage>
       <Button
         style={{ margin: 8 }}
-        /*loading={uploading}*/ size="large"
+        /* loading={uploading} */ size="large"
         shape="round"
         type="primary"
         onClick={onClickUploadArtpiece}

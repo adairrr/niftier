@@ -1,11 +1,12 @@
 import React, { useContext, useState } from 'react';
-import MintableLayerStore from '../../store/MintableLayerStore';
 import { observer } from 'mobx-react-lite';
 import { Form, Card, Input, Tooltip, Row, Col, Select, Switch } from 'antd';
 import * as AntIcon from '@ant-design/icons';
+import MintableLayerStore from '../../store/MintableLayerStore';
 import { useAddressContext } from '../../contexts';
 import PinataDraggableDropzone from '../Files/PinataDraggableDropzone';
 import { PinataResponse } from '../../helpers/pinata';
+
 const { Option } = Select;
 const { TextArea } = Input;
 
@@ -109,11 +110,11 @@ const MintableLayerForm: React.FC<MintableLayerFormProps> = ({ layer }) => {
                 checkedChildren={<CheckOutlined />}
                 unCheckedChildren={<CloseOutlined />}
               />
-            </Form.Item> valuePropName="uploadedFileUrl" getValueFromEvent={normFile}*/}
+            </Form.Item> valuePropName="uploadedFileUrl" getValueFromEvent={normFile} */}
           </Col>
           <Col span={8}>
             <Form.Item name={['image']} valuePropName="onChange" getValueFromEvent={e => e.fileUrlPreview} noStyle>
-              <PinataDraggableDropzone singleFile={true} onSuccessfulUpload={handleSuccessfulUpload} />
+              <PinataDraggableDropzone singleFile onSuccessfulUpload={handleSuccessfulUpload} />
             </Form.Item>
           </Col>
         </Row>

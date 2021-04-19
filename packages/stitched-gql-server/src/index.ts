@@ -1,12 +1,9 @@
 import waitOn from 'wait-on';
-import { introspectSchema } from '@graphql-tools/wrap';
 import { stitchSchemas } from '@graphql-tools/stitch';
-import { delegateToSchema } from '@graphql-tools/delegate';
 import { batchDelegateToSchema } from '@graphql-tools/batch-delegate';
-import { makeRemoteExecutor, startServer } from './utils';
+import { getRemoteSchema, startServer, transformIdIntoQuery, parseValuesFromResults } from './utils';
 import * as dotenv from 'dotenv';
-import getRemoteSchema from './utils/getRemoteSchema';
-import { GraphQLObjectType } from 'graphql';
+import { forwardArgsToSelectionSet } from '@graphql-tools/stitch';
 
 dotenv.config();
 
@@ -34,73 +31,21 @@ async function makeGatewaySchema() {
         account: Account
       }
     `,
-    resolvers: {
-      // TODO batching does not work properly yet
-      
-      // Account: {
-      //   data: {
-      //     selectionSet: `{ id }`,
-      //     resolve(account, _args, context, info) {
-      //       return batchDelegateToSchema({
-      //         schema: textileSchema,
-      //         operation: 'query',
-      //         fieldName: 'accountDatasByIds',
-      //         key: account.id,
-      //         argsFromKeys: (ids) => ({ ids }),
-      //         valuesFromResults: (results, keys) => {
-      //           let index = 0;
-      //           return keys.map((key) => {
-      //             if (index < results.length && results[index].id === key) {
-      //               return results[index++];
-      //             }
-      //             return null;
-      //           })
-      //         },
-      //         context,
-      //         info,
-      //       });
-      //     }
-      //   }
-      // },
-      // AccountData: {
-      //   account: {
-      //     selectionSet: `{ id }`,
-      //     resolve(accountData, _args, context, info) {
-      //       return batchDelegateToSchema({
-      //         schema: subgraphSchema,
-      //         operation: 'query',
-      //         fieldName: 'accounts',
-      //         key: accountData.id,
-      //         argsFromKeys: (ids) => ({ ids }),
-      //         valuesFromResults: (results, keys) => {
-      //           console.log("RESULTS", JSON.stringify(results));
-      //           console.log("KEYS", keys);
-      //           let index = 0;
-      //           return keys.map((key) => {
-      //             // if (index < results.length && results[index].id === key) {
-      //             //   return results[index++];
-      //             // }
-      //             return null;
-      //           })
-      //         },
-      //         context,
-      //         info,
-      //       });
-      //     }
-      //   }
-      // }
-      
+    resolvers: {      
       Account: {
         data: {
-          selectionSet: `{ id }`,
-          resolve(account, args, context, info) {
-            return delegateToSchema({
+          selectionSet: forwardArgsToSelectionSet(`{ id }`),
+          resolve(account, _args, context, info) {
+            return batchDelegateToSchema({
               schema: textileSchema,
               operation: 'query',
-              fieldName: 'accountData',
-              args: { id: account.id },
+              fieldName: 'accountDatasByIds',
+              key: account.id,
+              argsFromKeys: (ids) => ({ ids }),
+              transforms: transformIdIntoQuery('accountDatasByIds'),
+              valuesFromResults: parseValuesFromResults(),
               context,
-              info,
+              info
             });
           }
         }
@@ -108,12 +53,15 @@ async function makeGatewaySchema() {
       AccountData: {
         account: {
           selectionSet: `{ id }`,
-          resolve(accountData, args, context, info) {
-            return delegateToSchema({
+          resolve(accountData, _args, context, info) {
+            return batchDelegateToSchema({
               schema: subgraphSchema,
               operation: 'query',
-              fieldName: 'account',
-              args: { id: accountData.id },
+              fieldName: 'accounts',
+              key: accountData.id,
+              argsFromKeys: (ids) => ({ where: { id_in: ids } }),
+              transforms: transformIdIntoQuery('accounts'),
+              valuesFromResults: parseValuesFromResults(),
               context,
               info,
             });
@@ -132,3 +80,37 @@ waitOn({
 }, async () => {
   startServer(await makeGatewaySchema(), 'gateway', parseInt(<string>process.env.STITCHED_PORT));
 });
+
+// Below are the singular non-batched methods... not sure if we still need these eventually
+/*
+Account: {
+  data: {
+    selectionSet: `{ id }`,
+    resolve(account, args, context, info) {
+      return delegateToSchema({
+        schema: textileSchema,
+        operation: 'query',
+        fieldName: 'accountData',
+        args: { id: account.id },
+        context,
+        info,
+      });
+    }
+  }
+},
+AccountData: {
+  account: {
+    selectionSet: `{ id }`,
+    resolve(accountData, args, context, info) {
+      return delegateToSchema({
+        schema: subgraphSchema,
+        operation: 'query',
+        fieldName: 'account',
+        args: { id: accountData.id },
+        context,
+        info,
+      });
+    }
+  }
+}
+*/
