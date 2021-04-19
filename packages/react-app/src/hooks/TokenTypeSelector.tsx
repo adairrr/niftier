@@ -58,8 +58,9 @@ interface TokenTypeData {
 }
 
 type TokenTypeSelectorProps = {
-  selectChild?: boolean;
   onSelectedParent: (parent: TokenType) => void;
+  // eslint-disable-next-line react/require-default-props
+  selectChild?: boolean;
 };
 
 const TokenTypeSelector = ({ selectChild = false, onSelectedParent }: TokenTypeSelectorProps) => {
@@ -99,7 +100,7 @@ const TokenTypeSelector = ({ selectChild = false, onSelectedParent }: TokenTypeS
           }
         >
           {data.tokenTypes.map((tokenType: TokenType, index: number) => (
-            <Option key={index} value={index}>
+            <Option key={tokenType.id} value={index}>
               {tokenType.name}
             </Option>
           ))}
@@ -114,9 +115,9 @@ const TokenTypeSelector = ({ selectChild = false, onSelectedParent }: TokenTypeS
             onChange={onChildTypeChange}
             filterOption={(input, option) => option.toLowerCase().indexOf(input.toLowerCase()) >= 0}
           >
-            // TODO FIK THE CHILDREN FILTER
+            {/* TODO FIK THE CHILDREN FILTER */}
             {childTokenTypes.map((childTokenType: AuthorizedChild, index: number) => (
-              <Option key={index} value={index}>
+              <Option key={childTokenType.child.id} value={index}>
                 {childTokenType.child.name}
               </Option>
             ))}

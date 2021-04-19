@@ -65,6 +65,7 @@ const { blockExplorer } = targetNetwork;
 
 // const threeID = new ThreeIdConnect();
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 function App(props) {
   const [injectedProvider, setInjectedProvider] = useState<Web3Provider>();
 
@@ -293,6 +294,7 @@ function App(props) {
                       </Route>
                       <Route path="/subgraph">
                         <Subgraph
+                          // eslint-disable-next-line react/prop-types
                           subgraphUri={props.subgraphUri}
                           tx={tx}
                           writeContracts={writeContracts}

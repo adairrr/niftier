@@ -14,13 +14,14 @@ interface MintableLayerFormProps {
   layer: MintableLayerStore;
 }
 
-const MintableLayerForm: React.FC<MintableLayerFormProps> = ({ layer }) => {
+const MintableLayerForm: React.FC<MintableLayerFormProps> = ({ layer }: MintableLayerFormProps) => {
   const currentAddress = useAddressContext();
 
   const [tokenRecipient, setTokenRecipient] = useState('self');
 
   // TODO use this instead of onFormValuesChange garbage
   const updateLayerProperty = (key: string, value: string) => {
+    // eslint-disable-next-line no-param-reassign
     layer[key] = value;
   };
 

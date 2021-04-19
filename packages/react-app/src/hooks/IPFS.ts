@@ -1,3 +1,4 @@
+/* eslint-disable */
 import ipfsAPI from 'ipfs-http-client';
 import { BufferList } from 'bl';
 
@@ -9,14 +10,15 @@ const getFromIPFS = async (hashToGet: string) => {
   for await (const file of ipfs.get(hashToGet)) {
     console.log(file.path);
     // @ts-ignore
-    if (!file.content) continue;
-    const content = new BufferList();
-    // @ts-ignore
-    for await (const chunk of file.content) {
-      content.append(chunk);
+    if (file.content) {
+      const content = new BufferList();
+      // @ts-ignore
+      for await (const chunk of file.content) {
+        content.append(chunk);
+      }
+      console.log(content);
+      return content;
     }
-    console.log(content);
-    return content;
   }
 };
 

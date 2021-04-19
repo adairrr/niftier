@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { Layout, PageHeader } from 'antd';
 import './SiteHeader.less';
 import { NavLink } from 'react-router-dom';
@@ -7,7 +7,7 @@ interface SiteHeaderProps {
   account: JSX.Element;
 }
 
-const SiteHeader: React.FC<SiteHeaderProps> = ({ account }) => {
+const SiteHeader: React.FC<SiteHeaderProps> = ({ account }: SiteHeaderProps) => {
   const baseClassName = 'SiteHeader';
 
   return (

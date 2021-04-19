@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React from 'react';
 import { Tabs, TabsProps } from 'antd';
 import { DndProvider, DragSource, DropTarget } from 'react-dnd';

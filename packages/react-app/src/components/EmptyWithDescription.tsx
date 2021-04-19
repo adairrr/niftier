@@ -1,5 +1,5 @@
 import { Empty } from 'antd';
-import React, { Component } from 'react';
+import React from 'react';
 
 type EmptyProps = {
   height?: number;
@@ -7,7 +7,7 @@ type EmptyProps = {
   imageUrl?: string;
 };
 // IMAGES
-export default class EmptyWithDescription extends Component<EmptyProps> {
+export default class EmptyWithDescription extends React.PureComponent<EmptyProps> {
   static defaultProps = {
     height: 100,
     description: 'No data',

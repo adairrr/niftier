@@ -5,7 +5,7 @@ import { observer } from 'mobx-react-lite';
 import { DraggableTabs } from '..';
 import { DraggableTabOrder } from '../DraggableTabs';
 import MintableLayerForm from './MintableLayerForm';
-import { MintableLayerListStore } from '../../store/MintableLayerStore';
+import { MintableLayerListStore } from '../../store';
 import { unpinFile } from '../../helpers/pinata';
 
 const { TabPane } = Tabs;
@@ -25,7 +25,7 @@ interface LayerTabsProps {
   layerList: MintableLayerListStore;
 }
 
-const LayerTabs: React.FC<LayerTabsProps> = ({ layerList }) => {
+const LayerTabs: React.FC<LayerTabsProps> = ({ layerList }: LayerTabsProps) => {
   console.log(layerList);
 
   const [newTabIndex, setNewTabIndex] = useState(2);
@@ -42,17 +42,17 @@ const LayerTabs: React.FC<LayerTabsProps> = ({ layerList }) => {
   //     localStorage.setItem('layerTabs', JSON.stringify(layerTabs));
   //   }, [layerTabs]);
 
-  const onTabAction = (targetTabKey: string, tabAction: 'add' | 'remove') => {
-    console.log('In LayerTabs', tabAction);
-    if (tabAction === 'add') onAddTab();
-  };
-
   const onAddTab = () => {
     setNewTabIndex(newTabIndex + 1);
     const newLayer = layerList.addLayer(`Layer ${layerList.layerCount + 1}`);
 
     // add a slot for the new media
     setActiveTabKey(newLayer.id);
+  };
+
+  const onTabAction = (targetTabKey: string, tabAction: 'add' | 'remove') => {
+    console.log('In LayerTabs', tabAction);
+    if (tabAction === 'add') onAddTab();
   };
 
   const onCloseTab = async (targetTabKey: string) => {

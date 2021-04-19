@@ -1,13 +1,13 @@
 import React, { useRef, useState } from 'react';
 import { PageHeader, Layout, Menu, MenuTheme } from 'antd';
-import WalletConnect from '../WalletConnect';
-import AccountDropdown from '../Header/AccountDropdown';
-import useThemeContext from '../../contexts/ThemeContext';
 import { NavLink, useLocation, useRouteMatch } from 'react-router-dom';
 import * as AntIcon from '@ant-design/icons';
 import { SiderTheme } from 'antd/lib/layout/Sider';
 import './SiteSider.less';
 import { relative } from 'node:path';
+import WalletConnect from '../WalletConnect';
+import AccountDropdown from '../Header/AccountDropdown';
+import { useThemeContext } from '../../contexts';
 
 const { SubMenu } = Menu;
 
@@ -51,9 +51,8 @@ const adminPaths = [
     icon: <AntIcon.RadarChartOutlined />,
   },
 ];
-interface SiteSiderProps {}
 
-const SiteSider: React.FC<SiteSiderProps> = ({}) => {
+const SiteSider: React.FC = () => {
   const baseClassName = 'SiteSider';
   const { theme } = useThemeContext();
   const { path } = useRouteMatch();
@@ -63,6 +62,8 @@ const SiteSider: React.FC<SiteSiderProps> = ({}) => {
   const [isMobileMenu, setIsMobileMenu] = useState(false);
 
   const renderLogoAndTitle = (
+    // TODO fix anchor?
+    // eslint-disable-next-line jsx-a11y/anchor-is-valid
     <a>
       <img src="https://gw.alipayobjects.com/zos/antfincdn/PmY%24TNNDBI/logo.svg" alt="logo" />
       {collapsed ? null : <h1>Imaginifty</h1>}
@@ -88,7 +89,7 @@ const SiteSider: React.FC<SiteSiderProps> = ({}) => {
         collapsible
         collapsed={collapsed}
         collapsedWidth={48} // TODO smaller
-        onCollapse={collapsed => setCollapsed(collapsed)}
+        onCollapse={nowCollapsed => setCollapsed(nowCollapsed)}
         trigger={collapsed ? <AntIcon.MenuUnfoldOutlined /> : <AntIcon.MenuFoldOutlined />}
         theme={theme as SiderTheme}
         className={`${baseClassName}-sider`}

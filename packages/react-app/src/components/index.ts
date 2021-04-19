@@ -1,4 +1,5 @@
 export { default as Account } from './Account';
+// eslint-disable-next-line import/no-cycle
 export { default as Contract } from './Contract';
 export { default as Address } from './Address';
 export { default as AddressInput } from './AddressInput';

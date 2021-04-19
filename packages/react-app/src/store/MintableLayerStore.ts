@@ -1,6 +1,5 @@
 import React from 'react';
 import { makeAutoObservable, runInAction, toJS } from 'mobx';
-import { DraggableTabOrder } from '../components/DraggableTabs';
 import autoSave from './AutoSave';
 import { PinataResponse, unpinFile, uploadJson } from '../helpers/pinata';
 
@@ -21,23 +20,23 @@ export default class MintableLayerStore {
   mediaPrevew: string = undefined;
 
   /* setters */
-  setName(name: string) {
+  setName(name: string): void {
     this.name = name;
   }
 
-  setDescription(description: string) {
+  setDescription(description: string): void {
     this.description = description;
   }
 
-  setRecipientAddress(recipientAddress: string) {
+  setRecipientAddress(recipientAddress: string): void {
     this.recipientAddress = recipientAddress;
   }
 
-  setMediaUri(mediaUri: string) {
+  setMediaUri(mediaUri: string): void {
     this.mediaUri = mediaUri;
   }
 
-  setMediaPrevew(mediaPrevew: string) {
+  setMediaPrevew(mediaPrevew: string): void {
     this.mediaPrevew = mediaPrevew;
   }
 
@@ -54,7 +53,7 @@ export default class MintableLayerStore {
 
   /* action functions */
 
-  async pinMetadata() {
+  async pinMetadata(): Promise<string> {
     try {
       const uploadResp = await uploadJson(JSON.stringify(this.toMetadataJSON));
       const uploadData: PinataResponse = await uploadResp.json();
@@ -66,6 +65,7 @@ export default class MintableLayerStore {
     } catch (e) {
       console.log(e);
     }
+    return null;
   }
 
   deleteFromCache() {
@@ -76,86 +76,5 @@ export default class MintableLayerStore {
     makeAutoObservable(this, { deleteFromCache: false });
     this.name = layerName;
     // if (autosave) autoSave(this, this.id);
-  }
-}
-
-export class MintableLayerListStore {
-  /* properties */
-  layers: Array<MintableLayerStore> = [];
-
-  /* computed functions */
-  get layerCount() {
-    return this.layers.length;
-  }
-
-  get layerPreviews() {
-    return this.layers.slice().map(layer => layer.mediaPrevew);
-  }
-
-  async pinAndGetLayerUris() {
-    try {
-      const layerUriPromises = this.layers.map(async layer => layer.pinMetadata());
-      const layerUris = Promise.all(layerUriPromises);
-      console.log(layerUris);
-      return await layerUris;
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  /* action functions */
-  addLayer(name: string) {
-    const newLayer = new MintableLayerStore(name);
-    this.layers.push(newLayer);
-    return newLayer;
-  }
-
-  getLayerWithId(layerId: string) {
-    return this.layers.find(layer => layer.id === layerId);
-  }
-
-  removeLayer(activeLayerId: string, removedId: string) {
-    let lastIndex: number;
-    // iterate through tabs to find last index
-    // TODO can we use findIndex? (-1)
-    this.layers.forEach((layer, index) => {
-      if (layer.id === removedId) {
-        lastIndex = index - 1;
-      }
-    });
-
-    // filter out the removed tab
-    const afterRemoveTabs = this.layers.filter(layer => layer.id !== removedId);
-    this.layers = afterRemoveTabs;
-
-    // if the removed layer was the active layer, change the active layer
-    if (afterRemoveTabs.length && activeLayerId === removedId) {
-      if (lastIndex >= 0) {
-        activeLayerId = afterRemoveTabs[lastIndex].id;
-      } else {
-        activeLayerId = afterRemoveTabs[0].id;
-      }
-    }
-    return activeLayerId;
-  }
-
-  reorderLayers(newLayerOrder: DraggableTabOrder) {
-    const newOrder = newLayerOrder.order;
-
-    // sort the tabs by the order
-    const orderedTabs = this.layers.slice().sort((a, b) => {
-      return newOrder.indexOf(a.id) - newOrder.indexOf(b.id);
-    });
-
-    console.log(this.layers);
-    console.log(newOrder);
-    console.log(orderedTabs);
-
-    this.layers = orderedTabs;
-  }
-
-  constructor(layers?: Array<MintableLayerStore>) {
-    makeAutoObservable(this);
-    if (layers) this.layers = layers;
   }
 }

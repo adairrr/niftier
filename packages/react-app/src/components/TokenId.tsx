@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/anchor-is-valid */ // TODO TODO
 import React, { Component } from 'react';
 import Blockies from 'react-blockies';
 import { Typography, Skeleton } from 'antd';
@@ -28,7 +29,7 @@ type TokenIdProps = {
   size: string;
   onChange?: () => void;
 };
-class TokenId extends Component<TokenIdProps> {
+class TokenId extends React.PureComponent<TokenIdProps> {
   static defaultProps = {
     fontSize: 16,
     minimized: false,

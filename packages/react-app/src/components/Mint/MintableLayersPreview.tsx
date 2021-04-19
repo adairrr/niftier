@@ -12,7 +12,10 @@ interface MintableLayersPreviewProps {
   layerList: MintableLayerListStore;
 }
 
-const MintableLayersPreview: React.FC<MintableLayersPreviewProps> = ({ artpiece, layerList }) => {
+const MintableLayersPreview: React.FC<MintableLayersPreviewProps> = ({
+  artpiece,
+  layerList,
+}: MintableLayersPreviewProps) => {
   const stageRef = useRef(null);
 
   const [artpieceImage, setArtpieceImage] = useState(null);

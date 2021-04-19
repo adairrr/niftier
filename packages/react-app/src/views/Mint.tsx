@@ -11,9 +11,8 @@ import { TokenType } from '../hooks/TokenTypeSelector';
 import { PINATA_IPFS_PREFIX } from '../constants';
 import { DraggableDropzone } from '../components/Files';
 import { useAddressContext, useContractIOContext } from '../contexts';
-import MintableLayerStore, { MintableLayerListStore } from '../store/MintableLayerStore';
+import { ArtpieceStore, MintableLayerStore, MintableLayerListStore } from '../store';
 
-import { ArtpieceStore } from '../store';
 import { ArtpieceLayerMinter, MintableLayersPreview } from '../components/Mint';
 
 const { TextArea } = Input;

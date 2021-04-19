@@ -9,6 +9,15 @@ import { uploadFileCustomRequest, pinFileToIPFSUrl, unpinFile, PinataResponse } 
 
 const { Dragger } = Upload;
 
+function getBase64(file: Blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
+  });
+}
+
 export interface FilePreview {
   fileUrlPreview?: string;
 }
@@ -33,6 +42,15 @@ const PinataDraggableDropzone: React.FC<PinataDraggableDropzoneProps> = ({
 
   const triggerPreviewChange = (changedValue: FilePreview) => {
     onChange?.({ ...changedValue });
+  };
+
+  const assignFilePreview = async (file: UploadFile) => {
+    // TODO this only really works for images and we'll probably want an audio preview and other previews.
+    if (!file.url && !file.preview) {
+      // @ts-ignore: Type 'unknown' is not assignable to type 'string'.
+      // eslint-disable-next-line no-param-reassign
+      file.preview = await getBase64(file.originFileObj);
+    }
   };
 
   const onChangeFile = async ({ file: newFile, fileList: newFileList, event }) => {
@@ -66,14 +84,6 @@ const PinataDraggableDropzone: React.FC<PinataDraggableDropzoneProps> = ({
         // code block
         // TODO what do?
         break;
-    }
-  };
-
-  const assignFilePreview = async (file: UploadFile) => {
-    // TODO this only really works for images and we'll probably want an audio preview and other previews.
-    if (!file.url && !file.preview) {
-      // @ts-ignore
-      file.preview = await getBase64(file.originFileObj);
     }
   };
 
@@ -203,15 +213,4 @@ const PinataDraggableDropzone: React.FC<PinataDraggableDropzoneProps> = ({
   return singleFile ? singleFileUpload : pictureCardUpload;
 };
 
-function getBase64(file: Blob) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = error => reject(error);
-  });
-}
-
 export default PinataDraggableDropzone;
-
-//

@@ -1,15 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Button, List, Card, Image, Row, Col, Typography } from 'antd';
-import { useQuery, gql } from '@apollo/client';
-import { RouteComponentProps } from 'react-router';
+import { List, Card, Image, Row, Col, Typography } from 'antd';
 import { useParams } from 'react-router-dom';
-import { Address, AddressInput, TokenId } from '..';
-import { TOKEN_QUERY } from '../../apollo/queries';
-import { PINATA_IPFS_PREFIX } from '../../constants';
-import { fetchTokenMetadata, getFromIPFS } from '../../hooks';
-import { TokenMetadata } from '../../hooks/FetchTokenMetadata';
+import { TokenId } from '..';
 import { useAddressContext } from '../../contexts';
-import { TokenModelType, TokenRelationshipModelType } from '../../subgraph_models';
+import { TokenModelType } from '../../subgraph_models';
 import { useQuery as useMstQuery } from '../../subgraph_models/reactUtils';
 
 const { Meta } = Card;
@@ -56,7 +50,7 @@ const Token = () => {
   const [parentToken, setParentToken] = useState<TokenModelType>();
   const [childTokens, setChildTokens] = useState<TokenModelType[]>();
 
-  const { setQuery, data: mstData, store, error: mstError, loading: mstLoading } = useMstQuery<{
+  const { setQuery, data: mstData, store: mstStore, error: mstError, loading: mstLoading } = useMstQuery<{
     token: TokenModelType;
   }>(store => {
     return store.loadToken(tokenId);

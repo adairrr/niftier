@@ -34,6 +34,9 @@ module.exports = {
     "no-console": "off",
     "import/prefer-default-export": "off",
     "no-plusplus": ["error", { "allowForLoopAfterthoughts": true }],
+    "react/static-property-placement": "off",
+    "react/destructuring-assignment": "off",
+    "react/jsx-props-no-spreading": "off",
     'prettier/prettier': [
       'error',
       {

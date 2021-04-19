@@ -3,8 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { Button, message } from 'antd';
 import { utils } from 'ethers';
 import { ArtpieceStore, MintableLayerListStore } from '../../store';
-import { useAddressContext } from '../../contexts';
-import useContractIOContext from '../../contexts/ContractIOContext';
+import { useAddressContext, useContractIOContext } from '../../contexts';
 import { PinataResponse, uploadJson } from '../../helpers/pinata';
 
 interface ArtpieceLayerMinterProps {
@@ -12,7 +11,7 @@ interface ArtpieceLayerMinterProps {
   layerList: MintableLayerListStore;
 }
 
-const ArtpieceLayerMinter: React.FC<ArtpieceLayerMinterProps> = ({ artpiece, layerList }) => {
+const ArtpieceLayerMinter: React.FC<ArtpieceLayerMinterProps> = ({ artpiece, layerList }: ArtpieceLayerMinterProps) => {
   // TODO should account for recipient address eventually
   const currentAddress = useAddressContext();
   const { tx, reader, writer } = useContractIOContext();

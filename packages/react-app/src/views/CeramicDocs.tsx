@@ -9,9 +9,9 @@ export const QueryDoc = (did, client: CeramicClient) => {
   const [docID, setDocID] = useState(null);
 
   const query = async () => {
-    const doc = await client.loadDocument(btoa(docID));
-    setDoc(doc);
-    console.log(doc);
+    const loadedDoc = await client.loadDocument(btoa(docID));
+    setDoc(loadedDoc);
+    console.log(loadedDoc);
   };
 
   const handleChange = e => {
