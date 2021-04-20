@@ -1,4 +1,5 @@
 # folders
 build/
 node_modules/
-src/subgraph_models/
+src/subgraph_models/*.base.ts
+src/subgraph_models/index.ts

@@ -28,15 +28,15 @@ module.exports = {
   },
   rules: {
     'linebreak-style': 'off',
-    "no-underscore-dangle": "off",
-    "@typescript-eslint/ban-ts-ignore": "off", // TODO off with description
-    "@typescript-eslint/ban-ts-comment": "off",
-    "no-console": "off",
-    "import/prefer-default-export": "off",
-    "no-plusplus": ["error", { "allowForLoopAfterthoughts": true }],
-    "react/static-property-placement": "off",
-    "react/destructuring-assignment": "off",
-    "react/jsx-props-no-spreading": "off",
+    'no-underscore-dangle': 'off',
+    '@typescript-eslint/ban-ts-ignore': 'off', // TODO off with description
+    '@typescript-eslint/ban-ts-comment': 'off',
+    'no-console': 'off',
+    'import/prefer-default-export': 'off',
+    'no-plusplus': ['error', { 'allowForLoopAfterthoughts': true }],
+    'react/static-property-placement': 'off',
+    'react/destructuring-assignment': 'off',
+    'react/jsx-props-no-spreading': 'off',
     'prettier/prettier': [
       'error',
       {
@@ -44,4 +44,16 @@ module.exports = {
       },
     ],
   },
+  overrides: [
+    {
+      files: ['src/subgraph_models/*.ts'],
+      rules: {
+        'import/no-cycle': 'off',
+        '@typescript-eslint/no-empty-interface': 'off',
+        'no-param-reassign': 'off',
+        'require-yield': 'off',
+        '@typescript-eslint/no-unused-vars': 'off',
+      }
+    }
+  ]
 };
