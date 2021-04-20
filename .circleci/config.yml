@@ -9,7 +9,7 @@ jobs:
   checkout_and_compile:
     docker:
       - image: circleci/node:14.15.1
-    working_directory: ~/nft-canvas-ci
+    working_directory: ~/niftier-ci
     steps:
       - checkout # check out source code to working directory
       - setup_remote_docker:
@@ -35,7 +35,7 @@ jobs:
           name: Save compiled cache
           key: compiled-env-{{ .Environment.CIRCLE_SHA1 }}
           paths:
-            - ~/nft-canvas-ci
+            - ~/niftier-ci
       # - run:
       #     name: Prettier
       #     command: yarn prettier --check .
@@ -46,7 +46,7 @@ jobs:
   test:
     docker:
       - image: circleci/node:14.15.1
-    working_directory: ~/nft-canvas-ci
+    working_directory: ~/niftier-ci
     steps:
       - setup_remote_docker:
           docker_layer_caching: false
@@ -71,7 +71,7 @@ jobs:
   coverage:
     docker:
       - image: circleci/node:14.15.1
-    working_directory: ~/nft-canvas-ci
+    working_directory: ~/niftier-ci
     steps:
       - setup_remote_docker:
           docker_layer_caching: false

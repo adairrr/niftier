@@ -1,5 +1,5 @@
 {
-  "name": "@scaffold-eth/stitched-gql-server",
+  "name": "@niftier/stitched-gql-server",
   "version": "0.0.1",
   "main": "src/index.ts",
   "license": "MIT",
