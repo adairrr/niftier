@@ -1,6 +1,6 @@
 type AccountData {
   _id: String! # textile ID
-  id: String!
+  id: String! # account ID
   did: String
 }
 

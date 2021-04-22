@@ -31,7 +31,7 @@ async function makeGatewaySchema() {
         account: Account
       }
     `,
-    resolvers: {      
+    resolvers: {
       Account: {
         data: {
           selectionSet: forwardArgsToSelectionSet(`{ id }`),

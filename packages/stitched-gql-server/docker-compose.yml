@@ -1,0 +1,15 @@
+version: '3.9'
+services:
+  graphql_stitched:
+    build: .
+    tty: true
+    environment:
+      - PORT=10002
+    ports:
+      - '10002:10002'
+    restart: unless-stopped
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '15m'
+        max-file: '3'

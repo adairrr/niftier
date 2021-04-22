@@ -11,10 +11,14 @@ packages/hardhat/artifacts
 packages/hardhat/deployments
 packages/react-app/src/contracts
 packages/react-app/.env.development
-# TODO this is temporary 
+
+# TODO these are temporary 
 packages/react-app/src/components/Three
+packages/mesh-gql-server
+
 packages/hardhat/cache
 packages/hardhat/typechain
+
 
 docker/ceramic-node/config.json
 
@@ -40,6 +44,7 @@ packages/hardhat/test-results
 
 # production
 build
+dist
 
 # misc
 .DS_Store
