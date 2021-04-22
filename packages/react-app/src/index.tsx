@@ -14,7 +14,8 @@ const themes = {
 
 const prevTheme = window.localStorage.getItem('theme');
 
-const subgraphUri = `http://${process.env.REACT_APP_GRAPHQL_ADDRESS}/subgraphs/name/nft-minter/composable-contract`;
+// const subgraphUri = `http://${process.env.REACT_APP_GRAPHQL_ADDRESS}/subgraphs/name/nft-minter/composable-contract`;
+const subgraphUri = `http://${process.env.REACT_APP_STITCTHED_GRAPHQL_ADDRESS}/graphql`;
 
 const client = new ApolloClient({
   uri: subgraphUri,

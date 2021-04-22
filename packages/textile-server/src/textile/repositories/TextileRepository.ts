@@ -88,6 +88,7 @@ export default abstract class TextileRepository<T extends TextileCollection> {
     return await this.client.delete(this.threadId, this.collectionName, [_id])
       .then(() => true)
       .catch(() => false);
+      // TODO this does not return false on non-existent deletes
   }
 
   async create(t: Omit<T, '_id' | '__typename'>): Promise<TPayload<T>> {

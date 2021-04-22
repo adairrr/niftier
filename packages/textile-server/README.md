@@ -30,3 +30,5 @@ while queries are performed using graphql.
     }
     ```
 1. Add the respective resolvers in `src/graphql/resolvers.ts`
+
+TODO typescirpt resolvers
