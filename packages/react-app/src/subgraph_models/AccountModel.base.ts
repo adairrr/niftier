@@ -6,6 +6,8 @@ import { IObservableArray } from "mobx"
 import { types } from "mobx-state-tree"
 import { MSTGQLRef, QueryBuilder, withTypedRefs } from "mst-gql"
 import { ModelBase } from "./ModelBase"
+import { AccountDataModel, AccountDataModelType } from "./AccountDataModel"
+import { AccountDataModelSelector } from "./AccountDataModel.base"
 import { ApprovalModel, ApprovalModelType } from "./ApprovalModel"
 import { ApprovalModelSelector } from "./ApprovalModel.base"
 import { BalanceModel, BalanceModelType } from "./BalanceModel"
@@ -40,6 +42,7 @@ export const AccountModelBase = withTypedRefs<Refs>()(ModelBase
     transfersTo: types.union(types.undefined, types.array(MSTGQLRef(types.late((): any => TransferModel)))),
     approvalsOwner: types.union(types.undefined, types.array(MSTGQLRef(types.late((): any => ApprovalModel)))),
     approvalsSpender: types.union(types.undefined, types.array(MSTGQLRef(types.late((): any => ApprovalModel)))),
+    data: types.union(types.undefined, types.null, types.late((): any => AccountDataModel)),
   })
   .views(self => ({
     get store() {
@@ -55,6 +58,7 @@ export class AccountModelSelector extends QueryBuilder {
   transfersTo(builder?: string | TransferModelSelector | ((selector: TransferModelSelector) => TransferModelSelector)) { return this.__child(`transfersTo`, TransferModelSelector, builder) }
   approvalsOwner(builder?: string | ApprovalModelSelector | ((selector: ApprovalModelSelector) => ApprovalModelSelector)) { return this.__child(`approvalsOwner`, ApprovalModelSelector, builder) }
   approvalsSpender(builder?: string | ApprovalModelSelector | ((selector: ApprovalModelSelector) => ApprovalModelSelector)) { return this.__child(`approvalsSpender`, ApprovalModelSelector, builder) }
+  data(builder?: string | AccountDataModelSelector | ((selector: AccountDataModelSelector) => AccountDataModelSelector)) { return this.__child(`data`, AccountDataModelSelector, builder) }
 }
 export function selectFromAccount() {
   return new AccountModelSelector()

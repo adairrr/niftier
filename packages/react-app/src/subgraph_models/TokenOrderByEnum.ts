@@ -9,6 +9,7 @@ import { types } from 'mobx-state-tree';
 
 export enum TokenOrderBy {
   id = 'id',
+  registry = 'registry',
   identifier = 'identifier',
   uri = 'uri',
   totalSupply = 'totalSupply',
@@ -25,6 +26,7 @@ export enum TokenOrderBy {
  */
 export const TokenOrderByEnumType = types.enumeration('TokenOrderBy', [
   'id',
+  'registry',
   'identifier',
   'uri',
   'totalSupply',

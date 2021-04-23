@@ -25,6 +25,8 @@ import { SenderModel, SenderModelType } from "./SenderModel"
 import { senderModelPrimitives, SenderModelSelector } from "./SenderModel.base"
 import { TokenModel, TokenModelType } from "./TokenModel"
 import { tokenModelPrimitives, TokenModelSelector } from "./TokenModel.base"
+import { TokenRegistryModel, TokenRegistryModelType } from "./TokenRegistryModel"
+import { tokenRegistryModelPrimitives, TokenRegistryModelSelector } from "./TokenRegistryModel.base"
 import { TokenRelationshipModel, TokenRelationshipModelType } from "./TokenRelationshipModel"
 import { tokenRelationshipModelPrimitives, TokenRelationshipModelSelector } from "./TokenRelationshipModel.base"
 import { TokenTypeModel, TokenTypeModelType } from "./TokenTypeModel"
@@ -39,6 +41,10 @@ import { BlockModel, BlockModelType } from "./BlockModel"
 import { blockModelPrimitives, BlockModelSelector } from "./BlockModel.base"
 import { MetaModel, MetaModelType } from "./MetaModel"
 import { metaModelPrimitives, MetaModelSelector } from "./MetaModel.base"
+import { AccountDataModel, AccountDataModelType } from "./AccountDataModel"
+import { accountDataModelPrimitives, AccountDataModelSelector } from "./AccountDataModel.base"
+import { AccountDataPayloadModel, AccountDataPayloadModelType } from "./AccountDataPayloadModel"
+import { accountDataPayloadModelPrimitives, AccountDataPayloadModelSelector } from "./AccountDataPayloadModel.base"
 
 import { eventModelPrimitives, EventModelSelector , EventUnion } from "./"
 
@@ -53,6 +59,7 @@ import { PersistentStringArrayOrderBy } from "./PersistentStringArrayOrderByEnum
 import { PersistentStringOrderBy } from "./PersistentStringOrderByEnum"
 import { PurposeOrderBy } from "./PurposeOrderByEnum"
 import { SenderOrderBy } from "./SenderOrderByEnum"
+import { TokenRegistryOrderBy } from "./TokenRegistryOrderByEnum"
 import { TokenRelationshipOrderBy } from "./TokenRelationshipOrderByEnum"
 import { TokenTypeRelationshipOrderBy } from "./TokenTypeRelationshipOrderByEnum"
 import { TokenTypeOrderBy } from "./TokenTypeOrderByEnum"
@@ -422,6 +429,16 @@ export type SenderFilter = {
   purposeCount_in?: any[]
   purposeCount_not_in?: any[]
 }
+export type TokenRegistryFilter = {
+  id?: string
+  id_not?: string
+  id_gt?: string
+  id_lt?: string
+  id_gte?: string
+  id_lte?: string
+  id_in?: string[]
+  id_not_in?: string[]
+}
 export type TokenRelationshipFilter = {
   id?: string
   id_not?: string
@@ -531,6 +548,20 @@ export type TokenFilter = {
   id_lte?: string
   id_in?: string[]
   id_not_in?: string[]
+  registry?: string
+  registry_not?: string
+  registry_gt?: string
+  registry_lt?: string
+  registry_gte?: string
+  registry_lte?: string
+  registry_in?: string[]
+  registry_not_in?: string[]
+  registry_contains?: string
+  registry_not_contains?: string
+  registry_starts_with?: string
+  registry_not_starts_with?: string
+  registry_ends_with?: string
+  registry_not_ends_with?: string
   identifier?: any
   identifier_not?: any
   identifier_gt?: any
@@ -726,6 +757,14 @@ export type TransferFilter = {
   value_in?: any[]
   value_not_in?: any[]
 }
+export type AccountDataCreateInput = {
+  id: string
+  did?: string
+}
+export type AccountDataUpdateInput = {
+  id: string
+  did?: string
+}
 /* The TypeScript type that explicits the refs to other models in order to prevent a circular refs issue */
 type Refs = {
   accounts: ObservableMap<string, AccountModelType>,
@@ -738,6 +777,7 @@ type Refs = {
   purposes: ObservableMap<string, PurposeModelType>,
   senders: ObservableMap<string, SenderModelType>,
   tokens: ObservableMap<string, TokenModelType>,
+  tokenRegistries: ObservableMap<string, TokenRegistryModelType>,
   tokenRelationships: ObservableMap<string, TokenRelationshipModelType>,
   tokenTypes: ObservableMap<string, TokenTypeModelType>,
   tokenTypeRelationships: ObservableMap<string, TokenTypeRelationshipModelType>,
@@ -762,6 +802,8 @@ queryTokenType="queryTokenType",
 queryTokenTypes="queryTokenTypes",
 queryTokenTypeRelationship="queryTokenTypeRelationship",
 queryTokenTypeRelationships="queryTokenTypeRelationships",
+queryTokenRegistry="queryTokenRegistry",
+queryTokenRegistries="queryTokenRegistries",
 queryToken="queryToken",
 queryTokens="queryTokens",
 queryTokenRelationship="queryTokenRelationship",
@@ -782,16 +824,23 @@ queryPersistentString="queryPersistentString",
 queryPersistentStrings="queryPersistentStrings",
 queryEvent="queryEvent",
 queryEvents="queryEvents",
-query_meta="query_meta"
+query_meta="query_meta",
+queryAccountData="queryAccountData",
+queryAccountDatasByIds="queryAccountDatasByIds",
+queryAccountDatas="queryAccountDatas"
 }
-
+export enum RootStoreBaseMutations {
+mutateCreateAccountData="mutateCreateAccountData",
+mutateUpdateAccountData="mutateUpdateAccountData",
+mutateDeleteAccountData="mutateDeleteAccountData"
+}
 
 /**
 * Store, managing, among others, all the objects received through graphQL
 */
 export const RootStoreBase = withTypedRefs<Refs>()(MSTGQLStore
   .named("RootStore")
-  .extend(configureStoreMixin([['Account', () => AccountModel], ['Approval', () => ApprovalModel], ['Balance', () => BalanceModel], ['Debug', () => DebugModel], ['DecimalValue', () => DecimalValueModel], ['PersistentString', () => PersistentStringModel], ['PersistentStringArray', () => PersistentStringArrayModel], ['Purpose', () => PurposeModel], ['Sender', () => SenderModel], ['Token', () => TokenModel], ['TokenRelationship', () => TokenRelationshipModel], ['TokenType', () => TokenTypeModel], ['TokenTypeRelationship', () => TokenTypeRelationshipModel], ['Transaction', () => TransactionModel], ['Transfer', () => TransferModel], ['_Block_', () => BlockModel], ['_Meta_', () => MetaModel]], ['Account', 'Approval', 'Balance', 'Debug', 'DecimalValue', 'PersistentString', 'PersistentStringArray', 'Purpose', 'Sender', 'Token', 'TokenRelationship', 'TokenType', 'TokenTypeRelationship', 'Transaction', 'Transfer'], "js"))
+  .extend(configureStoreMixin([['Account', () => AccountModel], ['Approval', () => ApprovalModel], ['Balance', () => BalanceModel], ['Debug', () => DebugModel], ['DecimalValue', () => DecimalValueModel], ['PersistentString', () => PersistentStringModel], ['PersistentStringArray', () => PersistentStringArrayModel], ['Purpose', () => PurposeModel], ['Sender', () => SenderModel], ['Token', () => TokenModel], ['TokenRegistry', () => TokenRegistryModel], ['TokenRelationship', () => TokenRelationshipModel], ['TokenType', () => TokenTypeModel], ['TokenTypeRelationship', () => TokenTypeRelationshipModel], ['Transaction', () => TransactionModel], ['Transfer', () => TransferModel], ['_Block_', () => BlockModel], ['_Meta_', () => MetaModel], ['AccountData', () => AccountDataModel], ['AccountDataPayload', () => AccountDataPayloadModel]], ['Account', 'Approval', 'Balance', 'Debug', 'DecimalValue', 'PersistentString', 'PersistentStringArray', 'Purpose', 'Sender', 'Token', 'TokenRegistry', 'TokenRelationship', 'TokenType', 'TokenTypeRelationship', 'Transaction', 'Transfer'], "js"))
   .props({
     accounts: types.optional(types.map(types.late((): any => AccountModel)), {}),
     approvals: types.optional(types.map(types.late((): any => ApprovalModel)), {}),
@@ -803,6 +852,7 @@ export const RootStoreBase = withTypedRefs<Refs>()(MSTGQLStore
     purposes: types.optional(types.map(types.late((): any => PurposeModel)), {}),
     senders: types.optional(types.map(types.late((): any => SenderModel)), {}),
     tokens: types.optional(types.map(types.late((): any => TokenModel)), {}),
+    tokenRegistries: types.optional(types.map(types.late((): any => TokenRegistryModel)), {}),
     tokenRelationships: types.optional(types.map(types.late((): any => TokenRelationshipModel)), {}),
     tokenTypes: types.optional(types.map(types.late((): any => TokenTypeModel)), {}),
     tokenTypeRelationships: types.optional(types.map(types.late((): any => TokenTypeRelationshipModel)), {}),
@@ -811,162 +861,172 @@ export const RootStoreBase = withTypedRefs<Refs>()(MSTGQLStore
   })
   .actions(self => ({
     queryPurpose(variables: { id: string, block?: BlockHeight }, resultSelector: string | ((qb: PurposeModelSelector) => PurposeModelSelector) = purposeModelPrimitives.toString(), options: QueryOptions = {}) {
-      return self.query<{ purpose: PurposeModelType}>(`query purpose($id: ID!) { purpose(id: $id) {
+      return self.query<{ purpose: PurposeModelType}>(`query purpose($id: ID!, $block: Block_height) { purpose(id: $id, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new PurposeModelSelector()).toString() : resultSelector}
       } }`, variables, options)
     },
     queryPurposes(variables: { skip?: number, first?: number, orderBy?: PurposeOrderBy, orderDirection?: OrderDirection, where?: PurposeFilter, block?: BlockHeight }, resultSelector: string | ((qb: PurposeModelSelector) => PurposeModelSelector) = purposeModelPrimitives.toString(), options: QueryOptions = {}) {
-      return self.query<{ purposes: PurposeModelType[]}>(`query purposes($skip: Int, $first: Int, $orderBy: Purpose_orderBy, $orderDirection: OrderDirection, $where: Purpose_filter) { purposes(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where) {
+      return self.query<{ purposes: PurposeModelType[]}>(`query purposes($skip: Int, $first: Int, $orderBy: Purpose_orderBy, $orderDirection: OrderDirection, $where: Purpose_filter, $block: Block_height) { purposes(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new PurposeModelSelector()).toString() : resultSelector}
       } }`, variables, options)
     },
     querySender(variables: { id: string, block?: BlockHeight }, resultSelector: string | ((qb: SenderModelSelector) => SenderModelSelector) = senderModelPrimitives.toString(), options: QueryOptions = {}) {
-      return self.query<{ sender: SenderModelType}>(`query sender($id: ID!) { sender(id: $id) {
+      return self.query<{ sender: SenderModelType}>(`query sender($id: ID!, $block: Block_height) { sender(id: $id, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new SenderModelSelector()).toString() : resultSelector}
       } }`, variables, options)
     },
     querySenders(variables: { skip?: number, first?: number, orderBy?: SenderOrderBy, orderDirection?: OrderDirection, where?: SenderFilter, block?: BlockHeight }, resultSelector: string | ((qb: SenderModelSelector) => SenderModelSelector) = senderModelPrimitives.toString(), options: QueryOptions = {}) {
-      return self.query<{ senders: SenderModelType[]}>(`query senders($skip: Int, $first: Int, $orderBy: Sender_orderBy, $orderDirection: OrderDirection, $where: Sender_filter) { senders(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where) {
+      return self.query<{ senders: SenderModelType[]}>(`query senders($skip: Int, $first: Int, $orderBy: Sender_orderBy, $orderDirection: OrderDirection, $where: Sender_filter, $block: Block_height) { senders(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new SenderModelSelector()).toString() : resultSelector}
       } }`, variables, options)
     },
     queryDebug(variables: { id: string, block?: BlockHeight }, resultSelector: string | ((qb: DebugModelSelector) => DebugModelSelector) = debugModelPrimitives.toString(), options: QueryOptions = {}) {
-      return self.query<{ debug: DebugModelType}>(`query debug($id: ID!) { debug(id: $id) {
+      return self.query<{ debug: DebugModelType}>(`query debug($id: ID!, $block: Block_height) { debug(id: $id, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new DebugModelSelector()).toString() : resultSelector}
       } }`, variables, options)
     },
     queryDebugs(variables: { skip?: number, first?: number, orderBy?: DebugOrderBy, orderDirection?: OrderDirection, where?: DebugFilter, block?: BlockHeight }, resultSelector: string | ((qb: DebugModelSelector) => DebugModelSelector) = debugModelPrimitives.toString(), options: QueryOptions = {}) {
-      return self.query<{ debugs: DebugModelType[]}>(`query debugs($skip: Int, $first: Int, $orderBy: Debug_orderBy, $orderDirection: OrderDirection, $where: Debug_filter) { debugs(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where) {
+      return self.query<{ debugs: DebugModelType[]}>(`query debugs($skip: Int, $first: Int, $orderBy: Debug_orderBy, $orderDirection: OrderDirection, $where: Debug_filter, $block: Block_height) { debugs(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new DebugModelSelector()).toString() : resultSelector}
       } }`, variables, options)
     },
     queryAccount(variables: { id: string, block?: BlockHeight }, resultSelector: string | ((qb: AccountModelSelector) => AccountModelSelector) = accountModelPrimitives.toString(), options: QueryOptions = {}) {
-      return self.query<{ account: AccountModelType}>(`query account($id: ID!) { account(id: $id) {
+      return self.query<{ account: AccountModelType}>(`query account($id: ID!, $block: Block_height) { account(id: $id, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new AccountModelSelector()).toString() : resultSelector}
       } }`, variables, options)
     },
     queryAccounts(variables: { skip?: number, first?: number, orderBy?: AccountOrderBy, orderDirection?: OrderDirection, where?: AccountFilter, block?: BlockHeight }, resultSelector: string | ((qb: AccountModelSelector) => AccountModelSelector) = accountModelPrimitives.toString(), options: QueryOptions = {}) {
-      return self.query<{ accounts: AccountModelType[]}>(`query accounts($skip: Int, $first: Int, $orderBy: Account_orderBy, $orderDirection: OrderDirection, $where: Account_filter) { accounts(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where) {
+      return self.query<{ accounts: AccountModelType[]}>(`query accounts($skip: Int, $first: Int, $orderBy: Account_orderBy, $orderDirection: OrderDirection, $where: Account_filter, $block: Block_height) { accounts(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new AccountModelSelector()).toString() : resultSelector}
       } }`, variables, options)
     },
     queryTokenType(variables: { id: string, block?: BlockHeight }, resultSelector: string | ((qb: TokenTypeModelSelector) => TokenTypeModelSelector) = tokenTypeModelPrimitives.toString(), options: QueryOptions = {}) {
-      return self.query<{ tokenType: TokenTypeModelType}>(`query tokenType($id: ID!) { tokenType(id: $id) {
+      return self.query<{ tokenType: TokenTypeModelType}>(`query tokenType($id: ID!, $block: Block_height) { tokenType(id: $id, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new TokenTypeModelSelector()).toString() : resultSelector}
       } }`, variables, options)
     },
     queryTokenTypes(variables: { skip?: number, first?: number, orderBy?: TokenTypeOrderBy, orderDirection?: OrderDirection, where?: TokenTypeFilter, block?: BlockHeight }, resultSelector: string | ((qb: TokenTypeModelSelector) => TokenTypeModelSelector) = tokenTypeModelPrimitives.toString(), options: QueryOptions = {}) {
-      return self.query<{ tokenTypes: TokenTypeModelType[]}>(`query tokenTypes($skip: Int, $first: Int, $orderBy: TokenType_orderBy, $orderDirection: OrderDirection, $where: TokenType_filter) { tokenTypes(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where) {
+      return self.query<{ tokenTypes: TokenTypeModelType[]}>(`query tokenTypes($skip: Int, $first: Int, $orderBy: TokenType_orderBy, $orderDirection: OrderDirection, $where: TokenType_filter, $block: Block_height) { tokenTypes(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new TokenTypeModelSelector()).toString() : resultSelector}
       } }`, variables, options)
     },
     queryTokenTypeRelationship(variables: { id: string, block?: BlockHeight }, resultSelector: string | ((qb: TokenTypeRelationshipModelSelector) => TokenTypeRelationshipModelSelector) = tokenTypeRelationshipModelPrimitives.toString(), options: QueryOptions = {}) {
-      return self.query<{ tokenTypeRelationship: TokenTypeRelationshipModelType}>(`query tokenTypeRelationship($id: ID!) { tokenTypeRelationship(id: $id) {
+      return self.query<{ tokenTypeRelationship: TokenTypeRelationshipModelType}>(`query tokenTypeRelationship($id: ID!, $block: Block_height) { tokenTypeRelationship(id: $id, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new TokenTypeRelationshipModelSelector()).toString() : resultSelector}
       } }`, variables, options)
     },
     queryTokenTypeRelationships(variables: { skip?: number, first?: number, orderBy?: TokenTypeRelationshipOrderBy, orderDirection?: OrderDirection, where?: TokenTypeRelationshipFilter, block?: BlockHeight }, resultSelector: string | ((qb: TokenTypeRelationshipModelSelector) => TokenTypeRelationshipModelSelector) = tokenTypeRelationshipModelPrimitives.toString(), options: QueryOptions = {}) {
-      return self.query<{ tokenTypeRelationships: TokenTypeRelationshipModelType[]}>(`query tokenTypeRelationships($skip: Int, $first: Int, $orderBy: TokenTypeRelationship_orderBy, $orderDirection: OrderDirection, $where: TokenTypeRelationship_filter) { tokenTypeRelationships(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where) {
+      return self.query<{ tokenTypeRelationships: TokenTypeRelationshipModelType[]}>(`query tokenTypeRelationships($skip: Int, $first: Int, $orderBy: TokenTypeRelationship_orderBy, $orderDirection: OrderDirection, $where: TokenTypeRelationship_filter, $block: Block_height) { tokenTypeRelationships(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new TokenTypeRelationshipModelSelector()).toString() : resultSelector}
       } }`, variables, options)
     },
+    queryTokenRegistry(variables: { id: string, block?: BlockHeight }, resultSelector: string | ((qb: TokenRegistryModelSelector) => TokenRegistryModelSelector) = tokenRegistryModelPrimitives.toString(), options: QueryOptions = {}) {
+      return self.query<{ tokenRegistry: TokenRegistryModelType}>(`query tokenRegistry($id: ID!, $block: Block_height) { tokenRegistry(id: $id, block: $block) {
+        ${typeof resultSelector === "function" ? resultSelector(new TokenRegistryModelSelector()).toString() : resultSelector}
+      } }`, variables, options)
+    },
+    queryTokenRegistries(variables: { skip?: number, first?: number, orderBy?: TokenRegistryOrderBy, orderDirection?: OrderDirection, where?: TokenRegistryFilter, block?: BlockHeight }, resultSelector: string | ((qb: TokenRegistryModelSelector) => TokenRegistryModelSelector) = tokenRegistryModelPrimitives.toString(), options: QueryOptions = {}) {
+      return self.query<{ tokenRegistries: TokenRegistryModelType[]}>(`query tokenRegistries($skip: Int, $first: Int, $orderBy: TokenRegistry_orderBy, $orderDirection: OrderDirection, $where: TokenRegistry_filter, $block: Block_height) { tokenRegistries(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where, block: $block) {
+        ${typeof resultSelector === "function" ? resultSelector(new TokenRegistryModelSelector()).toString() : resultSelector}
+      } }`, variables, options)
+    },
     queryToken(variables: { id: string, block?: BlockHeight }, resultSelector: string | ((qb: TokenModelSelector) => TokenModelSelector) = tokenModelPrimitives.toString(), options: QueryOptions = {}) {
-      return self.query<{ token: TokenModelType}>(`query token($id: ID!) { token(id: $id) {
+      return self.query<{ token: TokenModelType}>(`query token($id: ID!, $block: Block_height) { token(id: $id, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new TokenModelSelector()).toString() : resultSelector}
       } }`, variables, options)
     },
     queryTokens(variables: { skip?: number, first?: number, orderBy?: TokenOrderBy, orderDirection?: OrderDirection, where?: TokenFilter, block?: BlockHeight }, resultSelector: string | ((qb: TokenModelSelector) => TokenModelSelector) = tokenModelPrimitives.toString(), options: QueryOptions = {}) {
-      return self.query<{ tokens: TokenModelType[]}>(`query tokens($skip: Int, $first: Int, $orderBy: Token_orderBy, $orderDirection: OrderDirection, $where: Token_filter) { tokens(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where) {
+      return self.query<{ tokens: TokenModelType[]}>(`query tokens($skip: Int, $first: Int, $orderBy: Token_orderBy, $orderDirection: OrderDirection, $where: Token_filter, $block: Block_height) { tokens(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new TokenModelSelector()).toString() : resultSelector}
       } }`, variables, options)
     },
     queryTokenRelationship(variables: { id: string, block?: BlockHeight }, resultSelector: string | ((qb: TokenRelationshipModelSelector) => TokenRelationshipModelSelector) = tokenRelationshipModelPrimitives.toString(), options: QueryOptions = {}) {
-      return self.query<{ tokenRelationship: TokenRelationshipModelType}>(`query tokenRelationship($id: ID!) { tokenRelationship(id: $id) {
+      return self.query<{ tokenRelationship: TokenRelationshipModelType}>(`query tokenRelationship($id: ID!, $block: Block_height) { tokenRelationship(id: $id, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new TokenRelationshipModelSelector()).toString() : resultSelector}
       } }`, variables, options)
     },
     queryTokenRelationships(variables: { skip?: number, first?: number, orderBy?: TokenRelationshipOrderBy, orderDirection?: OrderDirection, where?: TokenRelationshipFilter, block?: BlockHeight }, resultSelector: string | ((qb: TokenRelationshipModelSelector) => TokenRelationshipModelSelector) = tokenRelationshipModelPrimitives.toString(), options: QueryOptions = {}) {
-      return self.query<{ tokenRelationships: TokenRelationshipModelType[]}>(`query tokenRelationships($skip: Int, $first: Int, $orderBy: TokenRelationship_orderBy, $orderDirection: OrderDirection, $where: TokenRelationship_filter) { tokenRelationships(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where) {
+      return self.query<{ tokenRelationships: TokenRelationshipModelType[]}>(`query tokenRelationships($skip: Int, $first: Int, $orderBy: TokenRelationship_orderBy, $orderDirection: OrderDirection, $where: TokenRelationship_filter, $block: Block_height) { tokenRelationships(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new TokenRelationshipModelSelector()).toString() : resultSelector}
       } }`, variables, options)
     },
     queryBalance(variables: { id: string, block?: BlockHeight }, resultSelector: string | ((qb: BalanceModelSelector) => BalanceModelSelector) = balanceModelPrimitives.toString(), options: QueryOptions = {}) {
-      return self.query<{ balance: BalanceModelType}>(`query balance($id: ID!) { balance(id: $id) {
+      return self.query<{ balance: BalanceModelType}>(`query balance($id: ID!, $block: Block_height) { balance(id: $id, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new BalanceModelSelector()).toString() : resultSelector}
       } }`, variables, options)
     },
     queryBalances(variables: { skip?: number, first?: number, orderBy?: BalanceOrderBy, orderDirection?: OrderDirection, where?: BalanceFilter, block?: BlockHeight }, resultSelector: string | ((qb: BalanceModelSelector) => BalanceModelSelector) = balanceModelPrimitives.toString(), options: QueryOptions = {}) {
-      return self.query<{ balances: BalanceModelType[]}>(`query balances($skip: Int, $first: Int, $orderBy: Balance_orderBy, $orderDirection: OrderDirection, $where: Balance_filter) { balances(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where) {
+      return self.query<{ balances: BalanceModelType[]}>(`query balances($skip: Int, $first: Int, $orderBy: Balance_orderBy, $orderDirection: OrderDirection, $where: Balance_filter, $block: Block_height) { balances(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new BalanceModelSelector()).toString() : resultSelector}
       } }`, variables, options)
     },
     queryTransaction(variables: { id: string, block?: BlockHeight }, resultSelector: string | ((qb: TransactionModelSelector) => TransactionModelSelector) = transactionModelPrimitives.toString(), options: QueryOptions = {}) {
-      return self.query<{ transaction: TransactionModelType}>(`query transaction($id: ID!) { transaction(id: $id) {
+      return self.query<{ transaction: TransactionModelType}>(`query transaction($id: ID!, $block: Block_height) { transaction(id: $id, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new TransactionModelSelector()).toString() : resultSelector}
       } }`, variables, options)
     },
     queryTransactions(variables: { skip?: number, first?: number, orderBy?: TransactionOrderBy, orderDirection?: OrderDirection, where?: TransactionFilter, block?: BlockHeight }, resultSelector: string | ((qb: TransactionModelSelector) => TransactionModelSelector) = transactionModelPrimitives.toString(), options: QueryOptions = {}) {
-      return self.query<{ transactions: TransactionModelType[]}>(`query transactions($skip: Int, $first: Int, $orderBy: Transaction_orderBy, $orderDirection: OrderDirection, $where: Transaction_filter) { transactions(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where) {
+      return self.query<{ transactions: TransactionModelType[]}>(`query transactions($skip: Int, $first: Int, $orderBy: Transaction_orderBy, $orderDirection: OrderDirection, $where: Transaction_filter, $block: Block_height) { transactions(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new TransactionModelSelector()).toString() : resultSelector}
       } }`, variables, options)
     },
     queryTransfer(variables: { id: string, block?: BlockHeight }, resultSelector: string | ((qb: TransferModelSelector) => TransferModelSelector) = transferModelPrimitives.toString(), options: QueryOptions = {}) {
-      return self.query<{ transfer: TransferModelType}>(`query transfer($id: ID!) { transfer(id: $id) {
+      return self.query<{ transfer: TransferModelType}>(`query transfer($id: ID!, $block: Block_height) { transfer(id: $id, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new TransferModelSelector()).toString() : resultSelector}
       } }`, variables, options)
     },
     queryTransfers(variables: { skip?: number, first?: number, orderBy?: TransferOrderBy, orderDirection?: OrderDirection, where?: TransferFilter, block?: BlockHeight }, resultSelector: string | ((qb: TransferModelSelector) => TransferModelSelector) = transferModelPrimitives.toString(), options: QueryOptions = {}) {
-      return self.query<{ transfers: TransferModelType[]}>(`query transfers($skip: Int, $first: Int, $orderBy: Transfer_orderBy, $orderDirection: OrderDirection, $where: Transfer_filter) { transfers(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where) {
+      return self.query<{ transfers: TransferModelType[]}>(`query transfers($skip: Int, $first: Int, $orderBy: Transfer_orderBy, $orderDirection: OrderDirection, $where: Transfer_filter, $block: Block_height) { transfers(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new TransferModelSelector()).toString() : resultSelector}
       } }`, variables, options)
     },
     queryApproval(variables: { id: string, block?: BlockHeight }, resultSelector: string | ((qb: ApprovalModelSelector) => ApprovalModelSelector) = approvalModelPrimitives.toString(), options: QueryOptions = {}) {
-      return self.query<{ approval: ApprovalModelType}>(`query approval($id: ID!) { approval(id: $id) {
+      return self.query<{ approval: ApprovalModelType}>(`query approval($id: ID!, $block: Block_height) { approval(id: $id, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new ApprovalModelSelector()).toString() : resultSelector}
       } }`, variables, options)
     },
     queryApprovals(variables: { skip?: number, first?: number, orderBy?: ApprovalOrderBy, orderDirection?: OrderDirection, where?: ApprovalFilter, block?: BlockHeight }, resultSelector: string | ((qb: ApprovalModelSelector) => ApprovalModelSelector) = approvalModelPrimitives.toString(), options: QueryOptions = {}) {
-      return self.query<{ approvals: ApprovalModelType[]}>(`query approvals($skip: Int, $first: Int, $orderBy: Approval_orderBy, $orderDirection: OrderDirection, $where: Approval_filter) { approvals(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where) {
+      return self.query<{ approvals: ApprovalModelType[]}>(`query approvals($skip: Int, $first: Int, $orderBy: Approval_orderBy, $orderDirection: OrderDirection, $where: Approval_filter, $block: Block_height) { approvals(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new ApprovalModelSelector()).toString() : resultSelector}
       } }`, variables, options)
     },
     queryDecimalValue(variables: { id: string, block?: BlockHeight }, resultSelector: string | ((qb: DecimalValueModelSelector) => DecimalValueModelSelector) = decimalValueModelPrimitives.toString(), options: QueryOptions = {}) {
-      return self.query<{ decimalValue: DecimalValueModelType}>(`query decimalValue($id: ID!) { decimalValue(id: $id) {
+      return self.query<{ decimalValue: DecimalValueModelType}>(`query decimalValue($id: ID!, $block: Block_height) { decimalValue(id: $id, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new DecimalValueModelSelector()).toString() : resultSelector}
       } }`, variables, options)
     },
     queryDecimalValues(variables: { skip?: number, first?: number, orderBy?: DecimalValueOrderBy, orderDirection?: OrderDirection, where?: DecimalValueFilter, block?: BlockHeight }, resultSelector: string | ((qb: DecimalValueModelSelector) => DecimalValueModelSelector) = decimalValueModelPrimitives.toString(), options: QueryOptions = {}) {
-      return self.query<{ decimalValues: DecimalValueModelType[]}>(`query decimalValues($skip: Int, $first: Int, $orderBy: DecimalValue_orderBy, $orderDirection: OrderDirection, $where: DecimalValue_filter) { decimalValues(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where) {
+      return self.query<{ decimalValues: DecimalValueModelType[]}>(`query decimalValues($skip: Int, $first: Int, $orderBy: DecimalValue_orderBy, $orderDirection: OrderDirection, $where: DecimalValue_filter, $block: Block_height) { decimalValues(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new DecimalValueModelSelector()).toString() : resultSelector}
       } }`, variables, options)
     },
     queryPersistentStringArray(variables: { id: string, block?: BlockHeight }, resultSelector: string | ((qb: PersistentStringArrayModelSelector) => PersistentStringArrayModelSelector) = persistentStringArrayModelPrimitives.toString(), options: QueryOptions = {}) {
-      return self.query<{ persistentStringArray: PersistentStringArrayModelType}>(`query persistentStringArray($id: ID!) { persistentStringArray(id: $id) {
+      return self.query<{ persistentStringArray: PersistentStringArrayModelType}>(`query persistentStringArray($id: ID!, $block: Block_height) { persistentStringArray(id: $id, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new PersistentStringArrayModelSelector()).toString() : resultSelector}
       } }`, variables, options)
     },
     queryPersistentStringArrays(variables: { skip?: number, first?: number, orderBy?: PersistentStringArrayOrderBy, orderDirection?: OrderDirection, where?: PersistentStringArrayFilter, block?: BlockHeight }, resultSelector: string | ((qb: PersistentStringArrayModelSelector) => PersistentStringArrayModelSelector) = persistentStringArrayModelPrimitives.toString(), options: QueryOptions = {}) {
-      return self.query<{ persistentStringArrays: PersistentStringArrayModelType[]}>(`query persistentStringArrays($skip: Int, $first: Int, $orderBy: PersistentStringArray_orderBy, $orderDirection: OrderDirection, $where: PersistentStringArray_filter) { persistentStringArrays(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where) {
+      return self.query<{ persistentStringArrays: PersistentStringArrayModelType[]}>(`query persistentStringArrays($skip: Int, $first: Int, $orderBy: PersistentStringArray_orderBy, $orderDirection: OrderDirection, $where: PersistentStringArray_filter, $block: Block_height) { persistentStringArrays(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new PersistentStringArrayModelSelector()).toString() : resultSelector}
       } }`, variables, options)
     },
     queryPersistentString(variables: { id: string, block?: BlockHeight }, resultSelector: string | ((qb: PersistentStringModelSelector) => PersistentStringModelSelector) = persistentStringModelPrimitives.toString(), options: QueryOptions = {}) {
-      return self.query<{ persistentString: PersistentStringModelType}>(`query persistentString($id: ID!) { persistentString(id: $id) {
+      return self.query<{ persistentString: PersistentStringModelType}>(`query persistentString($id: ID!, $block: Block_height) { persistentString(id: $id, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new PersistentStringModelSelector()).toString() : resultSelector}
       } }`, variables, options)
     },
     queryPersistentStrings(variables: { skip?: number, first?: number, orderBy?: PersistentStringOrderBy, orderDirection?: OrderDirection, where?: PersistentStringFilter, block?: BlockHeight }, resultSelector: string | ((qb: PersistentStringModelSelector) => PersistentStringModelSelector) = persistentStringModelPrimitives.toString(), options: QueryOptions = {}) {
-      return self.query<{ persistentStrings: PersistentStringModelType[]}>(`query persistentStrings($skip: Int, $first: Int, $orderBy: PersistentString_orderBy, $orderDirection: OrderDirection, $where: PersistentString_filter) { persistentStrings(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where) {
+      return self.query<{ persistentStrings: PersistentStringModelType[]}>(`query persistentStrings($skip: Int, $first: Int, $orderBy: PersistentString_orderBy, $orderDirection: OrderDirection, $where: PersistentString_filter, $block: Block_height) { persistentStrings(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new PersistentStringModelSelector()).toString() : resultSelector}
       } }`, variables, options)
     },
     queryEvent(variables: { id: string, block?: BlockHeight }, resultSelector: string | ((qb: EventModelSelector) => EventModelSelector) = eventModelPrimitives.toString(), options: QueryOptions = {}) {
-      return self.query<{ event: EventUnion}>(`query event($id: ID!) { event(id: $id) {
+      return self.query<{ event: EventUnion}>(`query event($id: ID!, $block: Block_height) { event(id: $id, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new EventModelSelector()).toString() : resultSelector}
       } }`, variables, options)
     },
     queryEvents(variables: { skip?: number, first?: number, orderBy?: EventOrderBy, orderDirection?: OrderDirection, where?: EventFilter, block?: BlockHeight }, resultSelector: string | ((qb: EventModelSelector) => EventModelSelector) = eventModelPrimitives.toString(), options: QueryOptions = {}) {
-      return self.query<{ events: EventUnion[]}>(`query events($skip: Int, $first: Int, $orderBy: Event_orderBy, $orderDirection: OrderDirection, $where: Event_filter) { events(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where) {
+      return self.query<{ events: EventUnion[]}>(`query events($skip: Int, $first: Int, $orderBy: Event_orderBy, $orderDirection: OrderDirection, $where: Event_filter, $block: Block_height) { events(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new EventModelSelector()).toString() : resultSelector}
       } }`, variables, options)
     },
@@ -976,163 +1036,201 @@ export const RootStoreBase = withTypedRefs<Refs>()(MSTGQLStore
         ${typeof resultSelector === "function" ? resultSelector(new MetaModelSelector()).toString() : resultSelector}
       } }`, variables, options)
     },
+    queryAccountData(variables: { id: string }, resultSelector: string | ((qb: AccountDataModelSelector) => AccountDataModelSelector) = accountDataModelPrimitives.toString(), options: QueryOptions = {}) {
+      return self.query<{ accountData: AccountDataModelType}>(`query accountData($id: String!) { accountData(id: $id) {
+        ${typeof resultSelector === "function" ? resultSelector(new AccountDataModelSelector()).toString() : resultSelector}
+      } }`, variables, options)
+    },
+    queryAccountDatasByIds(variables: { ids: string[] }, resultSelector: string | ((qb: AccountDataModelSelector) => AccountDataModelSelector) = accountDataModelPrimitives.toString(), options: QueryOptions = {}) {
+      return self.query<{ accountDatasByIds: AccountDataModelType[]}>(`query accountDatasByIds($ids: [String!]!) { accountDatasByIds(ids: $ids) {
+        ${typeof resultSelector === "function" ? resultSelector(new AccountDataModelSelector()).toString() : resultSelector}
+      } }`, variables, options)
+    },
+    queryAccountDatas(variables?: {  }, resultSelector: string | ((qb: AccountDataModelSelector) => AccountDataModelSelector) = accountDataModelPrimitives.toString(), options: QueryOptions = {}) {
+      return self.query<{ accountDatas: AccountDataModelType[]}>(`query accountDatas { accountDatas {
+        ${typeof resultSelector === "function" ? resultSelector(new AccountDataModelSelector()).toString() : resultSelector}
+      } }`, variables, options)
+    },
+    mutateCreateAccountData(variables: { accountData: AccountDataCreateInput }, resultSelector: string | ((qb: AccountDataPayloadModelSelector) => AccountDataPayloadModelSelector) = accountDataPayloadModelPrimitives.toString(), optimisticUpdate?: () => void) {
+      return self.mutate<{ createAccountData: AccountDataPayloadModelType}>(`mutation createAccountData($accountData: AccountDataCreateInput!) { createAccountData(accountData: $accountData) {
+        ${typeof resultSelector === "function" ? resultSelector(new AccountDataPayloadModelSelector()).toString() : resultSelector}
+      } }`, variables, optimisticUpdate)
+    },
+    mutateUpdateAccountData(variables: { accountData: AccountDataUpdateInput }, resultSelector: string | ((qb: AccountDataPayloadModelSelector) => AccountDataPayloadModelSelector) = accountDataPayloadModelPrimitives.toString(), optimisticUpdate?: () => void) {
+      return self.mutate<{ updateAccountData: AccountDataPayloadModelType}>(`mutation updateAccountData($accountData: AccountDataUpdateInput!) { updateAccountData(accountData: $accountData) {
+        ${typeof resultSelector === "function" ? resultSelector(new AccountDataPayloadModelSelector()).toString() : resultSelector}
+      } }`, variables, optimisticUpdate)
+    },
+    mutateDeleteAccountData(variables: { id: string }, optimisticUpdate?: () => void) {
+      return self.mutate<{ deleteAccountData: boolean }>(`mutation deleteAccountData($id: String!) { deleteAccountData(_id: $id) }`, variables, optimisticUpdate)
+    },
     subscribePurpose(variables: { id: string, block?: BlockHeight }, resultSelector: string | ((qb: PurposeModelSelector) => PurposeModelSelector) = purposeModelPrimitives.toString(), onData?: (item: any) => void, onError?: (error: Error) => void) {
-      return self.subscribe<{ purpose: PurposeModelType}>(`subscription purpose($id: ID!) { purpose(id: $id) {
+      return self.subscribe<{ purpose: PurposeModelType}>(`subscription purpose($id: ID!, $block: Block_height) { purpose(id: $id, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new PurposeModelSelector()).toString() : resultSelector}
       } }`, variables, onData, onError)
     },
     subscribePurposes(variables: { skip?: number, first?: number, orderBy?: PurposeOrderBy, orderDirection?: OrderDirection, where?: PurposeFilter, block?: BlockHeight }, resultSelector: string | ((qb: PurposeModelSelector) => PurposeModelSelector) = purposeModelPrimitives.toString(), onData?: (item: any) => void, onError?: (error: Error) => void) {
-      return self.subscribe<{ purposes: PurposeModelType[]}>(`subscription purposes($skip: Int, $first: Int, $orderBy: Purpose_orderBy, $orderDirection: OrderDirection, $where: Purpose_filter) { purposes(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where) {
+      return self.subscribe<{ purposes: PurposeModelType[]}>(`subscription purposes($skip: Int, $first: Int, $orderBy: Purpose_orderBy, $orderDirection: OrderDirection, $where: Purpose_filter, $block: Block_height) { purposes(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new PurposeModelSelector()).toString() : resultSelector}
       } }`, variables, onData, onError)
     },
     subscribeSender(variables: { id: string, block?: BlockHeight }, resultSelector: string | ((qb: SenderModelSelector) => SenderModelSelector) = senderModelPrimitives.toString(), onData?: (item: any) => void, onError?: (error: Error) => void) {
-      return self.subscribe<{ sender: SenderModelType}>(`subscription sender($id: ID!) { sender(id: $id) {
+      return self.subscribe<{ sender: SenderModelType}>(`subscription sender($id: ID!, $block: Block_height) { sender(id: $id, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new SenderModelSelector()).toString() : resultSelector}
       } }`, variables, onData, onError)
     },
     subscribeSenders(variables: { skip?: number, first?: number, orderBy?: SenderOrderBy, orderDirection?: OrderDirection, where?: SenderFilter, block?: BlockHeight }, resultSelector: string | ((qb: SenderModelSelector) => SenderModelSelector) = senderModelPrimitives.toString(), onData?: (item: any) => void, onError?: (error: Error) => void) {
-      return self.subscribe<{ senders: SenderModelType[]}>(`subscription senders($skip: Int, $first: Int, $orderBy: Sender_orderBy, $orderDirection: OrderDirection, $where: Sender_filter) { senders(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where) {
+      return self.subscribe<{ senders: SenderModelType[]}>(`subscription senders($skip: Int, $first: Int, $orderBy: Sender_orderBy, $orderDirection: OrderDirection, $where: Sender_filter, $block: Block_height) { senders(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new SenderModelSelector()).toString() : resultSelector}
       } }`, variables, onData, onError)
     },
     subscribeDebug(variables: { id: string, block?: BlockHeight }, resultSelector: string | ((qb: DebugModelSelector) => DebugModelSelector) = debugModelPrimitives.toString(), onData?: (item: any) => void, onError?: (error: Error) => void) {
-      return self.subscribe<{ debug: DebugModelType}>(`subscription debug($id: ID!) { debug(id: $id) {
+      return self.subscribe<{ debug: DebugModelType}>(`subscription debug($id: ID!, $block: Block_height) { debug(id: $id, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new DebugModelSelector()).toString() : resultSelector}
       } }`, variables, onData, onError)
     },
     subscribeDebugs(variables: { skip?: number, first?: number, orderBy?: DebugOrderBy, orderDirection?: OrderDirection, where?: DebugFilter, block?: BlockHeight }, resultSelector: string | ((qb: DebugModelSelector) => DebugModelSelector) = debugModelPrimitives.toString(), onData?: (item: any) => void, onError?: (error: Error) => void) {
-      return self.subscribe<{ debugs: DebugModelType[]}>(`subscription debugs($skip: Int, $first: Int, $orderBy: Debug_orderBy, $orderDirection: OrderDirection, $where: Debug_filter) { debugs(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where) {
+      return self.subscribe<{ debugs: DebugModelType[]}>(`subscription debugs($skip: Int, $first: Int, $orderBy: Debug_orderBy, $orderDirection: OrderDirection, $where: Debug_filter, $block: Block_height) { debugs(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new DebugModelSelector()).toString() : resultSelector}
       } }`, variables, onData, onError)
     },
     subscribeAccount(variables: { id: string, block?: BlockHeight }, resultSelector: string | ((qb: AccountModelSelector) => AccountModelSelector) = accountModelPrimitives.toString(), onData?: (item: any) => void, onError?: (error: Error) => void) {
-      return self.subscribe<{ account: AccountModelType}>(`subscription account($id: ID!) { account(id: $id) {
+      return self.subscribe<{ account: AccountModelType}>(`subscription account($id: ID!, $block: Block_height) { account(id: $id, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new AccountModelSelector()).toString() : resultSelector}
       } }`, variables, onData, onError)
     },
     subscribeAccounts(variables: { skip?: number, first?: number, orderBy?: AccountOrderBy, orderDirection?: OrderDirection, where?: AccountFilter, block?: BlockHeight }, resultSelector: string | ((qb: AccountModelSelector) => AccountModelSelector) = accountModelPrimitives.toString(), onData?: (item: any) => void, onError?: (error: Error) => void) {
-      return self.subscribe<{ accounts: AccountModelType[]}>(`subscription accounts($skip: Int, $first: Int, $orderBy: Account_orderBy, $orderDirection: OrderDirection, $where: Account_filter) { accounts(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where) {
+      return self.subscribe<{ accounts: AccountModelType[]}>(`subscription accounts($skip: Int, $first: Int, $orderBy: Account_orderBy, $orderDirection: OrderDirection, $where: Account_filter, $block: Block_height) { accounts(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new AccountModelSelector()).toString() : resultSelector}
       } }`, variables, onData, onError)
     },
     subscribeTokenType(variables: { id: string, block?: BlockHeight }, resultSelector: string | ((qb: TokenTypeModelSelector) => TokenTypeModelSelector) = tokenTypeModelPrimitives.toString(), onData?: (item: any) => void, onError?: (error: Error) => void) {
-      return self.subscribe<{ tokenType: TokenTypeModelType}>(`subscription tokenType($id: ID!) { tokenType(id: $id) {
+      return self.subscribe<{ tokenType: TokenTypeModelType}>(`subscription tokenType($id: ID!, $block: Block_height) { tokenType(id: $id, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new TokenTypeModelSelector()).toString() : resultSelector}
       } }`, variables, onData, onError)
     },
     subscribeTokenTypes(variables: { skip?: number, first?: number, orderBy?: TokenTypeOrderBy, orderDirection?: OrderDirection, where?: TokenTypeFilter, block?: BlockHeight }, resultSelector: string | ((qb: TokenTypeModelSelector) => TokenTypeModelSelector) = tokenTypeModelPrimitives.toString(), onData?: (item: any) => void, onError?: (error: Error) => void) {
-      return self.subscribe<{ tokenTypes: TokenTypeModelType[]}>(`subscription tokenTypes($skip: Int, $first: Int, $orderBy: TokenType_orderBy, $orderDirection: OrderDirection, $where: TokenType_filter) { tokenTypes(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where) {
+      return self.subscribe<{ tokenTypes: TokenTypeModelType[]}>(`subscription tokenTypes($skip: Int, $first: Int, $orderBy: TokenType_orderBy, $orderDirection: OrderDirection, $where: TokenType_filter, $block: Block_height) { tokenTypes(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new TokenTypeModelSelector()).toString() : resultSelector}
       } }`, variables, onData, onError)
     },
     subscribeTokenTypeRelationship(variables: { id: string, block?: BlockHeight }, resultSelector: string | ((qb: TokenTypeRelationshipModelSelector) => TokenTypeRelationshipModelSelector) = tokenTypeRelationshipModelPrimitives.toString(), onData?: (item: any) => void, onError?: (error: Error) => void) {
-      return self.subscribe<{ tokenTypeRelationship: TokenTypeRelationshipModelType}>(`subscription tokenTypeRelationship($id: ID!) { tokenTypeRelationship(id: $id) {
+      return self.subscribe<{ tokenTypeRelationship: TokenTypeRelationshipModelType}>(`subscription tokenTypeRelationship($id: ID!, $block: Block_height) { tokenTypeRelationship(id: $id, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new TokenTypeRelationshipModelSelector()).toString() : resultSelector}
       } }`, variables, onData, onError)
     },
     subscribeTokenTypeRelationships(variables: { skip?: number, first?: number, orderBy?: TokenTypeRelationshipOrderBy, orderDirection?: OrderDirection, where?: TokenTypeRelationshipFilter, block?: BlockHeight }, resultSelector: string | ((qb: TokenTypeRelationshipModelSelector) => TokenTypeRelationshipModelSelector) = tokenTypeRelationshipModelPrimitives.toString(), onData?: (item: any) => void, onError?: (error: Error) => void) {
-      return self.subscribe<{ tokenTypeRelationships: TokenTypeRelationshipModelType[]}>(`subscription tokenTypeRelationships($skip: Int, $first: Int, $orderBy: TokenTypeRelationship_orderBy, $orderDirection: OrderDirection, $where: TokenTypeRelationship_filter) { tokenTypeRelationships(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where) {
+      return self.subscribe<{ tokenTypeRelationships: TokenTypeRelationshipModelType[]}>(`subscription tokenTypeRelationships($skip: Int, $first: Int, $orderBy: TokenTypeRelationship_orderBy, $orderDirection: OrderDirection, $where: TokenTypeRelationship_filter, $block: Block_height) { tokenTypeRelationships(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new TokenTypeRelationshipModelSelector()).toString() : resultSelector}
       } }`, variables, onData, onError)
     },
+    subscribeTokenRegistry(variables: { id: string, block?: BlockHeight }, resultSelector: string | ((qb: TokenRegistryModelSelector) => TokenRegistryModelSelector) = tokenRegistryModelPrimitives.toString(), onData?: (item: any) => void, onError?: (error: Error) => void) {
+      return self.subscribe<{ tokenRegistry: TokenRegistryModelType}>(`subscription tokenRegistry($id: ID!, $block: Block_height) { tokenRegistry(id: $id, block: $block) {
+        ${typeof resultSelector === "function" ? resultSelector(new TokenRegistryModelSelector()).toString() : resultSelector}
+      } }`, variables, onData, onError)
+    },
+    subscribeTokenRegistries(variables: { skip?: number, first?: number, orderBy?: TokenRegistryOrderBy, orderDirection?: OrderDirection, where?: TokenRegistryFilter, block?: BlockHeight }, resultSelector: string | ((qb: TokenRegistryModelSelector) => TokenRegistryModelSelector) = tokenRegistryModelPrimitives.toString(), onData?: (item: any) => void, onError?: (error: Error) => void) {
+      return self.subscribe<{ tokenRegistries: TokenRegistryModelType[]}>(`subscription tokenRegistries($skip: Int, $first: Int, $orderBy: TokenRegistry_orderBy, $orderDirection: OrderDirection, $where: TokenRegistry_filter, $block: Block_height) { tokenRegistries(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where, block: $block) {
+        ${typeof resultSelector === "function" ? resultSelector(new TokenRegistryModelSelector()).toString() : resultSelector}
+      } }`, variables, onData, onError)
+    },
     subscribeToken(variables: { id: string, block?: BlockHeight }, resultSelector: string | ((qb: TokenModelSelector) => TokenModelSelector) = tokenModelPrimitives.toString(), onData?: (item: any) => void, onError?: (error: Error) => void) {
-      return self.subscribe<{ token: TokenModelType}>(`subscription token($id: ID!) { token(id: $id) {
+      return self.subscribe<{ token: TokenModelType}>(`subscription token($id: ID!, $block: Block_height) { token(id: $id, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new TokenModelSelector()).toString() : resultSelector}
       } }`, variables, onData, onError)
     },
     subscribeTokens(variables: { skip?: number, first?: number, orderBy?: TokenOrderBy, orderDirection?: OrderDirection, where?: TokenFilter, block?: BlockHeight }, resultSelector: string | ((qb: TokenModelSelector) => TokenModelSelector) = tokenModelPrimitives.toString(), onData?: (item: any) => void, onError?: (error: Error) => void) {
-      return self.subscribe<{ tokens: TokenModelType[]}>(`subscription tokens($skip: Int, $first: Int, $orderBy: Token_orderBy, $orderDirection: OrderDirection, $where: Token_filter) { tokens(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where) {
+      return self.subscribe<{ tokens: TokenModelType[]}>(`subscription tokens($skip: Int, $first: Int, $orderBy: Token_orderBy, $orderDirection: OrderDirection, $where: Token_filter, $block: Block_height) { tokens(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new TokenModelSelector()).toString() : resultSelector}
       } }`, variables, onData, onError)
     },
     subscribeTokenRelationship(variables: { id: string, block?: BlockHeight }, resultSelector: string | ((qb: TokenRelationshipModelSelector) => TokenRelationshipModelSelector) = tokenRelationshipModelPrimitives.toString(), onData?: (item: any) => void, onError?: (error: Error) => void) {
-      return self.subscribe<{ tokenRelationship: TokenRelationshipModelType}>(`subscription tokenRelationship($id: ID!) { tokenRelationship(id: $id) {
+      return self.subscribe<{ tokenRelationship: TokenRelationshipModelType}>(`subscription tokenRelationship($id: ID!, $block: Block_height) { tokenRelationship(id: $id, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new TokenRelationshipModelSelector()).toString() : resultSelector}
       } }`, variables, onData, onError)
     },
     subscribeTokenRelationships(variables: { skip?: number, first?: number, orderBy?: TokenRelationshipOrderBy, orderDirection?: OrderDirection, where?: TokenRelationshipFilter, block?: BlockHeight }, resultSelector: string | ((qb: TokenRelationshipModelSelector) => TokenRelationshipModelSelector) = tokenRelationshipModelPrimitives.toString(), onData?: (item: any) => void, onError?: (error: Error) => void) {
-      return self.subscribe<{ tokenRelationships: TokenRelationshipModelType[]}>(`subscription tokenRelationships($skip: Int, $first: Int, $orderBy: TokenRelationship_orderBy, $orderDirection: OrderDirection, $where: TokenRelationship_filter) { tokenRelationships(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where) {
+      return self.subscribe<{ tokenRelationships: TokenRelationshipModelType[]}>(`subscription tokenRelationships($skip: Int, $first: Int, $orderBy: TokenRelationship_orderBy, $orderDirection: OrderDirection, $where: TokenRelationship_filter, $block: Block_height) { tokenRelationships(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new TokenRelationshipModelSelector()).toString() : resultSelector}
       } }`, variables, onData, onError)
     },
     subscribeBalance(variables: { id: string, block?: BlockHeight }, resultSelector: string | ((qb: BalanceModelSelector) => BalanceModelSelector) = balanceModelPrimitives.toString(), onData?: (item: any) => void, onError?: (error: Error) => void) {
-      return self.subscribe<{ balance: BalanceModelType}>(`subscription balance($id: ID!) { balance(id: $id) {
+      return self.subscribe<{ balance: BalanceModelType}>(`subscription balance($id: ID!, $block: Block_height) { balance(id: $id, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new BalanceModelSelector()).toString() : resultSelector}
       } }`, variables, onData, onError)
     },
     subscribeBalances(variables: { skip?: number, first?: number, orderBy?: BalanceOrderBy, orderDirection?: OrderDirection, where?: BalanceFilter, block?: BlockHeight }, resultSelector: string | ((qb: BalanceModelSelector) => BalanceModelSelector) = balanceModelPrimitives.toString(), onData?: (item: any) => void, onError?: (error: Error) => void) {
-      return self.subscribe<{ balances: BalanceModelType[]}>(`subscription balances($skip: Int, $first: Int, $orderBy: Balance_orderBy, $orderDirection: OrderDirection, $where: Balance_filter) { balances(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where) {
+      return self.subscribe<{ balances: BalanceModelType[]}>(`subscription balances($skip: Int, $first: Int, $orderBy: Balance_orderBy, $orderDirection: OrderDirection, $where: Balance_filter, $block: Block_height) { balances(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new BalanceModelSelector()).toString() : resultSelector}
       } }`, variables, onData, onError)
     },
     subscribeTransaction(variables: { id: string, block?: BlockHeight }, resultSelector: string | ((qb: TransactionModelSelector) => TransactionModelSelector) = transactionModelPrimitives.toString(), onData?: (item: any) => void, onError?: (error: Error) => void) {
-      return self.subscribe<{ transaction: TransactionModelType}>(`subscription transaction($id: ID!) { transaction(id: $id) {
+      return self.subscribe<{ transaction: TransactionModelType}>(`subscription transaction($id: ID!, $block: Block_height) { transaction(id: $id, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new TransactionModelSelector()).toString() : resultSelector}
       } }`, variables, onData, onError)
     },
     subscribeTransactions(variables: { skip?: number, first?: number, orderBy?: TransactionOrderBy, orderDirection?: OrderDirection, where?: TransactionFilter, block?: BlockHeight }, resultSelector: string | ((qb: TransactionModelSelector) => TransactionModelSelector) = transactionModelPrimitives.toString(), onData?: (item: any) => void, onError?: (error: Error) => void) {
-      return self.subscribe<{ transactions: TransactionModelType[]}>(`subscription transactions($skip: Int, $first: Int, $orderBy: Transaction_orderBy, $orderDirection: OrderDirection, $where: Transaction_filter) { transactions(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where) {
+      return self.subscribe<{ transactions: TransactionModelType[]}>(`subscription transactions($skip: Int, $first: Int, $orderBy: Transaction_orderBy, $orderDirection: OrderDirection, $where: Transaction_filter, $block: Block_height) { transactions(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new TransactionModelSelector()).toString() : resultSelector}
       } }`, variables, onData, onError)
     },
     subscribeTransfer(variables: { id: string, block?: BlockHeight }, resultSelector: string | ((qb: TransferModelSelector) => TransferModelSelector) = transferModelPrimitives.toString(), onData?: (item: any) => void, onError?: (error: Error) => void) {
-      return self.subscribe<{ transfer: TransferModelType}>(`subscription transfer($id: ID!) { transfer(id: $id) {
+      return self.subscribe<{ transfer: TransferModelType}>(`subscription transfer($id: ID!, $block: Block_height) { transfer(id: $id, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new TransferModelSelector()).toString() : resultSelector}
       } }`, variables, onData, onError)
     },
     subscribeTransfers(variables: { skip?: number, first?: number, orderBy?: TransferOrderBy, orderDirection?: OrderDirection, where?: TransferFilter, block?: BlockHeight }, resultSelector: string | ((qb: TransferModelSelector) => TransferModelSelector) = transferModelPrimitives.toString(), onData?: (item: any) => void, onError?: (error: Error) => void) {
-      return self.subscribe<{ transfers: TransferModelType[]}>(`subscription transfers($skip: Int, $first: Int, $orderBy: Transfer_orderBy, $orderDirection: OrderDirection, $where: Transfer_filter) { transfers(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where) {
+      return self.subscribe<{ transfers: TransferModelType[]}>(`subscription transfers($skip: Int, $first: Int, $orderBy: Transfer_orderBy, $orderDirection: OrderDirection, $where: Transfer_filter, $block: Block_height) { transfers(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new TransferModelSelector()).toString() : resultSelector}
       } }`, variables, onData, onError)
     },
     subscribeApproval(variables: { id: string, block?: BlockHeight }, resultSelector: string | ((qb: ApprovalModelSelector) => ApprovalModelSelector) = approvalModelPrimitives.toString(), onData?: (item: any) => void, onError?: (error: Error) => void) {
-      return self.subscribe<{ approval: ApprovalModelType}>(`subscription approval($id: ID!) { approval(id: $id) {
+      return self.subscribe<{ approval: ApprovalModelType}>(`subscription approval($id: ID!, $block: Block_height) { approval(id: $id, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new ApprovalModelSelector()).toString() : resultSelector}
       } }`, variables, onData, onError)
     },
     subscribeApprovals(variables: { skip?: number, first?: number, orderBy?: ApprovalOrderBy, orderDirection?: OrderDirection, where?: ApprovalFilter, block?: BlockHeight }, resultSelector: string | ((qb: ApprovalModelSelector) => ApprovalModelSelector) = approvalModelPrimitives.toString(), onData?: (item: any) => void, onError?: (error: Error) => void) {
-      return self.subscribe<{ approvals: ApprovalModelType[]}>(`subscription approvals($skip: Int, $first: Int, $orderBy: Approval_orderBy, $orderDirection: OrderDirection, $where: Approval_filter) { approvals(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where) {
+      return self.subscribe<{ approvals: ApprovalModelType[]}>(`subscription approvals($skip: Int, $first: Int, $orderBy: Approval_orderBy, $orderDirection: OrderDirection, $where: Approval_filter, $block: Block_height) { approvals(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new ApprovalModelSelector()).toString() : resultSelector}
       } }`, variables, onData, onError)
     },
     subscribeDecimalValue(variables: { id: string, block?: BlockHeight }, resultSelector: string | ((qb: DecimalValueModelSelector) => DecimalValueModelSelector) = decimalValueModelPrimitives.toString(), onData?: (item: any) => void, onError?: (error: Error) => void) {
-      return self.subscribe<{ decimalValue: DecimalValueModelType}>(`subscription decimalValue($id: ID!) { decimalValue(id: $id) {
+      return self.subscribe<{ decimalValue: DecimalValueModelType}>(`subscription decimalValue($id: ID!, $block: Block_height) { decimalValue(id: $id, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new DecimalValueModelSelector()).toString() : resultSelector}
       } }`, variables, onData, onError)
     },
     subscribeDecimalValues(variables: { skip?: number, first?: number, orderBy?: DecimalValueOrderBy, orderDirection?: OrderDirection, where?: DecimalValueFilter, block?: BlockHeight }, resultSelector: string | ((qb: DecimalValueModelSelector) => DecimalValueModelSelector) = decimalValueModelPrimitives.toString(), onData?: (item: any) => void, onError?: (error: Error) => void) {
-      return self.subscribe<{ decimalValues: DecimalValueModelType[]}>(`subscription decimalValues($skip: Int, $first: Int, $orderBy: DecimalValue_orderBy, $orderDirection: OrderDirection, $where: DecimalValue_filter) { decimalValues(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where) {
+      return self.subscribe<{ decimalValues: DecimalValueModelType[]}>(`subscription decimalValues($skip: Int, $first: Int, $orderBy: DecimalValue_orderBy, $orderDirection: OrderDirection, $where: DecimalValue_filter, $block: Block_height) { decimalValues(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new DecimalValueModelSelector()).toString() : resultSelector}
       } }`, variables, onData, onError)
     },
     subscribePersistentStringArray(variables: { id: string, block?: BlockHeight }, resultSelector: string | ((qb: PersistentStringArrayModelSelector) => PersistentStringArrayModelSelector) = persistentStringArrayModelPrimitives.toString(), onData?: (item: any) => void, onError?: (error: Error) => void) {
-      return self.subscribe<{ persistentStringArray: PersistentStringArrayModelType}>(`subscription persistentStringArray($id: ID!) { persistentStringArray(id: $id) {
+      return self.subscribe<{ persistentStringArray: PersistentStringArrayModelType}>(`subscription persistentStringArray($id: ID!, $block: Block_height) { persistentStringArray(id: $id, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new PersistentStringArrayModelSelector()).toString() : resultSelector}
       } }`, variables, onData, onError)
     },
     subscribePersistentStringArrays(variables: { skip?: number, first?: number, orderBy?: PersistentStringArrayOrderBy, orderDirection?: OrderDirection, where?: PersistentStringArrayFilter, block?: BlockHeight }, resultSelector: string | ((qb: PersistentStringArrayModelSelector) => PersistentStringArrayModelSelector) = persistentStringArrayModelPrimitives.toString(), onData?: (item: any) => void, onError?: (error: Error) => void) {
-      return self.subscribe<{ persistentStringArrays: PersistentStringArrayModelType[]}>(`subscription persistentStringArrays($skip: Int, $first: Int, $orderBy: PersistentStringArray_orderBy, $orderDirection: OrderDirection, $where: PersistentStringArray_filter) { persistentStringArrays(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where) {
+      return self.subscribe<{ persistentStringArrays: PersistentStringArrayModelType[]}>(`subscription persistentStringArrays($skip: Int, $first: Int, $orderBy: PersistentStringArray_orderBy, $orderDirection: OrderDirection, $where: PersistentStringArray_filter, $block: Block_height) { persistentStringArrays(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new PersistentStringArrayModelSelector()).toString() : resultSelector}
       } }`, variables, onData, onError)
     },
     subscribePersistentString(variables: { id: string, block?: BlockHeight }, resultSelector: string | ((qb: PersistentStringModelSelector) => PersistentStringModelSelector) = persistentStringModelPrimitives.toString(), onData?: (item: any) => void, onError?: (error: Error) => void) {
-      return self.subscribe<{ persistentString: PersistentStringModelType}>(`subscription persistentString($id: ID!) { persistentString(id: $id) {
+      return self.subscribe<{ persistentString: PersistentStringModelType}>(`subscription persistentString($id: ID!, $block: Block_height) { persistentString(id: $id, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new PersistentStringModelSelector()).toString() : resultSelector}
       } }`, variables, onData, onError)
     },
     subscribePersistentStrings(variables: { skip?: number, first?: number, orderBy?: PersistentStringOrderBy, orderDirection?: OrderDirection, where?: PersistentStringFilter, block?: BlockHeight }, resultSelector: string | ((qb: PersistentStringModelSelector) => PersistentStringModelSelector) = persistentStringModelPrimitives.toString(), onData?: (item: any) => void, onError?: (error: Error) => void) {
-      return self.subscribe<{ persistentStrings: PersistentStringModelType[]}>(`subscription persistentStrings($skip: Int, $first: Int, $orderBy: PersistentString_orderBy, $orderDirection: OrderDirection, $where: PersistentString_filter) { persistentStrings(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where) {
+      return self.subscribe<{ persistentStrings: PersistentStringModelType[]}>(`subscription persistentStrings($skip: Int, $first: Int, $orderBy: PersistentString_orderBy, $orderDirection: OrderDirection, $where: PersistentString_filter, $block: Block_height) { persistentStrings(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new PersistentStringModelSelector()).toString() : resultSelector}
       } }`, variables, onData, onError)
     },
     subscribeEvent(variables: { id: string, block?: BlockHeight }, resultSelector: string | ((qb: EventModelSelector) => EventModelSelector) = eventModelPrimitives.toString(), onData?: (item: any) => void, onError?: (error: Error) => void) {
-      return self.subscribe<{ event: EventUnion}>(`subscription event($id: ID!) { event(id: $id) {
+      return self.subscribe<{ event: EventUnion}>(`subscription event($id: ID!, $block: Block_height) { event(id: $id, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new EventModelSelector()).toString() : resultSelector}
       } }`, variables, onData, onError)
     },
     subscribeEvents(variables: { skip?: number, first?: number, orderBy?: EventOrderBy, orderDirection?: OrderDirection, where?: EventFilter, block?: BlockHeight }, resultSelector: string | ((qb: EventModelSelector) => EventModelSelector) = eventModelPrimitives.toString(), onData?: (item: any) => void, onError?: (error: Error) => void) {
-      return self.subscribe<{ events: EventUnion[]}>(`subscription events($skip: Int, $first: Int, $orderBy: Event_orderBy, $orderDirection: OrderDirection, $where: Event_filter) { events(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where) {
+      return self.subscribe<{ events: EventUnion[]}>(`subscription events($skip: Int, $first: Int, $orderBy: Event_orderBy, $orderDirection: OrderDirection, $where: Event_filter, $block: Block_height) { events(skip: $skip, first: $first, orderBy: $orderBy, orderDirection: $orderDirection, where: $where, block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new EventModelSelector()).toString() : resultSelector}
       } }`, variables, onData, onError)
     },
@@ -1141,5 +1239,13 @@ export const RootStoreBase = withTypedRefs<Refs>()(MSTGQLStore
       return self.subscribe<{ _meta: MetaModelType}>(`subscription _meta($block: Block_height) { _meta(block: $block) {
         ${typeof resultSelector === "function" ? resultSelector(new MetaModelSelector()).toString() : resultSelector}
       } }`, variables, onData, onError)
+    },
+    subscribeAccountDataAdded(variables?: {  }, resultSelector: string | ((qb: AccountDataModelSelector) => AccountDataModelSelector) = accountDataModelPrimitives.toString(), onData?: (item: any) => void, onError?: (error: Error) => void) {
+      return self.subscribe<{ accountDataAdded: AccountDataModelType}>(`subscription accountDataAdded { accountDataAdded {
+        ${typeof resultSelector === "function" ? resultSelector(new AccountDataModelSelector()).toString() : resultSelector}
+      } }`, variables, onData, onError)
+    },
+    subscribeAccountDataDeleted(variables?: {  }, onData?: (item: any) => void, onError?: (error: Error) => void) {
+      return self.subscribe<{ accountDataDeleted: string }>(`subscription accountDataDeleted { accountDataDeleted }`, variables, onData, onError)
     },
   })))

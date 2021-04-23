@@ -10,6 +10,8 @@ import { ApprovalModel, ApprovalModelType } from "./ApprovalModel"
 import { ApprovalModelSelector } from "./ApprovalModel.base"
 import { BalanceModel, BalanceModelType } from "./BalanceModel"
 import { BalanceModelSelector } from "./BalanceModel.base"
+import { TokenRegistryModel, TokenRegistryModelType } from "./TokenRegistryModel"
+import { TokenRegistryModelSelector } from "./TokenRegistryModel.base"
 import { TokenRelationshipModel, TokenRelationshipModelType } from "./TokenRelationshipModel"
 import { TokenRelationshipModelSelector } from "./TokenRelationshipModel.base"
 import { TokenTypeModel, TokenTypeModelType } from "./TokenTypeModel"
@@ -21,6 +23,7 @@ import { RootStoreType } from "./index"
 
 /* The TypeScript type that explicits the refs to other models in order to prevent a circular refs issue */
 type Refs = {
+  registry: TokenRegistryModelType;
   tokenType: TokenTypeModelType;
   children: IObservableArray<TokenRelationshipModelType>;
   parents: IObservableArray<TokenRelationshipModelType>;
@@ -38,6 +41,7 @@ export const TokenModelBase = withTypedRefs<Refs>()(ModelBase
   .props({
     __typename: types.optional(types.literal("Token"), "Token"),
     id: types.identifier,
+    registry: types.union(types.undefined, MSTGQLRef(types.late((): any => TokenRegistryModel))),
     identifier: types.union(types.undefined, types.frozen()),
     uri: types.union(types.undefined, types.null, types.string),
     totalSupply: types.union(types.undefined, types.frozen()),
@@ -59,6 +63,7 @@ export class TokenModelSelector extends QueryBuilder {
   get identifier() { return this.__attr(`identifier`) }
   get uri() { return this.__attr(`uri`) }
   get totalSupply() { return this.__attr(`totalSupply`) }
+  registry(builder?: string | TokenRegistryModelSelector | ((selector: TokenRegistryModelSelector) => TokenRegistryModelSelector)) { return this.__child(`registry`, TokenRegistryModelSelector, builder) }
   tokenType(builder?: string | TokenTypeModelSelector | ((selector: TokenTypeModelSelector) => TokenTypeModelSelector)) { return this.__child(`tokenType`, TokenTypeModelSelector, builder) }
   children(builder?: string | TokenRelationshipModelSelector | ((selector: TokenRelationshipModelSelector) => TokenRelationshipModelSelector)) { return this.__child(`children`, TokenRelationshipModelSelector, builder) }
   parents(builder?: string | TokenRelationshipModelSelector | ((selector: TokenRelationshipModelSelector) => TokenRelationshipModelSelector)) { return this.__child(`parents`, TokenRelationshipModelSelector, builder) }
