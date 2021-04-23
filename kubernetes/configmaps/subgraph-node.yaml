@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: subgraph-node
+  labels:
+    app: subgraph-node
+data:
+  RUST_LOG: info
+  RUST_BACKTRACE: full
+  # ethereum: hardhat:http://xx.xx.xx.xx:8545
+  ipfs: localhost:5001
+  postgres_db: graph-node
+  postgres_host: localhost
+  postgres_pass: let-me-in
+  postgres_user: graph-node

@@ -28,6 +28,11 @@ packages/subgraph/config/config.json
 packages/subgraph/config/config.ts
 tenderly.yaml
 
+# secrets
+mnemonic.txt
+*secret.yaml
+secrets/
+
 # build files
 packages/textile-server/dist
 packages/textile-server/yarn-offline-mirror

@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: subgraph-postgres
+  labels:
+    app: subgraph-postgres
+data:
+  POSTGRES_DB: graph-node
+  POSTGRES_USER: graph-node
+  POSTGRES_PASSWORD: let-me-in
