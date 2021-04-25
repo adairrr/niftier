@@ -4,9 +4,9 @@ services:
     build: .
     tty: true
     environment:
-      - PORT=10002
+      - PORT=10000
     ports:
-      - '10002:10002'
+      - '10000:10000'
     restart: unless-stopped
     logging:
       driver: 'json-file'

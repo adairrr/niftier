@@ -1,7 +1,10 @@
 *
 
+!yarn-offline-mirror/
 !src/
 !package.json
 !yarn.lock
+!.yarnrc
+!codegen.yml
 !tsconfig.json
 !.env

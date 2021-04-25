@@ -72,12 +72,16 @@ async function makeGatewaySchema() {
   });
 }
 
+console.log(`Waiting on subgraph resource: ${<string>process.env.SUBGRAPH_RESOURCE} 
+  and textile resource: ${<string>process.env.TEXTILE_RESOURCE}`);
+
 waitOn({ 
   resources: [
-    `tcp:${<string>process.env.SUBGRAPH_PORT}`, 
-    `tcp:${<string>process.env.TEXTILE_PORT}`
+    `${<string>process.env.SUBGRAPH_RESOURCE}`, 
+    `${<string>process.env.TEXTILE_RESOURCE}`
   ] 
 }, async () => {
+  console.log('Sucessfully connected to subgraph and textile resources.');
   startServer(await makeGatewaySchema(), 'gateway', parseInt(<string>process.env.STITCHED_PORT));
 });
 

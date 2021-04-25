@@ -5,7 +5,7 @@ import * as dotenv from 'dotenv';
 export default function startServer(schema: any, name: string, port: number) {
   const app = express();
   app.use('/graphql', graphqlHTTP({ schema, graphiql: true }));
-  app.listen(port, () => (
+  app.listen(port, "0.0.0.0", () => (
     console.log(`${name} running at http://localhost:${port}/graphql`)
   ));
 }
