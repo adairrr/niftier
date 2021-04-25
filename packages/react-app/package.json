@@ -160,8 +160,8 @@
     "ship": "yarn surge",
     "theme": "npx gulp less",
     "watch": "node ./scripts/watch.js",
-    "generate:subgraph-mst-gql": "yarn mst-gql --format ts http://localhost:8000/subgraphs/name/nft-minter/composable-contract --outDir src/subgraph_models",
-    "generate:textile-mst-gql": "yarn mst-gql --format ts http://localhost:10000/graphql --outDir src/stitched_models",
+    "generate:subgraph-mst-gql": "yarn mst-gql --format ts http://localhost:8000/subgraphs/name/niftier/composable-contract --outDir src/subgraph_models",
+    "generate:textile-mst-gql": "yarn mst-gql --format ts http://localhost:10000/graphql --outDir src/subgraph_models",
     "ceramic-bootstrap": "node ./scripts/ceramicBootstrap.js",
     "bump-ceramic": "yarn add @ceramicnetwork/ceramic-http-client@latest @ceramicstudio/idx@latest @ceramicstudio/idx-constants@latest @ceramicstudio/idx-tools@latest 3id-connect@next"
   }

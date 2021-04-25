@@ -6,9 +6,9 @@
     "codegen": "graph codegen",
     "build": "graph build",
     "deploy": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ GITHUB_USERNAME/your-contract",
-    "create-local": "graph create --node http://localhost:8020/ nft-minter/composable-contract",
-    "remove-local": "graph remove --node http://localhost:8020/ nft-minter/composable-contract",
-    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 nft-minter/composable-contract"
+    "create-local": "graph create --node http://localhost:8020/ niftier/composable-contract",
+    "remove-local": "graph remove --node http://localhost:8020/ niftier/composable-contract",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 niftier/composable-contract"
   },
   "dependencies": {
     "@amxx/graphprotocol-utils": "^0.0.8",

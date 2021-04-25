@@ -4,7 +4,7 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: YourContract
-    network: localhost
+    network: hardhat
     source:
       address: '{{YourContractAddress}}'
       abi: YourContract
@@ -25,7 +25,7 @@ dataSources:
       file: ./src/mapping.ts
   - kind: ethereum/contract
     name: TypedERC1155Composable
-    network: localhost
+    network: hardhat
     source:
       address: '{{TypedERC1155ComposableAddress}}'
       abi: TypedERC1155Composable
