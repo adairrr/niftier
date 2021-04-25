@@ -1,19 +1,23 @@
 apiVersion: v1
 kind: Service
 metadata:
-  annotations:
-    kompose.cmd: kompose convert -o kubernetes
-    kompose.version: 1.22.0 (955b78124)
-  creationTimestamp: null
-  labels:
-    io.kompose.service: graphql-textile
   name: graphql-textile
+  namespace: ambassador
+  annotations:
+    a8r.io/owner: adairrr
+    a8r.io/description: "A service that exposes an additional account info graphql server"
+    a8r.io/repository: "https://github.com/adairrr/niftier/tree/develop/packages/textile-server"
+    a8r.io/documentation: "https://github.com/adairrr/niftier/blob/develop/packages/textile-server/README.md"
+  labels:
+    service: graphql-textile
 spec:
   ports:
-    - name: "9000"
+    - name: graphql-textile-endpoint
       port: 9000
       targetPort: 9000
+      protocol: TCP
   selector:
-    io.kompose.service: graphql-textile
-status:
-  loadBalancer: {}
+    service: graphql-textile
+  # type: NodePort
+# status:
+#   loadBalancer: {}

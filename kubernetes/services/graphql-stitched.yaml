@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: graphql-stitched
+  namespace: ambassador
+  annotations:
+    a8r.io/owner: adairrr
+    a8r.io/description: "A service that exposes a stitched graphql endpoint"
+    a8r.io/repository: "https://github.com/adairrr/niftier/tree/develop/packages/stitched-gql-server"
+    a8r.io/documentation: "https://github.com/adairrr/niftier/blob/develop/packages/stitched-gql-server/README.md"
+  labels:
+    service: graphql-stitched
+spec:
+  ports:
+    - name: graphql-stitched-endpoint
+      port: 10000
+      targetPort: 10000
+  selector:
+    service: graphql-stitched
+  type: NodePort
+# status:
+#   loadBalancer: {}

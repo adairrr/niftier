@@ -1,28 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    kompose.cmd: kompose convert -o kubernetes
-    kompose.version: 1.22.0 (955b78124)
-  creationTimestamp: null
-  labels:
-    io.kompose.service: ceramic-node
   name: ceramic-node
+  namespace: ambassador
+  labels:
+    service: ceramic-node
 spec:
   replicas: 1
   selector:
     matchLabels:
-      io.kompose.service: ceramic-node
+      service: ceramic-node
   strategy:
     type: Recreate
   template:
     metadata:
-      annotations:
-        kompose.cmd: kompose convert -o kubernetes
-        kompose.version: 1.22.0 (955b78124)
-      creationTimestamp: null
       labels:
-        io.kompose.service: ceramic-node
+        service: ceramic-node
     spec:
       containers:
         - command:

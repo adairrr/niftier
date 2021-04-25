@@ -2,8 +2,9 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: subgraph-node
+  namespace: ambassador
   labels:
-    app: subgraph-node
+    service: subgraph-node
 data:
   RUST_LOG: info
   RUST_BACKTRACE: full

@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: graphql-stitched
+  namespace: ambassador
+  labels:
+    service: graphql-stitched
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: graphql-stitched
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        service: graphql-stitched
+    spec:
+      containers:
+        - name: graphql-stitched
+          image: adairrr/stitched-gql-server-kubernetes
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: graphql-stitched
+          ports:
+            - containerPort: 10000
+          resources: {}
+          tty: true
+      restartPolicy: Always
+status: {}

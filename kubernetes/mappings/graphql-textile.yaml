@@ -1,0 +1,8 @@
+apiVersion: getambassador.io/v2
+kind: Mapping
+metadata:
+  name: graphql-textile
+  namespace: ambassador
+spec:
+  prefix: /graphql/textile/
+  service: graphql-textile:9000

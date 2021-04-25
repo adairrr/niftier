@@ -1,13 +1,15 @@
 apiVersion: v1
 kind: Service
 metadata:
-  annotations:
-    kompose.cmd: kompose convert -o kubernetes
-    kompose.version: 1.22.0 (955b78124)
-  creationTimestamp: null
-  labels:
-    io.kompose.service: graph-node
   name: graph-node
+  namespace: ambassador
+  annotations:
+    a8r.io/owner: adairrr
+    a8r.io/description: "A service that encapsulates a graph node"
+    a8r.io/repository: "https://github.com/adairrr/niftier/tree/develop/packages/subgraph"
+    a8r.io/documentation: "https://github.com/adairrr/niftier/blob/develop/packages/subgraph/README.md"
+  labels:
+    service: graph-node
 spec:
   ports:
     - name: graphql-server
@@ -26,6 +28,6 @@ spec:
       port: 8040
       targetPort: 8040
   selector:
-    io.kompose.service: graph-node
+    service: graph-node
 status:
   loadBalancer: {}
