@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: subgraph-node
+  namespace: ambassador
+type: Opaque
+data:
+  # which chain to follow, obfuscated because ip
+  ethereum: BASE64_HASH_HERE

@@ -4,5 +4,6 @@ metadata:
   name: graphql-textile
   namespace: ambassador
 spec:
-  prefix: /graphql/textile/
+  prefix: /api/textile/
+  rewrite: /graphql
   service: graphql-textile:9000

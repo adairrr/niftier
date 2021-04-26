@@ -2,7 +2,9 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: graph-node
-  namespace: ambassador
+  # namespace: ambassador
+  annotations:
+    consul.hashicorp.com/connect-inject: 'true'
   labels:
     service: graph-node
 spec:

@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: graphql-textile
-  namespace: ambassador
+  # namespace: ambassador
   labels:
     service: graphql-textile
 spec:
@@ -12,7 +12,8 @@ spec:
   strategy: {}
   template:
     metadata:
-      # annotations:
+      annotations:
+        consul.hashicorp.com/connect-inject: 'true'
       labels:
         service: graphql-textile
     spec:
@@ -25,7 +26,6 @@ spec:
             value: "9000"
         ports:
           - containerPort: 9000
-            protocol: TCP
         readinessProbe:
           httpGet:
             path: /.well-known/apollo/server-health

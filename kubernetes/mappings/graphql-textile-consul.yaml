@@ -1,0 +1,13 @@
+apiVersion: getambassador.io/v2
+kind: Mapping
+metadata:
+  name: graphql-textile
+  # namespace: ambassador
+spec:
+  prefix: /api/textile/
+  rewrite: /api/textile/graphql
+  service: graphql-textile-sidecar-proxy
+  resolver: consul-dc1
+  tls: ambassador-consul
+  load_balancer:  # underscored in their docs
+    policy: round_robin

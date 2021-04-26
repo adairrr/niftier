@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: subgraph-node
-  namespace: ambassador
+  # namespace: ambassador
   labels:
     service: subgraph-node
 data:
