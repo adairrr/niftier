@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: subgraph-ipfs
+
+--- 
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: subgraph-ipfs
+  # namespace: ambassador
+  labels:
+    service: subgraph-ipfs
+spec:
+  selector:
+    matchLabels:
+      service: subgraph-ipfs
+  template:
+    metadata:
+      annotations:
+        consul.hashicorp.com/connect-inject: 'true'
+      labels:
+        service: subgraph-ipfs
+    spec:
+      serviceAccountName: subgraph-ipfs
+      containers:
+      - name: subgraph-ipfs
+        image: ipfs/go-ipfs:v0.4.23
+        imagePullPolicy: IfNotPresent
+        ports:
+          - containerPort: 5001
+            hostPort: 5001
+        volumeMounts:
+          - mountPath: /data/ipfs
+            name: subgraph-ipfs
+      volumes:
+        - name: subgraph-ipfs
+          persistentVolumeClaim:
+            claimName: subgraph-ipfs

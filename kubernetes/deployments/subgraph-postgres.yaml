@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: subgraph-postgres
+
+--- 
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: subgraph-postgres
+  # namespace: ambassador
+  labels:
+    service: subgraph-postgres
+spec:
+  selector:
+    matchLabels:
+      service: subgraph-postgres
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        consul.hashicorp.com/connect-inject: 'true'
+      labels:
+        service: subgraph-postgres
+    spec:
+      serviceAccountName: subgraph-postgres
+      containers:
+      - name: subgraph-postgres
+        image: postgres
+        imagePullPolicy: IfNotPresent
+        args:
+          - postgres
+          - -cshared_preload_libraries=pg_stat_statements
+        ports:
+          - containerPort: 5432
+            hostPort: 5432
+        envFrom:
+          - configMapRef:
+              name: subgraph-postgres
+        volumeMounts:
+          - mountPath: /data/postgres
+            name: subgraph-postgres
+      volumes:
+        - name: subgraph-postgres
+          persistentVolumeClaim:
+            claimName: subgraph-postgres
