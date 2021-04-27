@@ -2,6 +2,7 @@
 
 This application is monitored through the Ambassador Edge Stack
 
+
 ## Steps 
 
 1. [Install Consul](https://www.consul.io/docs/k8s/installation/install) and [enable Connect](https://www.consul.io/docs/k8s/service-sync) # TODO ENABLE TLS
@@ -9,6 +10,24 @@ This application is monitored through the Ambassador Edge Stack
     helm repo add hashicorp https://helm.releases.hashicorp.com
     helm install consul hashicorp/consul -f config.yaml --set global.name=consul
     ```
+
+
+1. Disable kube-dns and enable CoreDNS
+    [CoreDNS repo](https://github.com/coredns/deployment/tree/master/kubernetes)
+    OR: [this stackoverflow solution](https://stackoverflow.com/questions/55122234/installing-coredns-on-gke)
+    
+    ```
+    git clone https://github.com/coredns/deployment.git
+    cd deployment/kubernetes
+    ./deploy.sh > corendns-deployment.yaml
+    kubectl apply -f coredns-deployment.yaml
+    kubectl delete --namespace=kube-system deployment kube-dns
+    # EXTRA FROM https://stackoverflow.com/questions/55122234/installing-coredns-on-gke
+    kubectl scale --replicas=0 deployment/kube-dns-autoscaler --namespace=kube-system
+    kubectl scale --replicas=0 deployment/kube-dns --namespace=kube-system
+    ```
+    
+    Then do the steps [here](https://www.consul.io/docs/k8s/dns#coredns-configuration)
 
 
 1. Create a RoleBinding for cluster admin rights (GKE)
@@ -34,7 +53,7 @@ This application is monitored through the Ambassador Edge Stack
 
 1. Using [Ambassador's Consul Integration Docs](https://www.getambassador.io/docs/edge-stack/latest/howtos/consul/), create the ConsulResolver
     ```
-    kubectl apply -f ./consul/consul-dc1.yaml
+    kubectl apply -f ./consul/resolvers/consul-dc1.yaml
     ```
 
 1. Deploy the Ambassador Edge Stack Consul Connector 

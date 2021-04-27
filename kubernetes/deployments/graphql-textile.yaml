@@ -1,3 +1,10 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: graphql-textile
+
+--- 
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -17,6 +24,7 @@ spec:
       labels:
         service: graphql-textile
     spec:
+      serviceAccountName: graphql-textile
       containers:
       - name: graphql-textile
         image: adairrr/graphql-textile-kubernetes

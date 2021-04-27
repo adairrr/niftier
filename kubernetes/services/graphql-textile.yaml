@@ -2,22 +2,17 @@ apiVersion: v1
 kind: Service
 metadata:
   name: graphql-textile
-  namespace: ambassador
+  labels:
+    service: graphql-textile
   annotations:
     a8r.io/owner: adairrr
     a8r.io/description: "A service that exposes an additional account info graphql server"
     a8r.io/repository: "https://github.com/adairrr/niftier/tree/develop/packages/textile-server"
     a8r.io/documentation: "https://github.com/adairrr/niftier/blob/develop/packages/textile-server/README.md"
-  labels:
-    service: graphql-textile
 spec:
   ports:
     - name: graphql-textile-endpoint
       port: 9000
       targetPort: 9000
-      protocol: TCP
   selector:
     service: graphql-textile
-  # type: NodePort
-# status:
-#   loadBalancer: {}

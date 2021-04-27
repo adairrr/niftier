@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: subgraph-postgres
+  labels:
+    service: subgraph-postgres
+  annotations:
+    a8r.io/owner: adairrr
+    a8r.io/description: "A service for the subgraph's postgres database"
+    a8r.io/repository: "https://github.com/adairrr/niftier/tree/develop/packages/subgraph"
+    a8r.io/documentation: "https://github.com/adairrr/niftier/blob/develop/packages/subgraph/README.md"
+spec:
+  ports:
+    - name: subgraph-postgres-endpoint
+      port: 5432
+      targetPort: 5432
+  selector:
+    service: subgraph-postgres

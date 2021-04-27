@@ -2,13 +2,12 @@ apiVersion: v1
 kind: Service
 metadata:
   name: ceramic-node
-  namespace: ambassador
+  labels:
+    service: ceramic-node
   annotations:
     a8r.io/owner: adairrr
     a8r.io/description: "A service that exposes a Ceramic node"
     a8r.io/repository: "https://github.com/adairrr/niftier/tree/develop/docker/ceramic-node"
-  labels:
-    service: ceramic-node
 spec:
   ports:
     - name: ceramic-node-endpoint
@@ -16,5 +15,3 @@ spec:
       targetPort: 7007
   selector:
     service: ceramic-node
-status:
-  loadBalancer: {}

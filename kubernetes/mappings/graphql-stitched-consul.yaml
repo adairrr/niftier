@@ -1,0 +1,12 @@
+apiVersion: getambassador.io/v2
+kind: Mapping
+metadata:
+  name: graphql-stitched
+spec:
+  prefix: /api/stitched/
+  rewrite: /api/stitched/graphql
+  service: graphql-stitched-sidecar-proxy
+  resolver: consul-dc1
+  tls: ambassador-consul
+  load_balancer:  # underscored in their docs
+    policy: round_robin

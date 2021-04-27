@@ -1,0 +1,32 @@
+apiVersion: consul.hashicorp.com/v1alpha1
+kind: ServiceIntentions
+metadata:
+  name: stitched-to-subgraph
+spec:
+  destination:
+    name: subgraph-node
+  sources:
+    - name: graphql-stitched
+      action: allow
+---
+apiVersion: consul.hashicorp.com/v1alpha1
+kind: ServiceIntentions
+metadata:
+  name: stitched-to-textile
+spec:
+  destination:
+    name: graphql-textile
+  sources:
+    - name: graphql-stitched
+      action: allow
+---
+# apiVersion: consul.hashicorp.com/v1alpha1
+# kind: ServiceIntentions
+# metadata:
+#   name: product-api-to-postgres
+# spec:
+#   destination:
+#     name: postgres
+#   sources:
+#     - name: product-api
+#       action: allow

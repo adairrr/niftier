@@ -1,8 +1,14 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: graphql-stitched
+
+--- 
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: graphql-stitched
-  namespace: ambassador
   labels:
     service: graphql-stitched
 spec:
@@ -10,22 +16,24 @@ spec:
   selector:
     matchLabels:
       service: graphql-stitched
-  strategy: {}
   template:
     metadata:
       labels:
         service: graphql-stitched
+      annotations:
+        consul.hashicorp.com/connect-inject: 'true'
+        consul.hashicorp.com/connect-service-upstreams: 'subgraph-node:8000,graphql-textile:9000'
     spec:
+      serviceAccountName: graphql-stitched
       containers:
         - name: graphql-stitched
           image: adairrr/stitched-gql-server-kubernetes
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           envFrom:
             - configMapRef:
                 name: graphql-stitched
           ports:
             - containerPort: 10000
-          resources: {}
-          tty: true
+              # hostPort: 10000
+          # tty: true
       restartPolicy: Always
-status: {}
