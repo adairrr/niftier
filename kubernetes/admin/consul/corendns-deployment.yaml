@@ -71,6 +71,12 @@ data:
         reload
         loadbalance
     }
+    consul {
+        errors
+        cache 30
+        forward . CLUSTER_IP_HERE!!!!!!!!
+    }
+
 ---
 apiVersion: apps/v1
 kind: Deployment

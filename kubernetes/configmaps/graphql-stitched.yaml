@@ -6,7 +6,7 @@ metadata:
     service: graphql-stitched
 data:
   STITCHED_PORT: "10000"
-  SUBGRAPH_URL: "http://localhost:8000/subgraphs/name/niftier/composable-contract/graphql"
-  TEXTILE_URL: "http://localhost:9000/graphql"
+  SUBGRAPH_URL: "http://localhost:8000/subgraphs/name/niftier/composable-contract"
+  TEXTILE_URL: "http://localhost:9000"
   SUBGRAPH_RESOURCE: "tcp:localhost:8000"
   TEXTILE_RESOURCE: "tcp:localhost:9000"

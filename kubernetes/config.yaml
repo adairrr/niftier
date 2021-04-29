@@ -1,8 +1,0 @@
-global:
-  name: consul
-connectInject:
-  enabled: true
-controller:
-  enabled: true
-syncCatalog:
-  enabled: true

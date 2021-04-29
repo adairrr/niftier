@@ -23,6 +23,7 @@ spec:
       annotations:
         consul.hashicorp.com/connect-inject: 'true'
         consul.hashicorp.com/connect-service-upstreams: 'subgraph-node:8000,graphql-textile:9000'
+        consul.hashicorp.com/enable-metrics-merging: 'true'
     spec:
       serviceAccountName: graphql-stitched
       containers:

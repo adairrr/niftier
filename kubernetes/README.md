@@ -2,13 +2,23 @@
 
 This application is monitored through the Ambassador Edge Stack
 
+1. Install prometheus 
+    ```
+    helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+    helm install -f ./admin/helm_configs/prometheus-config.yaml  prometheus prometheus-community/prometheus --wait
+    ```
 
+1. Install Grafana
+    ```
+    helm repo add grafana https://grafana.github.io/helm-charts
+    helm install -f ./admin/helm_configs/grafana-config.yaml grafana grafana/grafana --wait
+    ```
 ## Steps 
 
 1. [Install Consul](https://www.consul.io/docs/k8s/installation/install) and [enable Connect](https://www.consul.io/docs/k8s/service-sync) # TODO ENABLE TLS
     ```
     helm repo add hashicorp https://helm.releases.hashicorp.com
-    helm install consul hashicorp/consul -f config.yaml --set global.name=consul
+    helm install consul hashicorp/consul -f ./admin/helm_configs/consul-config.yaml --set global.name=consul
     ```
 
 
@@ -39,9 +49,9 @@ This application is monitored through the Ambassador Edge Stack
 
 1. Install the [Ambassador Edge Stack](https://www.getambassador.io/docs/edge-stack/latest/tutorials/getting-started/#1-installation)
     ```
-    kubectl apply -f ./ambassador/aes-crds.yaml && \
+    kubectl apply -f ./admin/ambassador/aes-crds.yaml && \
     kubectl wait --for condition=established --timeout=90s crd -lproduct=aes && \
-    kubectl apply -f ./ambassador/aes.yaml && \
+    kubectl apply -f ./admin/ambassador/aes.yaml && \
     kubectl -n ambassador wait --for condition=available --timeout=90s deploy -lproduct=aes
     ```
 
@@ -53,12 +63,12 @@ This application is monitored through the Ambassador Edge Stack
 
 1. Using [Ambassador's Consul Integration Docs](https://www.getambassador.io/docs/edge-stack/latest/howtos/consul/), create the ConsulResolver
     ```
-    kubectl apply -f ./consul/resolvers/consul-dc1.yaml
+    kubectl apply -f ./admin/consul/resolvers/consul-dc1.yaml
     ```
 
 1. Deploy the Ambassador Edge Stack Consul Connector 
     ```
-    kubectl apply -f ./ambassador/ambassador-consul-connector.yaml
+    kubectl apply -f ./admin/ambassador/ambassador-consul-connector.yaml
     ```
 
 

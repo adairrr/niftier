@@ -5,7 +5,7 @@ metadata:
   # namespace: ambassador
 spec:
   prefix: /api/subgraph/
-  # rewrite: /api/subgraph/subgraphs/name/niftier/composable-contract
+  rewrite: /subgraphs/name/niftier/composable-contract/graphql
   service: subgraph-node-sidecar-proxy
   resolver: consul-dc1
   tls: ambassador-consul

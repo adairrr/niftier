@@ -4,7 +4,7 @@ metadata:
   name: graphql-stitched
 spec:
   prefix: /api/stitched/
-  rewrite: /api/stitched/graphql
+  rewrite: /graphql
   service: graphql-stitched-sidecar-proxy
   resolver: consul-dc1
   tls: ambassador-consul
