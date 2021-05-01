@@ -23,7 +23,7 @@ COPY package.json yarn.lock $APP/
 
 # How can we do this in offline mode?
 # RUN yarn --pure-lockfile --link-duplicates --cache-folder ./yarn-offline-mirror
-RUN yarn --pure-lockfile --link-duplicates
+RUN yarn install
 
 COPY . $APP/
 
