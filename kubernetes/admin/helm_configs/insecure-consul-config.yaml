@@ -1,0 +1,20 @@
+global:
+  name: consul
+  # metrics:
+  #   enabled: true
+  #   enableAgentMetrics: true
+  #   agentMetricsRetentionTime: "1m"
+server:
+  securityContext:
+    runAsNonRoot: false
+    runAsUser: 0
+connectInject:
+  enabled: true
+  #   defaultEnabled: true # by default, this inherits from the value global.metrics.enabled
+  #   defaultEnableMerging: true
+  #   defaultPrometheusScrapePort: 20200
+  #   defaultPrometheusScrapePath: "/metrics"
+controller:
+  enabled: true
+syncCatalog:
+  enabled: true

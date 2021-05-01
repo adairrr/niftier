@@ -10,21 +10,24 @@ metadata:
     a8r.io/repository: "https://github.com/adairrr/niftier/tree/develop/packages/subgraph"
     a8r.io/documentation: "https://github.com/adairrr/niftier/blob/develop/packages/subgraph/README.md"
 spec:
+  type: NodePort
   ports:
-    - name: subgraph-graphql-endpoint
-      port: 8000
-      targetPort: 8000
-    - name: subgraph-subscription-endpoint
-      port: 8001
-      targetPort: 8001
-    - name: json-subgraph-rpc-endpoint
-      port: 8020
-      targetPort: 8020
-    - name: index-subgraph-node-endpoint
-      port: 8030
-      targetPort: 8030
-    - name: subgraph-metrics-endpoint
-      port: 8040
-      targetPort: 8040
+    - port: 443
+      targetPort: 20000
+    # - name: subgraph-graphql-endpoint
+    #   port: 8000
+    #   targetPort: 8000
+    # - name: subgraph-subscription-endpoint
+    #   port: 8001
+    #   targetPort: 8001
+    # - name: json-subgraph-rpc-endpoint
+    #   port: 8020
+    #   targetPort: 8020
+    # - name: index-subgraph-node-endpoint
+    #   port: 8030
+    #   targetPort: 8030
+    # - name: subgraph-metrics-endpoint
+    #   port: 8040
+    #   targetPort: 8040
   selector:
     service: graph-node

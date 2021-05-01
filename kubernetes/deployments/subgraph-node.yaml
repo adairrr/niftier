@@ -9,14 +9,12 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: subgraph-node
-  # namespace: ambassador
   labels:
     service: subgraph-node
 spec:
   selector:
     matchLabels:
       service: subgraph-node
-  strategy: {}
   template:
     metadata:
       annotations:
@@ -32,15 +30,15 @@ spec:
           imagePullPolicy: IfNotPresent
           ports: 
             - containerPort: 8000 # GraphiQL / HTTP / GraphQLServer
-              hostPort: 8000
+              # hostPort: 8000
             - containerPort: 8001 # Websocket / SubscriptionServer
-              hostPort: 8001
+              # hostPort: 8001
             - containerPort: 8020 # Admin JSON-RPC / JsonRpcServer
-              hostPort: 8020
+              # hostPort: 8020
             - containerPort: 8030 # Indexing status / IndexNodeServer
-              hostPort: 8030
+              # hostPort: 8030
             - containerPort: 8040 # Metrics server
-              hostPort: 8040
+              # hostPort: 8040
           envFrom: 
             - configMapRef:
                 name: subgraph-node

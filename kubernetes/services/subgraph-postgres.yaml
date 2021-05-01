@@ -10,9 +10,12 @@ metadata:
     a8r.io/repository: "https://github.com/adairrr/niftier/tree/develop/packages/subgraph"
     a8r.io/documentation: "https://github.com/adairrr/niftier/blob/develop/packages/subgraph/README.md"
 spec:
+  type: NodePort
   ports:
-    - name: subgraph-postgres-endpoint
-      port: 5432
-      targetPort: 5432
+    - port: 443
+      targetPort: 20000
+    # - port: 5432
+    #   targetPort: 5432
+      # name: subgraph-postgres-endpoint
   selector:
     service: subgraph-postgres

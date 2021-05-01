@@ -10,9 +10,12 @@ metadata:
     a8r.io/repository: "https://github.com/adairrr/niftier/tree/develop/packages/subgraph"
     a8r.io/documentation: "https://github.com/adairrr/niftier/blob/develop/packages/subgraph/README.md"
 spec:
+  type: NodePort
   ports:
-    - name: ipfs-endpoint
-      port: 5001
-      targetPort: 5001
+    # - name: ipfs-endpoint
+    #   port: 5001
+    #   targetPort: 5001
+    - port: 443
+      targetPort: 20000
   selector:
     service: subgraph-ipfs

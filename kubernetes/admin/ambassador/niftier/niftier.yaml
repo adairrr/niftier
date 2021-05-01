@@ -1,8 +1,0 @@
-apiVersion: getambassador.io/v2
-kind: Host
-metadata:
-  name: niftier
-spec:
-  hostname: niftier.io
-  acmeProvider:
-    email: riada99@gmail.com

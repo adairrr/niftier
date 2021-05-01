@@ -2,12 +2,11 @@ apiVersion: getambassador.io/v2
 kind: Mapping
 metadata:
   name: subgraph-node
-  # namespace: ambassador
 spec:
   prefix: /api/subgraph/
-  rewrite: /subgraphs/name/niftier/composable-contract/graphql
+  # rewrite: /subgraphs/name/niftier/composable-contract/graphql
   service: subgraph-node-sidecar-proxy
   resolver: consul-dc1
   tls: ambassador-consul
-  load_balancer:  # underscored in their docs
+  load_balancer:
     policy: round_robin

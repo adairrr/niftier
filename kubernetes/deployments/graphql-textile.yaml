@@ -9,26 +9,26 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: graphql-textile
-  # namespace: ambassador
   labels:
     service: graphql-textile
 spec:
   selector:
     matchLabels:
       service: graphql-textile
-  strategy: {}
   template:
     metadata:
       annotations:
         consul.hashicorp.com/connect-inject: 'true'
+        # consul.hashicorp.com/enable-metrics-merging: 'true'
+        # consul.hashicorp.com/service-metrics-port: '9000'
+        # consul.hashicorp.com/service-metrics-path: '/metrics'
       labels:
         service: graphql-textile
     spec:
       serviceAccountName: graphql-textile
       containers:
       - name: graphql-textile
-        image: adairrr/graphql-textile-kubernetes
-        imagePullPolicy: IfNotPresent
+        image: adairrr/graphql-textile-kubernetes:latest
         env:
           - name: PORT
             value: "9000"

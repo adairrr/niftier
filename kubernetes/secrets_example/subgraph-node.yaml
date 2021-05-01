@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: subgraph-node
-  namespace: ambassador
+  # namespace: ambassador
 type: Opaque
 data:
   # which chain to follow, obfuscated because ip

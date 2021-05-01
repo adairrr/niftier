@@ -1,0 +1,15 @@
+---
+apiVersion: consul.hashicorp.com/v1alpha1
+kind: ServiceIntentions
+metadata:
+  name: intentions-to-graphql-stitched
+spec:
+  destination:
+    name: graphql-stitched
+  sources:
+    - name: ambassador
+      action: allow
+    - name: subgraph-node
+      action: allow
+    - name: graphql-textile
+      action: allow

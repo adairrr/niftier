@@ -28,7 +28,7 @@ spec:
         - command:
             - docker-entrypoint.sh
             - run-ceramic-daemon.sh
-          image: adairrr/ceramic-node-kubernetes
+          image: adairrr/ceramic-node-kubernetes:latest
           name: ceramic-node
           ports:
             - containerPort: 7007

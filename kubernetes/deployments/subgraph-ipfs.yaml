@@ -9,7 +9,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: subgraph-ipfs
-  # namespace: ambassador
   labels:
     service: subgraph-ipfs
 spec:
@@ -30,7 +29,7 @@ spec:
         imagePullPolicy: IfNotPresent
         ports:
           - containerPort: 5001
-            hostPort: 5001
+            # hostPort: 5001
         volumeMounts:
           - mountPath: /data/ipfs
             name: subgraph-ipfs

@@ -9,6 +9,7 @@ metadata:
     a8r.io/description: "A service that exposes a Ceramic node"
     a8r.io/repository: "https://github.com/adairrr/niftier/tree/develop/docker/ceramic-node"
 spec:
+  type: NodePort
   ports:
     - name: ceramic-node-endpoint
       port: 7007

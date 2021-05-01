@@ -1,0 +1,11 @@
+apiVersion: consul.hashicorp.com/v1alpha1
+kind: ServiceIntentions
+metadata:
+  name: ambassador-to-qotm
+spec:
+  destination:
+    name: qotm
+  sources:
+    - name: ambassador
+      action: allow
+

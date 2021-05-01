@@ -1,0 +1,14 @@
+apiVersion: getambassador.io/v2
+kind: Host
+metadata:
+  name: niftier
+  namespace: default
+spec:
+  hostname: admin.niftier.io
+  acmeProvider:
+    authority: 'https://acme-v02.api.letsencrypt.org/directory'
+    email: riada99@gmail.com
+  requestPolicy:
+    insecure:
+      action: Redirect     # Configures Ambassador to redirect cleartext
+      additionalPort: 8080 # Optional: The redirect port. Defaults to 8080

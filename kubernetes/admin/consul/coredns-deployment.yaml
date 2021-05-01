@@ -74,9 +74,8 @@ data:
     consul {
         errors
         cache 30
-        forward . CLUSTER_IP_HERE!!!!!!!!
+        forward . 10.3.241.33
     }
-
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -191,7 +190,7 @@ metadata:
 spec:
   selector:
     k8s-app: kube-dns
-  clusterIP: 10.27.240.10
+  clusterIP: 10.3.240.10
   ports:
   - name: dns
     port: 53

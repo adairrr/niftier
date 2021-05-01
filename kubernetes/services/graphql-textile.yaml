@@ -10,9 +10,10 @@ metadata:
     a8r.io/repository: "https://github.com/adairrr/niftier/tree/develop/packages/textile-server"
     a8r.io/documentation: "https://github.com/adairrr/niftier/blob/develop/packages/textile-server/README.md"
 spec:
+  type: NodePort
   ports:
-    - name: graphql-textile-endpoint
-      port: 9000
-      targetPort: 9000
+    - port: 443
+      targetPort: 20000
+      # name: graphql-textile-endpoint
   selector:
     service: graphql-textile

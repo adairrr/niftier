@@ -1,0 +1,41 @@
+global:
+  name: consul
+  metrics:
+    enabled: true
+    # enableAgentMetrics: true # global.metrics.enableAgentMetrics cannot be enabled if TLS (HTTPS only) is enabled"
+    # agentMetricsRetentionTime: "1m"
+  gossipEncryption:
+    secretName: "consul-gossip-encryption-key"
+    secretKey: "key"
+  tls:
+    enabled: true
+    enableAutoEncrypt: true
+    serverAdditionalDNSSANs: ["'consul-server.default.svc.cluster.local'"] # Enabling an additional SAN for the ConsulResolver
+    verify: true
+  acls:
+    manageSystemACLs: true
+connectInject:
+  enabled: true
+  #   defaultEnabled: true # by default, this inherits from the value global.metrics.enabled
+  #   defaultEnableMerging: true
+  #   defaultPrometheusScrapePort: 20200
+  #   defaultPrometheusScrapePath: "/metrics"
+controller:
+  enabled: true
+syncCatalog:
+  enabled: true
+ui:
+  service:
+    type: 'LoadBalancer'
+
+server:
+  extraConfig: |
+    {
+      "ui_config": {
+        "enabled": true,
+        "metrics_provider": "prometheus",
+        "metrics_proxy": {
+          "base_url": "http://prometheus-server"
+        }
+      }
+    }

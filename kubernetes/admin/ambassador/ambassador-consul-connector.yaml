@@ -13,7 +13,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: ambassador-consul-connect
-  namespace: ambassador
+  # namespace: ambassador
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -26,22 +26,24 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: ambassador-consul-connect
-    namespace: ambassador
+    namespace: default
+    # namespace: ambassador
 ---
 apiVersion: getambassador.io/v2
 kind: TLSContext
 metadata:
   name: ambassador-consul
-  namespace: ambassador
+  # namespace: ambassador
 spec:
   hosts: []
   secret: ambassador-consul-connect
+  # secret: ambassador-certs
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: ambassador-consul-connector
-  namespace: ambassador
+  # namespace: ambassador
   annotations:
     a8r.io/owner: "Ambassador Labs"
     a8r.io/repository: github.com/datawire/ambassador
@@ -62,7 +64,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ambassador-consul-connect-integration
-  namespace: ambassador
+  # namespace: ambassador
   labels:
     app: ambassador
     component: consul-connect
@@ -106,3 +108,14 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
+            - name: _CONSUL_PORT
+              value: "8501"
+            - name: CONSUL_HTTP_SSL
+              value: "true"
+            - name: CONSUL_HTTP_SSL_VERIFY
+              value: "false"
+            - name: CONSUL_HTTP_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  key: token
+                  name: consul-bootstrap-acl-token

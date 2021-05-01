@@ -1,0 +1,18 @@
+---
+apiVersion: consul.hashicorp.com/v1alpha1
+kind: ServiceIntentions
+metadata:
+  name: intentions-to-subgraph-node
+spec:
+  destination:
+    name: subgraph-node
+  sources:
+    - name: ambassador
+      action: allow
+    - name: subgraph-ipfs
+      action: allow
+    - name: subgraph-postgres
+      action: allow
+    - name: graphql-stitched
+      action: allow
+

@@ -2,7 +2,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: ceramic-node
-  # namespace: ambassador
+  # # namespace: ambassador
   labels:
     service: ceramic-node
 spec:

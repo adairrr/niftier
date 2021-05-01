@@ -1,0 +1,11 @@
+---
+apiVersion: consul.hashicorp.com/v1alpha1
+kind: ServiceIntentions
+metadata:
+  name: intentions-to-subgraph-postgres
+spec:
+  destination:
+    name: subgraph-postgres
+  sources:
+    - name: subgraph-node
+      action: allow

@@ -10,9 +10,12 @@ metadata:
     a8r.io/repository: "https://github.com/adairrr/niftier/tree/develop/packages/stitched-gql-server"
     a8r.io/documentation: "https://github.com/adairrr/niftier/blob/develop/packages/stitched-gql-server/README.md"
 spec:
+  type: NodePort
   ports:
-    - name: graphql-stitched-endpoint
-      port: 10000
-      targetPort: 10000
+    - port: 443
+      targetPort: 20000
+    # - name: graphql-stitched-endpoint
+    #   port: 10000
+    #   targetPort: 10000
   selector:
     service: graphql-stitched

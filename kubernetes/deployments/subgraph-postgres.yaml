@@ -9,14 +9,12 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: subgraph-postgres
-  # namespace: ambassador
   labels:
     service: subgraph-postgres
 spec:
   selector:
     matchLabels:
       service: subgraph-postgres
-  strategy: {}
   template:
     metadata:
       annotations:
@@ -34,7 +32,7 @@ spec:
           - -cshared_preload_libraries=pg_stat_statements
         ports:
           - containerPort: 5432
-            hostPort: 5432
+            # hostPort: 5432
         envFrom:
           - configMapRef:
               name: subgraph-postgres

@@ -1,9 +1,0 @@
-apiVersion: getambassador.io/v2
-kind: Mapping
-metadata:
-  name: graph-node
-  namespace: ambassador
-spec:
-  prefix: /api/subgraph/
-  # rewrite: /subgraphs/name/niftier/composable-contract/graphql
-  service: graph-node:8000
