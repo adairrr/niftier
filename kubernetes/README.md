@@ -20,6 +20,12 @@ This application is monitored through the Ambassador Edge Stack
     helm install -f ./admin/helm_configs/grafana-config.yaml grafana grafana/grafana --wait
     ```
 
+1. Access the grafana dashboard via port forward
+    ```
+    export POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=grafana,app.kubernetes.io/instance=grafana" -o jsonpath="{.items[0].metadata.name}") && \
+    kubectl --namespace default port-forward $POD_NAME 3000
+    ```
+
 ## Consul Steps
 
 1. Secure Consul and Registered Services using [this guide](https://learn.hashicorp.com/tutorials/consul/kubernetes-secure-agents)
@@ -66,7 +72,7 @@ This application is monitored through the Ambassador Edge Stack
 
 1. Port forward 8501
     ```
-    kubectl port forward consul-server-0 8501:8501
+    kubectl port-forward consul-server-0 8501:8501
     ```
 
 1. Get and save the ca-certificate 

@@ -20,16 +20,18 @@ spec:
     type: Recreate
   template:
     metadata:
+      annotations:
+        consul.hashicorp.com/connect-inject: 'true'
       labels:
         service: ceramic-node
     spec:
       serviceAccountName: ceramic-node
       containers:
-        - command:
+        - name: ceramic-node
+          image: adairrr/ceramic-node-kubernetes:latest
+          command:
             - docker-entrypoint.sh
             - run-ceramic-daemon.sh
-          image: adairrr/ceramic-node-kubernetes:latest
-          name: ceramic-node
           ports:
             - containerPort: 7007
           volumeMounts:

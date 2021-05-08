@@ -1628,6 +1628,11 @@
     lodash "^4.17.19"
     to-fast-properties "^2.0.0"
 
+"@bmatei/apollo-prometheus-exporter@^1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@bmatei/apollo-prometheus-exporter/-/apollo-prometheus-exporter-1.2.0.tgz#911363f4d179d640886371bfdea103c1e34bdb46"
+  integrity sha512-Rnr5ibt5x1Kc9y8UUmx0EF/3CjFnhwz8gytU9WJhm1GuL4v1HXgiyjQqvtJrJ+1UKYbQaThamyZT9NjbcrURLg==
+
 "@ceramicnetwork/3id-did-resolver@^0.6.10":
   version "0.6.10"
   resolved "https://registry.yarnpkg.com/@ceramicnetwork/3id-did-resolver/-/3id-did-resolver-0.6.10.tgz#61f6c889adaff4086e3e1208853e5ef71df71fa4"
@@ -8485,6 +8490,11 @@ bindings@^1.5.0:
   integrity sha512-p2q/t/mhvuOj/UeLlV6566GD/guowlr0hHxClI0W9m7MWYkL1F0hLo+0Aexs9HSPCtR1SXQ0TD3MMKrXZajbiQ==
   dependencies:
     file-uri-to-path "1.0.0"
+
+bintrees@1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/bintrees/-/bintrees-1.0.1.tgz#0e655c9b9c2435eaab68bf4027226d2b55a34524"
+  integrity sha1-DmVcm5wkNeqraL9AJyJtK1WjRSQ=
 
 bip39@2.5.0:
   version "2.5.0"
@@ -22644,6 +22654,13 @@ progress@^2.0.0:
   resolved "https://registry.yarnpkg.com/progress/-/progress-2.0.3.tgz#7e8cf8d8f5b8f239c1bc68beb4eb78567d572ef8"
   integrity sha512-7PiHtLll5LdnKIMw100I+8xJXR5gW2QwWYkT6iJva0bXitZKa/XMrSbdmg3r2Xnaidz9Qumd0VPaMrZlF9V9sA==
 
+prom-client@^13.1.0:
+  version "13.1.0"
+  resolved "https://registry.yarnpkg.com/prom-client/-/prom-client-13.1.0.tgz#1185caffd8691e28d32e373972e662964e3dba45"
+  integrity sha512-jT9VccZCWrJWXdyEtQddCDszYsiuWj5T0ekrPszi/WEegj3IZy6Mm09iOOVM86A4IKMWq8hZkT2dD9MaSe+sng==
+  dependencies:
+    tdigest "^0.1.1"
+
 promise-inflight@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/promise-inflight/-/promise-inflight-1.0.1.tgz#98472870bf228132fcbdd868129bad12c3c029e3"
@@ -26478,6 +26495,13 @@ tarr@1.1.0:
     block-stream "*"
     fstream ">=1.0.12"
     inherits "2"
+
+tdigest@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/tdigest/-/tdigest-0.1.1.tgz#2e3cb2c39ea449e55d1e6cd91117accca4588021"
+  integrity sha1-Ljyyw56kSeVdHmzZEReszKRYgCE=
+  dependencies:
+    bintrees "1.0.1"
 
 term-size@^2.1.0:
   version "2.2.1"

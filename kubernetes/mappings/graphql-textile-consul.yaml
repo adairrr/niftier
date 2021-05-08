@@ -5,7 +5,7 @@ metadata:
   name: graphql-textile
 spec:
   prefix: /textile/
-  rewrite: /textile/graphql
+  # rewrite: /textile/graphql
   service: graphql-textile-sidecar-proxy
   resolver: consul-dc1
   tls: ambassador-consul

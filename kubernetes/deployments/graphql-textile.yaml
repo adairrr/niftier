@@ -20,6 +20,11 @@ spec:
       annotations:
         consul.hashicorp.com/connect-inject: 'true'
         # consul.hashicorp.com/enable-metrics-merging: 'true'
+        # prometheus.io/path: /metrics
+        # prometheus.io/port: '20100'
+        # consul.hashicorp.com/prometheus-scrape-port: '20100'
+        # consul.hashicorp.com/prometheus-scrape-path: '/metrics'
+        # prometheus.io/scrape: 'true'
         # consul.hashicorp.com/service-metrics-port: '9000'
         # consul.hashicorp.com/service-metrics-path: '/metrics'
       labels:

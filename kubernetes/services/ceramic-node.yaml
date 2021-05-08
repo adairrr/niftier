@@ -11,8 +11,10 @@ metadata:
 spec:
   type: NodePort
   ports:
-    - name: ceramic-node-endpoint
-      port: 7007
-      targetPort: 7007
+    - port: 443
+      targetPort: 20000
+    # - name: ceramic-node-endpoint
+    #   port: 7007
+    #   targetPort: 7007
   selector:
     service: ceramic-node
