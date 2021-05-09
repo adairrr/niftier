@@ -1,0 +1,12 @@
+---
+apiVersion: consul.hashicorp.com/v1alpha1
+kind: ServiceIntentions
+metadata:
+  name: intentions-to-ceramic-node
+spec:
+  destination:
+    name: ceramic-node
+  sources:
+    - name: ambassador
+      action: allow
+

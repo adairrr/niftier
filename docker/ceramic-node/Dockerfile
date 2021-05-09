@@ -14,8 +14,10 @@ WORKDIR /usr/app
 RUN npm install -g node-pre-gyp
 
 # install ceramic cli as root
-RUN npm install -g @ceramicnetwork/cli@latest
+RUN npm install -g @ceramicnetwork/cli@1.0.0 # TODO latest?
 
+# See the ceramic version
+RUN npm list -g @ceramicnetwork/cli
 
 # RUN audit fix
 RUN npm i --package-lock-only

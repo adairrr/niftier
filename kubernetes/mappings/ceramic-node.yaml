@@ -1,0 +1,13 @@
+---
+apiVersion: getambassador.io/v2
+kind: Mapping
+metadata:
+  name: ceramic-node
+spec:
+  prefix: /ceramic
+  # rewrite: 
+  service: ceramic-node-sidecar-proxy
+  resolver: consul-dc1
+  tls: ambassador-consul
+  load_balancer:
+    policy: round_robin
